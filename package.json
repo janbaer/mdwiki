@@ -1,0 +1,106 @@
+{
+  "name": "MDWiki",
+  "version": "3.0.0",
+  "description": "My personal wiki",
+  "main": "index.html",
+  "author": "Jan Baer",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "parcel --port=4001 ./src/index.html",
+    "build": "mkdir -p ./dist && rm -rf ./dist/*.* && parcel build ./src/index.html --detailed-report",
+    "serve": "live-server --port=4002 --no-browser ./dist",
+    "lint": "eslint ./src"
+  },
+  "browserslist": [
+    "last 1 Chrome versions"
+  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "yarn lint"
+    }
+  },
+  "alias": {
+    "react": "preact-compat",
+    "react-dom": "preact-compat"
+  },
+  "babel": {
+    "presets": [
+      "env",
+      "preact"
+    ],
+    "plugins": [
+      "inline-react-svg",
+      "transform-object-rest-spread"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "standard",
+      "standard-preact"
+    ],
+    "plugins": [],
+    "rules": {
+      "semi": [
+        "error",
+        "always"
+      ],
+      "space-before-function-paren": [
+        "error",
+        "never"
+      ],
+      "jsx-quotes": [
+        "error",
+        "prefer-double"
+      ],
+      "comma-dangle": [
+        "error",
+        {
+          "arrays": "ignore",
+          "objects": "ignore"
+        }
+      ]
+    },
+    "globals": {
+      "fetch": false
+    }
+  },
+  "eslintIgnore": [
+    "dist/*"
+  ],
+  "lint-staged": {
+    "*.js": [
+      "eslint",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "classnames": "2.2.6",
+    "preact": "8.3.1",
+    "preact-compat": "3.18.4",
+    "preact-router": "2.6.1"
+  },
+  "devDependencies": {
+    "babel-core": "6.26.3",
+    "babel-eslint": "10.0.1",
+    "babel-plugin-inline-react-svg": "0.5.4",
+    "babel-plugin-module-resolver": "3.1.1",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-env": "1.7.0",
+    "babel-preset-preact": "1.1.0",
+    "eslint-config-standard": "12.0.0",
+    "eslint-config-standard-jsx": "6.0.2",
+    "eslint-config-standard-preact": "1.1.6",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-node": "7.0.1",
+    "eslint-plugin-promise": "4.0.1",
+    "eslint-plugin-react": "7.11.1",
+    "eslint-plugin-standard": "4.0.0",
+    "husky": "1.1.1",
+    "less": "3.8.1",
+    "lint-staged": "7.3.0",
+    "parcel-bundler": "1.10.2"
+  }
+}
