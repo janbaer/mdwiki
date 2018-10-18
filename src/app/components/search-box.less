@@ -1,0 +1,72 @@
+@import './../../styles/colors.less';
+@import './../../styles/screen-sizes.less';
+
+.Searchbox-container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+
+  @media (min-width: @TABLET_PORTRAIT_WIDTH) {
+    background-color: @SEARCHBOX_PANEL_COLOR;
+    align-items: unset;
+    flex-direction: row;
+    padding: 0 10px 0 0;
+  }
+
+  input {
+    display: none;
+    flex: 1;
+    background-color: transparent;
+    color: white;
+    border: none;
+
+    opacity: 0.5;
+
+    @media (min-width: @TABLET_PORTRAIT_WIDTH) {
+      display: unset;
+    }
+
+    &::placeholder {
+      color: white;
+    }
+
+    &:focus {
+      outline: none;
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+  }
+
+  button {
+    background-color: @NAVBAR_BUTTON_COLOR;
+    border: none;
+    cursor: pointer;
+    border-radius: 25px;
+    padding: 7px;
+
+    &:active {
+      background-color: @NAVBAR_BUTTON_HOOVER_COLOR;
+    }
+
+    &:focus {
+      outline-color: transparent;
+    }
+
+    @media (min-width: @TABLET_PORTRAIT_WIDTH) {
+      display: unset;
+      margin-right: 5px;
+      border: 1px solid @SEARCHBOX_BUTTON_COLOR;
+
+      &:active {
+        background-color: @SEARCHBOX_BUTTON_HOVER_COLOR;
+      }
+    }
+    svg {
+      fill: white;
+    }
+
+  }
+}

@@ -4,3 +4,69 @@ html, body {
   overflow: hidden;
 }
 
+@import './colors.less';
+
+.App-container {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 50px 1fr 50px;
+  grid-template-areas: 
+    "toolbar"
+    "content"
+    "footer";
+
+  header {
+    grid-area: toolbar;
+    color: @PANEL_COLOR;
+    background-color: @PANEL_BACKGROUND_COLOR;
+    display: flex;
+
+    nav.App-leftNavbar {
+      width: 40px;
+      display: flex;
+
+      @media (min-width: 1024px) {
+        display: none;
+      }
+    }
+
+    h1 {
+      display: block;
+      color: @PANEL_COLOR;
+      margin-top: 5px !important;
+      margin-bottom: 0px !important;
+      margin-left: 5px;
+      margin-right: 5px;
+
+      @media (min-width: 1024px) {
+        margin-top: 0 !important;
+      }
+    }
+
+    nav.App-middleNavbar {
+      flex: 2;
+      margin: 5px 10px;;
+      min-width: 40px;
+    }
+
+    nav.App-rightNavbar {
+      min-width: 96px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-right: 10px;
+      height: 100%;
+    }
+  }
+
+  main {
+    grid-area: content;
+    overflow-y: auto;
+  }
+
+  footer {
+    grid-area: footer;
+  }
+
+}

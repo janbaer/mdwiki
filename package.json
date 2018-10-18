@@ -79,7 +79,8 @@
     "classnames": "2.2.6",
     "preact": "8.3.1",
     "preact-compat": "3.18.4",
-    "preact-router": "2.6.1"
+    "preact-router": "2.6.1",
+    "uikit": "3.0.0-rc.19"
   },
   "devDependencies": {
     "babel-core": "6.26.3",
@@ -98,9 +99,9 @@
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-react": "7.11.1",
     "eslint-plugin-standard": "4.0.0",
-    "husky": "1.1.1",
+    "husky": "1.1.2",
     "less": "3.8.1",
     "lint-staged": "7.3.0",
-    "parcel-bundler": "1.10.2"
+    "parcel-bundler": "1.10.3"
   }
 }

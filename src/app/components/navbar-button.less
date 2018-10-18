@@ -1,0 +1,25 @@
+@import './../../styles/colors.less';
+
+.NavbarButton-button {
+  border: none;
+  border-radius: 25px;
+  background-color: @NAVBAR_BUTTON_COLOR;
+  color: @PANEL_COLOR;
+  cursor: pointer;
+  margin-right: 10px;
+  padding: 7px;
+
+  &:active {
+    background-color: @NAVBAR_BUTTON_HOOVER_COLOR;
+  }
+
+  &:focus {
+    outline-color: transparent;
+  }
+
+  & svg {
+    fill: @PANEL_COLOR;
+    height: 24px;
+    width: 24px
+  }
+}
