@@ -2,6 +2,7 @@ import { h, Component } from 'preact';
 import { Router, route } from 'preact-router';
 import Home from './pages/home';
 import Connect from './pages/connect';
+import configuration from '~/app/services/configuration.service';
 
 class App extends Component {
   constructor() {
@@ -10,7 +11,7 @@ class App extends Component {
   }
 
   isConnected() {
-    return true;
+    return !!configuration.user;
   }
 
   handleRoute(e) {
