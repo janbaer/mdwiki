@@ -15,12 +15,48 @@ class GithubService {
     };
   }
 
-  async getAuthenticatedUser(oauthToken) {
-    const options = this._buildOptions(oauthToken);
-    const response = await fetch(`${GITHUB_API_URL}/user`, options);
-    if (response.status === 200) {
-      const user = await response.json();
+  _mapPage(page) {
+    if (page) {
+      return {
+        name: page.name.substr(0, page.name.length - 3),
+        path: page.path,
+        sha: page.sha,
+        content: this._decodeContent(page.content)
+      };
+    }
+    return undefined;
+  }
 
+  _appendExtension(path) {
+    if (!path.endsWith('.md')) {
+      return `${path}.md`;
+    }
+    return path;
+  }
+
+  _markdownFilesOnly(page) {
+    return page.name.endsWith('.md');
+  }
+
+  async _get(url, oauthToken) {
+    const options = this._buildOptions(oauthToken, 'GET');
+    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
+    if (response.status === 200) {
+      return response.json();
+    }
+    return undefined;
+  }
+
+  _decodeContent(content) {
+    if (content) {
+      return decodeURIComponent(escape(window.atob(content)));
+    }
+    return undefined;
+  }
+
+  async getAuthenticatedUser(oauthToken) {
+    const user = this._get('/user');
+    if (user) {
       const { avatar_url, email, login, name } = user; // eslint-disable-line camelcase
       return {
         avatarUrl: avatar_url,
@@ -33,9 +69,14 @@ class GithubService {
   }
 
   async getUserRepositories(user, oauthToken) {
-    const options = this._buildOptions(oauthToken);
-    const response = await fetch(`${GITHUB_API_URL}/users/${user}/repos?per_page=100`, options);
-    return response.json();
+    return this._get(`/users/${user}/repos?per_page=100`);
+  }
+
+  async loadPages(userName, repository, oauthToken) {
+    const url = `/repos/${userName}/${repository}/contents`;
+    const pages = await this._get(url);
+
+    return pages.filter(this._markdownFilesOnly).map(page => this._mapPage(page));
   }
 }
 

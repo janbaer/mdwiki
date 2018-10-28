@@ -1,26 +1,29 @@
+@import './../../../styles/colors.less';
+
 .Home-container {
   display: flex;
   height: 100%;
 }
 
 .Home-sidebarContainer {
-  background-color: green;
   width: 250px;
   position: absolute;
   height: calc(~"100vh - 100px");
+  background-color: @CONTENT_BACKGROUND_COLOR;
+  border-right: 1px solid @BORDER_COLOR;
 
   left: -250px;
-  transition: left 1s ease-in-out;
+  transition: left 0.5s ease-in-out;
 
   &.is-shown {
-    transition: left 1s ease-in-out;
+    transition: left 0.5s ease-in-out;
     left: 0;
   }
 
   @media only screen and (min-width: 1024px) {
     position: static;
-    background-color: red;
     height: unset;
+    border-right: none;
   }
 }
 

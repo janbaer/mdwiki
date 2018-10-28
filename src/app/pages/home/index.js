@@ -6,8 +6,10 @@ import NavbarButton from '~/app/components/navbar-button';
 import LoginButton from '~/app/components/login-button';
 import SidebarButton from '~/app/components/sidebar-button';
 import Searchbox from '~/app/components/search-box';
+import Sidebar from './components/sidebar';
 
 import configuration from '~/app/services/configuration.service';
+import github from '~/app/services/github.service';
 
 import GithubSvg from './../../../images/github.svg';
 
@@ -22,6 +24,21 @@ export default class HomePage extends Component {
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.navigateToConnectPage = this.navigateToConnectPage.bind(this);
+    this.changePage = this.changePage.bind(this);
+  }
+
+  async loadPages(user, repository, oauthToken) {
+    const pages = await github.loadPages(user, repository, oauthToken);
+    if (pages) {
+      this.setState({ pages });
+    }
+  }
+
+  componentDidMount() {
+    if (configuration.user) {
+      const { user, repository, oauthToken } = configuration;
+      this.loadPages(user.loginName, repository, oauthToken);
+    }
   }
 
   toggleSidebar() {
@@ -29,11 +46,18 @@ export default class HomePage extends Component {
     this.setState({ showSidebar });
   }
 
+  changePage(pageName) {
+    route(`/?page=${pageName}`);
+    if (this.state.showSidebar) {
+      this.toggleSidebar();
+    }
+  }
+
   navigateToConnectPage() {
     route('/connect');
   }
 
-  render(props, { showSidebar }) {
+  render(props, { showSidebar, pages = [] }) {
     const leftSidebarContainerClassname = classnames(
       'Home-sidebarContainer',
       { 'is-shown': showSidebar }
@@ -64,7 +88,7 @@ export default class HomePage extends Component {
         <main>
           <div class="Home-container">
             <div class={leftSidebarContainerClassname}>
-              Sidebar
+              <Sidebar pages={pages} onClick={this.changePage} />
             </div>
             <div class="Home-contentContainer">
               {configuration.user.userName}
