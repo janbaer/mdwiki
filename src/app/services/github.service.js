@@ -55,7 +55,7 @@ class GithubService {
   }
 
   async getAuthenticatedUser(oauthToken) {
-    const user = this._get('/user');
+    const user = await this._get('/user', oauthToken);
     if (user) {
       const { avatar_url, email, login, name } = user; // eslint-disable-line camelcase
       return {
