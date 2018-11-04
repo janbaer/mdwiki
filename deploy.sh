@@ -9,7 +9,7 @@ echo "Deploying new version $VERSION to gh-pages branch"
 
 cd deploy
 
-git rm --cached -r .
+git rm -r .
 
 cp ../dist/*.* .
 cp ../CNAME .
