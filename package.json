@@ -9,6 +9,7 @@
   "scripts": {
     "start": "parcel --port=4001 ./src/index.html",
     "build": "mkdir -p ./dist && rm -rf ./dist/*.* && parcel build ./src/index.html --detailed-report",
+    "deploy": "yarn build && ./deploy.sh",
     "serve": "live-server --port=4002 --no-browser ./dist",
     "lint": "eslint ./src",
     "test": "jest --passWithNoTests",
