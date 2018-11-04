@@ -21,7 +21,7 @@ class ConfigurationService {
   }
 
   get oauthLoginUrl() {
-    const oauthClientId = this.isLocal ? '80a8ebcf2785af9f5c32' : '';
+    const oauthClientId = this.isLocal ? '80a8ebcf2785af9f5c32' : 'ca7d513bb2a616052f76';
     return `https://github-oauth-bridge.now.sh/login?clientId=${oauthClientId}`;
   }
 
