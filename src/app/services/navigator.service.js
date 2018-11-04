@@ -1,8 +1,12 @@
 import { route } from 'preact-router';
 
 class NavigatorService {
-  gotoConnectPage() {
-    route('/connect');
+  gotoConnectPage(token) {
+    let path = '/connect';
+    if (token) {
+      path += `?token=${token}`;
+    }
+    route(path);
   }
 
   gotoHomePage() {

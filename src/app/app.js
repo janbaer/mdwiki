@@ -15,11 +15,15 @@ class App extends Component {
   }
 
   handleRoute(e) {
-    switch (e.url) {
+    switch (e.current.attributes.path) {
       case '/':
         const isConnected = this.isConnected();
         if (!isConnected) {
-          route('/connect', true);
+          let path = '/connect';
+          if (e.current.attributes.token) {
+            path += `?token=${e.current.attributes.token}`;
+          }
+          route(path, true);
         }
         break;
     }

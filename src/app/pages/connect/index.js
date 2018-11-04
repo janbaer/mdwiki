@@ -1,7 +1,7 @@
 import { h, Component } from 'preact';
-import { route } from 'preact-router';
 import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
+import navigator from '~/app/services/navigator.service';
 import Footer from '~/app/components/footer';
 
 import RepositoriesSelection from './components/repositories-selection';
@@ -29,6 +29,10 @@ export default class ConnectPage extends Component {
     if (token) {
       this.verifyOauthToken(token);
     }
+
+    if (configuration.repository) {
+      this.changeSelectedRepository(configuration.repository);
+    }
   }
 
   navigateToGithub() {
@@ -50,7 +54,7 @@ export default class ConnectPage extends Component {
   connect() {
     const { user, selectedRepository, oauthToken } = this.state;
     configuration.save(user, selectedRepository, oauthToken);
-    route('/');
+    navigator.gotoHomePage();
   }
 
   disconnect() {
