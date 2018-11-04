@@ -4,7 +4,7 @@ import NavbarButton from './navbar-button';
 
 import './login-button.less';
 
-const LoginButton = ({ user }) => {
+const LoginButton = ({ user = {} }) => {
   return (
     <NavbarButton
       title={`Your're logged in as ${user.userName}`}
