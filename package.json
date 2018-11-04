@@ -39,7 +39,7 @@
   },
   "eslintConfig": {
     "env": {
-    "jest": true
+      "jest": true
     },
     "extends": [
       "standard",
@@ -93,9 +93,11 @@
   "dependencies": {
     "classnames": "2.2.6",
     "eslint-plugin-jest": "21.26.2",
+    "github-markdown-css": "2.10.0",
     "preact": "8.3.1",
     "preact-compat": "3.18.4",
     "preact-router": "2.6.1",
+    "react-markdown": "4.0.3",
     "uikit": "3.0.0-rc.20"
   },
   "devDependencies": {

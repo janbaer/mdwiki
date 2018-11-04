@@ -69,14 +69,17 @@ class GithubService {
   }
 
   async getUserRepositories(user, oauthToken) {
-    return this._get(`/users/${user}/repos?per_page=100`);
+    return this._get(`/users/${user}/repos?per_page=100`, oauthToken);
   }
 
-  async loadPages(userName, repository, oauthToken) {
-    const url = `/repos/${userName}/${repository}/contents`;
-    const pages = await this._get(url);
-
+  async getPages(userName, repository, oauthToken) {
+    const pages = await this._get(`/repos/${userName}/${repository}/contents`, oauthToken);
     return pages.filter(this._markdownFilesOnly).map(page => this._mapPage(page));
+  }
+
+  async getPage(userName, repository, path, oauthToken) {
+    const page = await this._get(`/repos/${userName}/${repository}/contents/${this._appendExtension(path)}`, oauthToken);
+    return this._mapPage(page);
   }
 }
 

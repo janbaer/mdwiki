@@ -1,5 +1,4 @@
 import { h, Component } from 'preact';
-import { route } from 'preact-router';
 import classnames from 'classnames';
 import Footer from '~/app/components/footer';
 import NavbarButton from '~/app/components/navbar-button';
@@ -7,9 +6,11 @@ import LoginButton from '~/app/components/login-button';
 import SidebarButton from '~/app/components/sidebar-button';
 import Searchbox from '~/app/components/search-box';
 import Sidebar from './components/sidebar';
+import PageContent from './components/page-content';
 
 import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
+import navigator from '~/app/services/navigator.service';
 
 import GithubSvg from './../../../images/github.svg';
 
@@ -19,7 +20,9 @@ export default class HomePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showSidebar: false
+      showSidebar: false,
+      pages: [],
+      page: { content: '' }
     };
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
@@ -28,9 +31,18 @@ export default class HomePage extends Component {
   }
 
   async loadPages(user, repository, oauthToken) {
-    const pages = await github.loadPages(user, repository, oauthToken);
+    const pages = await github.getPages(user, repository, oauthToken);
     if (pages) {
       this.setState({ pages });
+    }
+  }
+
+  async loadPage(pageName = 'index') {
+    const { user, repository, oauthToken } = configuration;
+
+    const page = await github.getPage(user.loginName, repository, pageName, oauthToken);
+    if (page) {
+      this.setState({ page });
     }
   }
 
@@ -38,6 +50,15 @@ export default class HomePage extends Component {
     if (configuration.user) {
       const { user, repository, oauthToken } = configuration;
       this.loadPages(user.loginName, repository, oauthToken);
+
+      const { page } = this.props;
+      this.loadPage(page);
+    }
+  }
+
+  componentWillReceiveProps(nextProps, nextState) {
+    if (nextProps.page !== this.props.page) {
+      this.loadPage(nextProps.page);
     }
   }
 
@@ -47,17 +68,17 @@ export default class HomePage extends Component {
   }
 
   changePage(pageName) {
-    route(`/?page=${pageName}`);
+    navigator.gotoPage(pageName);
     if (this.state.showSidebar) {
       this.toggleSidebar();
     }
   }
 
   navigateToConnectPage() {
-    route('/connect');
+    navigator.gotoConnectPage();
   }
 
-  render(props, { showSidebar, pages = [] }) {
+  render(props, { showSidebar, pages = [], page }) {
     const leftSidebarContainerClassname = classnames(
       'Home-sidebarContainer',
       { 'is-shown': showSidebar }
@@ -71,7 +92,9 @@ export default class HomePage extends Component {
           <nav class="App-leftNavbar">
             <SidebarButton onClick={this.toggleSidebar} showSidebar />
           </nav>
-          <h1 class="appTitle">MDWiki</h1>
+          <h1 class="App-title">
+            <a href="/">MDWiki</a>
+          </h1>
           <nav class="App-middleNavbar">
             <Searchbox />
           </nav>
@@ -91,7 +114,7 @@ export default class HomePage extends Component {
               <Sidebar pages={pages} onClick={this.changePage} />
             </div>
             <div class="Home-contentContainer">
-              {configuration.user.userName}
+              <PageContent content={page.content} />
             </div>
           </div>
         </main>
