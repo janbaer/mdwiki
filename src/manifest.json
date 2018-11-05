@@ -1,0 +1,13 @@
+{
+  "name": "MDWiki",
+  "short_name": "MDWiki",
+  "display": "standalone",
+  "start_url": "/",
+  "theme_color": "#1e87f0",
+  "background_color": "#1e87f0",
+  "lang": "en-US",
+  "Icons": [
+    { "src": "images/wiki.png", "type": "image/png",  "sizes": "48x48" },
+    { "src": "images/wiki.png", "type": "image/png",  "sizes": "256x256" }
+  ]
+}
