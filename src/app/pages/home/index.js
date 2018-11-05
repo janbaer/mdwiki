@@ -90,7 +90,7 @@ export default class HomePage extends Component {
       <div class="App-container">
         <header>
           <nav class="App-leftNavbar">
-            <SidebarButton onClick={this.toggleSidebar} showSidebar />
+            <SidebarButton onClick={this.toggleSidebar} showSidebar={showSidebar} />
           </nav>
           <h1 class="App-title">
             <a href="/">MDWiki</a>
