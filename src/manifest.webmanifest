@@ -7,7 +7,7 @@
   "background_color": "#1e87f0",
   "lang": "en-US",
   "icons": [
-    { "src": "images/wiki.png", "type": "image/png",  "sizes": "48x48" },
-    { "src": "images/wiki.png", "type": "image/png",  "sizes": "256x256" }
+    { "src": "images/wiki-192px.png", "type": "image/png",  "sizes": "192x192" },
+    { "src": "images/wiki-512px.png", "type": "image/png",  "sizes": "512x512" }
   ]
 }
