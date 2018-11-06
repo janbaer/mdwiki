@@ -6,7 +6,7 @@
   "theme_color": "#1e87f0",
   "background_color": "#1e87f0",
   "lang": "en-US",
-  "Icons": [
+  "icons": [
     { "src": "images/wiki.png", "type": "image/png",  "sizes": "48x48" },
     { "src": "images/wiki.png", "type": "image/png",  "sizes": "256x256" }
   ]
