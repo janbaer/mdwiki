@@ -1,7 +1,8 @@
 import { h, Component } from 'preact';
 import classnames from 'classnames';
 import Footer from '~/app/components/footer';
-import NavbarButton from '~/app/components/navbar-button';
+import AppTitle from '~/app/components/app-title';
+import ConnectButton from '~/app/components/connect-button';
 import LoginButton from '~/app/components/login-button';
 import SidebarButton from '~/app/components/sidebar-button';
 import Searchbox from '~/app/components/search-box';
@@ -11,8 +12,6 @@ import PageContent from './components/page-content';
 import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
 import navigator from '~/app/services/navigator.service';
-
-import GithubSvg from './../../../images/github.svg';
 
 import './index.less';
 
@@ -28,6 +27,11 @@ export default class HomePage extends Component {
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.navigateToConnectPage = this.navigateToConnectPage.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.startSearch = this.startSearch.bind(this);
+  }
+
+  startSearch(searchTerm) {
+    navigator.gotoSearch(searchTerm);
   }
 
   async loadPages(user, repository, oauthToken) {
@@ -75,7 +79,7 @@ export default class HomePage extends Component {
   }
 
   navigateToConnectPage() {
-    navigator.gotoConnectPage();
+    navigator.gotoConnect();
   }
 
   render(props, { showSidebar, pages = [], page }) {
@@ -92,19 +96,12 @@ export default class HomePage extends Component {
           <nav class="App-leftNavbar">
             <SidebarButton onClick={this.toggleSidebar} showSidebar={showSidebar} />
           </nav>
-          <h1 class="App-title">
-            <a href="/">MDWiki</a>
-          </h1>
+          <AppTitle />
           <nav class="App-middleNavbar">
-            <Searchbox />
+            <Searchbox onSearch={this.startSearch} />
           </nav>
           <nav class="App-rightNavbar">
-            <NavbarButton
-              title="Connect to a GitHub repository"
-              onClick={this.navigateToConnectPage}
-            >
-              <GithubSvg />
-            </NavbarButton>
+            <ConnectButton />
             <LoginButton user={user} />
           </nav>
         </header>

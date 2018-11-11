@@ -81,6 +81,13 @@ class GithubService {
     const page = await this._get(`/repos/${userName}/${repository}/contents/${this._appendExtension(path)}`, oauthToken);
     return this._mapPage(page);
   }
+
+  async searchPages(userName, repository, searchTerm, oauthToken) {
+    const searchUrl = `/search/code?q=${escape(searchTerm)}+in:file+extension:md+repo:${userName}/${repository}`;
+    const searchResult = await this._get(searchUrl, oauthToken);
+    searchResult.items = searchResult.items.map(page => this._mapPage(page));
+    return searchResult;
+  }
 }
 
 export default new GithubService();

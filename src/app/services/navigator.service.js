@@ -1,7 +1,11 @@
 import { route } from 'preact-router';
 
 class NavigatorService {
-  gotoConnectPage(token) {
+  gotoHome() {
+    route('/');
+  }
+
+  gotoConnect(token) {
     let path = '/connect';
     if (token) {
       path += `?token=${token}`;
@@ -9,8 +13,12 @@ class NavigatorService {
     route(path);
   }
 
-  gotoHomePage() {
-    route('/');
+  gotoSearch(searchTerm) {
+    let path = '/search';
+    if (searchTerm) {
+      path += `?q=${searchTerm}`;
+    }
+    route(path);
   }
 
   gotoPage(pageName) {
