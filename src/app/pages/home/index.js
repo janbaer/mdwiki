@@ -8,6 +8,7 @@ import SidebarButton from '~/app/components/sidebar-button';
 import Searchbox from '~/app/components/search-box';
 import Sidebar from './components/sidebar';
 import PageContent from './components/page-content';
+import PageEditor from './components/page-editor';
 
 import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
@@ -21,13 +22,20 @@ export default class HomePage extends Component {
     this.state = {
       showSidebar: false,
       pages: [],
-      page: { content: '' }
+      page: { content: '' },
+      editMode: false,
     };
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.navigateToConnectPage = this.navigateToConnectPage.bind(this);
     this.changePage = this.changePage.bind(this);
     this.startSearch = this.startSearch.bind(this);
+
+    this.newPage = this.newPage.bind(this);
+    this.editPage = this.editPage.bind(this);
+    this.deletePage = this.deletePage.bind(this);
+    this.savePage = this.savePage.bind(this);
+    this.cancelEdit = this.cancelEdit.bind(this);
   }
 
   startSearch(searchTerm) {
@@ -82,7 +90,62 @@ export default class HomePage extends Component {
     navigator.gotoConnect();
   }
 
-  render(props, { showSidebar, pages = [], page }) {
+  toggleEditMode() {
+    const editMode = !this.state.editMode;
+    this.setState({ editMode });
+  }
+
+  editPage() {
+    this.toggleEditMode();
+  }
+
+  cancelEdit() {
+    this.toggleEditMode();
+  }
+
+  deletePage() {
+    console.log('deletePage');
+  }
+
+  newPage(pageName) {
+    console.log('newPage', pageName);
+  }
+
+  async savePage(markdown) {
+    const { user, repository, oauthToken } = configuration;
+    const { page } = this.state;
+
+    const commitMessage = `Change page ${page.name}`;
+
+    const updatedPage = await github.createOrUpdatePage(
+      user.loginName, repository, page.name, commitMessage, markdown, page.sha, oauthToken
+    );
+
+    this.setState({ page: updatedPage }, () => this.toggleEditMode());
+  }
+
+  renderPageContent(content) {
+    return (
+      <PageContent
+        content={content}
+        onEdit={this.editPage}
+        onNew={this.newPage}
+        onDelete={this.deletePage}
+      />
+    );
+  }
+
+  renderPageEditor(markdown) {
+    return (
+      <PageEditor
+        markdown={markdown}
+        onSave={this.savePage}
+        onCancel={this.cancelEdit}
+      />
+    );
+  }
+
+  render(props, { showSidebar, pages = [], page, editMode }) {
     const leftSidebarContainerClassname = classnames(
       'Home-sidebarContainer',
       { 'is-shown': showSidebar }
@@ -111,7 +174,8 @@ export default class HomePage extends Component {
               <Sidebar pages={pages} onClick={this.changePage} />
             </div>
             <div class="Home-contentContainer">
-              <PageContent content={page.content} />
+              { !editMode && this.renderPageContent(page.content) }
+              { editMode && this.renderPageEditor(page.content) }
             </div>
           </div>
         </main>

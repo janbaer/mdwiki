@@ -1,5 +1,25 @@
-.Markdown-container {
+.PageContent-container {
   overflow-y: auto;
   height: calc(~"100vh - 80px");
-  padding: 0 10px;
+}
+
+.PageContent-toolbar {
+  opacity: .6;
+  &:hover {
+    opacity: 0.8;
+  }
+
+  & > a {
+    & > svg {
+      fill: #2c3e50;
+    }
+  }
+}
+
+.PageContent-body {
+  border: 1px solid #ddd;
+  height: calc(~"100% - 55px");
+  & > div {
+    margin: 0 10px;
+  }
 }

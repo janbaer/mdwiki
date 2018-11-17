@@ -47,11 +47,39 @@ class GithubService {
     return undefined;
   }
 
+  async _put(url, body, oauthToken) {
+    const EXPECTED_STATUS = [200, 201];
+
+    const options = this._buildOptions(oauthToken, 'PUT');
+    options.body = JSON.stringify(body);
+
+    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
+    if (EXPECTED_STATUS.some(s => s === response.status)) {
+      return response.json();
+    }
+    return undefined;
+  }
+
+  async _delete(url, body, oauthToken) {
+    const options = this.buildOptions('DELETE');
+    options.body = JSON.stringify(body);
+
+    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
+    if (response.status === 200) {
+      return response.json();
+    }
+    return undefined;
+  }
+
   _decodeContent(content) {
     if (content) {
       return decodeURIComponent(escape(window.atob(content)));
     }
     return undefined;
+  }
+
+  _encodeContent(content) {
+    return window.btoa(unescape(encodeURIComponent(content)));
   }
 
   async getAuthenticatedUser(oauthToken) {
@@ -87,6 +115,29 @@ class GithubService {
     const searchResult = await this._get(searchUrl, oauthToken);
     searchResult.items = searchResult.items.map(page => this._mapPage(page));
     return searchResult;
+  }
+
+  async createOrUpdatePage(userName, repository, path, commitMessage, content, sha, oauthToken) {
+    const url = `/repos/${userName}/${repository}/contents/${this._appendExtension(path)}`;
+    const body = {
+      message: commitMessage,
+      content: this._encodeContent(content),
+      sha
+    };
+
+    const response = await this._put(url, body, oauthToken);
+    const page = response.content;
+    page.content = body.content;
+    return this._mapPage(page);
+  }
+
+  deletePage(userName, repository, path, commitMessage, sha, oauthToken) {
+    const url = `/repos/${userName}/${repository}/contents/${this._appendExtension(path)}`;
+    const body = {
+      message: commitMessage,
+      sha
+    };
+    return this._delete(url, body, oauthToken);
   }
 }
 
