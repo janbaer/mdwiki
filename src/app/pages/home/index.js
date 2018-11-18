@@ -24,6 +24,7 @@ export default class HomePage extends Component {
       pages: [],
       page: { content: '' },
       editMode: false,
+      isNewPageDialogShown: false
     };
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
@@ -104,11 +105,26 @@ export default class HomePage extends Component {
   }
 
   deletePage() {
-    console.log('deletePage');
   }
 
-  newPage(pageName) {
-    console.log('newPage', pageName);
+  async newPage(pageName) {
+    const { user, repository, oauthToken } = configuration;
+    const commitMessage = `Create new page ${pageName}`;
+    const content = `# ${pageName}`;
+    pageName = pageName.replace(/\s/g, '_');
+
+    await github.createOrUpdatePage(
+      user.loginName,
+      repository,
+      pageName,
+      commitMessage,
+      content,
+      undefined,
+      oauthToken
+    );
+
+    await this.loadPages(user.loginName, repository, oauthToken);
+    navigator.gotoPage(pageName);
   }
 
   async savePage(commitMessage, markdown) {
@@ -126,8 +142,8 @@ export default class HomePage extends Component {
     return (
       <PageContent
         content={content}
-        onEdit={this.editPage}
         onNew={this.newPage}
+        onEdit={this.editPage}
         onDelete={this.deletePage}
       />
     );
