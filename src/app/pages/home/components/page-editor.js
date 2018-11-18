@@ -1,6 +1,8 @@
 import { h, Component } from 'preact';
 import SimpleMDE from 'react-simplemde-editor';
 
+import CommitMessageDialog from './commit-message-dialog';
+
 import './page-editor.less';
 
 const SimpleMDEOptions = {
@@ -34,10 +36,12 @@ export default class PageEditor extends Component {
     super(props);
 
     this.state = {
-      markdown: undefined
+      markdown: undefined,
+      isCommitMessageDialogShown: false
     };
 
     this.changeState = this.changeState.bind(this);
+    this.onHideCommitMessageDialog = this.onHideCommitMessageDialog.bind(this);
 
     this._prependCustomButtonsToToolbar();
   }
@@ -57,11 +61,21 @@ export default class PageEditor extends Component {
     SimpleMDEOptions.toolbar = [...myButtons, ...defaultToolbar];
   }
 
-  componentDidMount() {
+  onHideCommitMessageDialog(dialogResult, commitMessage) {
+    if (dialogResult) {
+      this.props.onSave(commitMessage, this.state.markdown);
+    }
+    this.setState({ isCommitMessageDialogShown: false });
   }
 
   onSaveButtonClicked() {
-    this.props.onSave(this.state.markdown);
+    const isCommitMessageDialogShown = true;
+    let selectedText = '';
+
+    if (this.simpleMDE) {
+      selectedText = this.simpleMDE.simpleMde.codemirror.getSelection();
+    }
+    this.setState({ selectedText, isCommitMessageDialogShown });
   }
 
   onCancelEditButtonClicked() {
@@ -72,16 +86,30 @@ export default class PageEditor extends Component {
     this.setState({ markdown });
   }
 
-  render(props, state) {
-    const markdown = this.state.markdown || this.props.markdown;
+  renderCommitMessageDialog(defaultCommitMessage) {
+    if (!this.state.isCommitMessageDialogShown) {
+      return null;
+    }
 
     return (
-      <SimpleMDE
-        ref={simpleMDE => this.simpleMDE = simpleMDE ? simpleMDE.simplemde : undefined} // eslint-disable-line
-        onChange={this.changeState}
-        value={markdown}
-        options={SimpleMDEOptions}
-      />
+      <CommitMessageDialog message={defaultCommitMessage} onHideDialog={this.onHideCommitMessageDialog} />
+    );
+  }
+
+  render(props, state) {
+    const markdown = this.state.markdown || this.props.markdown;
+    const defaultCommitMessage = state.selectedText || `Change page ${props.pageName}`;
+
+    return (
+      <div>
+        { this.renderCommitMessageDialog(defaultCommitMessage) }
+        <SimpleMDE
+          ref={simpleMDE => { this.simpleMDE = simpleMDE; }} // eslint-disable-line
+          onChange={this.changeState}
+          value={markdown}
+          options={SimpleMDEOptions}
+        />
+      </div>
     );
   }
 }

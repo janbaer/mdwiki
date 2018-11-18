@@ -111,11 +111,9 @@ export default class HomePage extends Component {
     console.log('newPage', pageName);
   }
 
-  async savePage(markdown) {
+  async savePage(commitMessage, markdown) {
     const { user, repository, oauthToken } = configuration;
     const { page } = this.state;
-
-    const commitMessage = `Change page ${page.name}`;
 
     const updatedPage = await github.createOrUpdatePage(
       user.loginName, repository, page.name, commitMessage, markdown, page.sha, oauthToken
@@ -135,9 +133,10 @@ export default class HomePage extends Component {
     );
   }
 
-  renderPageEditor(markdown) {
+  renderPageEditor(pageName, markdown) {
     return (
       <PageEditor
+        pageName={pageName}
         markdown={markdown}
         onSave={this.savePage}
         onCancel={this.cancelEdit}
@@ -175,7 +174,7 @@ export default class HomePage extends Component {
             </div>
             <div class="Home-contentContainer">
               { !editMode && this.renderPageContent(page.content) }
-              { editMode && this.renderPageEditor(page.content) }
+              { editMode && this.renderPageEditor(page.name, page.content) }
             </div>
           </div>
         </main>
