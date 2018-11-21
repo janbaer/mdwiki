@@ -11,62 +11,35 @@ import PageContent from './components/page-content';
 import PageEditor from './components/page-editor';
 
 import configuration from '~/app/services/configuration.service';
-import github from '~/app/services/github.service';
 import navigator from '~/app/services/navigator.service';
+
+import PageStore from './../../stores/page.store';
 
 import './index.less';
 
 export default class HomePage extends Component {
   constructor(props) {
     super(props);
+
+    this.store = new PageStore();
+    const { pages, page } = this.store;
+
     this.state = {
       showSidebar: false,
-      pages: [],
-      page: { content: '' },
-      editMode: false,
+      pages,
+      page,
+      isInEditMode: false,
       isNewPageDialogShown: false
     };
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
-    this.navigateToConnectPage = this.navigateToConnectPage.bind(this);
-    this.changePage = this.changePage.bind(this);
-    this.startSearch = this.startSearch.bind(this);
-
-    this.newPage = this.newPage.bind(this);
-    this.editPage = this.editPage.bind(this);
-    this.deletePage = this.deletePage.bind(this);
-    this.savePage = this.savePage.bind(this);
-    this.cancelEdit = this.cancelEdit.bind(this);
-  }
-
-  startSearch(searchTerm) {
-    navigator.gotoSearch(searchTerm);
-  }
-
-  async loadPages(user, repository, oauthToken) {
-    const pages = await github.getPages(user, repository, oauthToken);
-    if (pages) {
-      this.setState({ pages });
-    }
-  }
-
-  async loadPage(pageName = 'index') {
-    const { user, repository, oauthToken } = configuration;
-
-    const page = await github.getPage(user.loginName, repository, pageName, oauthToken);
-    if (page) {
-      this.setState({ page });
-    }
-  }
-
-  componentDidMount() {
-    if (configuration.user) {
-      const { user, repository, oauthToken } = configuration;
-      this.loadPages(user.loginName, repository, oauthToken);
-
-      const { page } = this.props;
-      this.loadPage(page);
-    }
+    this.onGotoPage = this.onGotoPage.bind(this);
+    this.onStartSearch = this.onStartSearch.bind(this);
+    this.onNewPage = this.onNewPage.bind(this);
+    this.onEditPage = this.onEditPage.bind(this);
+    this.onDeletePage = this.onDeletePage.bind(this);
+    this.onSavePage = this.onSavePage.bind(this);
+    this.onCancelEditPage = this.onCancelEditPage.bind(this);
   }
 
   componentWillReceiveProps(nextProps, nextState) {
@@ -75,93 +48,93 @@ export default class HomePage extends Component {
     }
   }
 
+  onStartSearch(searchTerm) {
+    navigator.gotoSearch(searchTerm);
+  }
+
+  async loadPages() {
+    const pages = await this.store.loadPages();
+    this.setState({ pages });
+  }
+
+  async loadPage(pageName = 'index') {
+    const page = await this.store.loadPage(pageName);
+    this.setState({ page });
+  }
+
+  async componentDidMount() {
+    if (configuration.user) {
+      await this.loadPages();
+
+      const { page } = this.props;
+      await this.loadPage(page);
+    }
+  }
+
   toggleSidebar() {
     const showSidebar = !this.state.showSidebar;
     this.setState({ showSidebar });
   }
 
-  changePage(pageName) {
+  onGotoPage(pageName) {
     navigator.gotoPage(pageName);
     if (this.state.showSidebar) {
       this.toggleSidebar();
     }
   }
 
-  navigateToConnectPage() {
-    navigator.gotoConnect();
-  }
-
   toggleEditMode() {
-    const editMode = !this.state.editMode;
-    this.setState({ editMode });
+    const isInEditMode = !this.state.isInEditMode;
+    this.setState({ isInEditMode });
   }
 
-  editPage() {
+  onEditPage() {
     this.toggleEditMode();
   }
 
-  cancelEdit() {
+  onCancelEditPage() {
     this.toggleEditMode();
   }
 
-  async deletePage() {
-    const { user, repository, oauthToken } = configuration;
-    const { pages, page } = this.state;
-    const commitMessage = `Create new page ${page.name}`;
-
-    await github.deletePage(user.loginName, repository, page.path, commitMessage, page.sha, oauthToken);
-    const index = pages.indexOf(p => p.name === page.name);
-    pages.splice(index, 1);
+  async onDeletePage() {
+    await this.store.deletePage();
+    const nextPageName = this.store.pages.length > 0 ? this.store.pages[0].name : 'index';
+    navigator.gotoPage(nextPageName);
   }
 
-  async newPage(pageName) {
-    const { user, repository, oauthToken } = configuration;
-    const commitMessage = `Create new page ${pageName}`;
-    const content = `# ${pageName}`;
-    pageName = pageName.replace(/\s/g, '_');
-
-    const page = await github.createOrUpdatePage(
-      user.loginName, repository, pageName, commitMessage, content, undefined, oauthToken
-    );
-
-    this.state.pages.push(page);
-    navigator.gotoPage(pageName);
+  async onNewPage(pageName) {
+    const page = await this.store.createPage(pageName);
+    navigator.gotoPage(page.name);
   }
 
-  async savePage(commitMessage, markdown) {
-    const { user, repository, oauthToken } = configuration;
-    const { page } = this.state;
-
-    const updatedPage = await github.createOrUpdatePage(
-      user.loginName, repository, page.path, commitMessage, markdown, page.sha, oauthToken
-    );
-
-    this.setState({ page: updatedPage }, () => this.toggleEditMode());
+  async onSavePage(content, commitMessage) {
+    const page = await this.store.updatePage(content, commitMessage);
+    this.setState({ page }, () => this.toggleEditMode());
   }
 
   renderPageContent(pageName, content) {
     return (
       <PageContent
         content={content}
-        onNew={this.newPage}
-        onEdit={this.editPage}
-        onDelete={this.deletePage}
+        onNew={this.onNewPage}
+        onEdit={this.onEditPage}
+        onDelete={this.onDeletePage}
       />
     );
   }
 
-  renderPageEditor(pageName, markdown) {
+  renderPageEditor(pageName, content) {
     return (
       <PageEditor
         pageName={pageName}
-        markdown={markdown}
-        onSave={this.savePage}
-        onCancel={this.cancelEdit}
+        content={content}
+        onSave={this.onSavePage}
+        onCancel={this.onCancelEditPage}
       />
     );
   }
 
-  render(props, { showSidebar, pages = [], page, editMode }) {
+  render(props, { showSidebar, isInEditMode, pages, page }) {
     const leftSidebarContainerClassname = classnames(
       'Home-sidebarContainer',
       { 'is-shown': showSidebar }
@@ -177,7 +150,7 @@ export default class HomePage extends Component {
           </nav>
           <AppTitle />
           <nav class="App-middleNavbar">
-            <Searchbox onSearch={this.startSearch} />
+            <Searchbox onSearch={this.onStartSearch} />
           </nav>
           <nav class="App-rightNavbar">
             <ConnectButton />
@@ -187,11 +160,11 @@ export default class HomePage extends Component {
         <main>
           <div class="Home-container">
             <div class={leftSidebarContainerClassname}>
-              <Sidebar pages={pages} onClick={this.changePage} />
+              <Sidebar pages={pages} onClick={this.onGotoPage} />
             </div>
             <div class="Home-contentContainer">
-              { !editMode && this.renderPageContent(page.name, page.content) }
-              { editMode && this.renderPageEditor(page.name, page.content) }
+              { !isInEditMode && this.renderPageContent(page.name, page.content) }
+              { isInEditMode && this.renderPageEditor(page.name, page.content) }
             </div>
           </div>
         </main>

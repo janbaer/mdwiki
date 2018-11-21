@@ -41,17 +41,17 @@ export default class PageContent extends Component {
   }
 
   async onNewPageDialogHide(dialogResult, pageName) {
+    await this.toggleNewPageDialog();
     if (dialogResult) {
       await this.props.onNew(pageName);
     }
-    await this.toggleNewPageDialog();
   }
 
   async onDeletePageHide(dialogResult) {
+    await this.toggleDeletePageDialog();
     if (dialogResult) {
       await this.props.onDelete();
     }
-    await this.toggleDeletePageDialog();
   }
 
   renderNewPageDialog(isNewPageDialogShown) {

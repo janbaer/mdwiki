@@ -117,8 +117,16 @@ class GithubService {
     return searchResult;
   }
 
-  async createOrUpdatePage(userName, repository, path, commitMessage, content, sha, oauthToken) {
-    const url = `/repos/${userName}/${repository}/contents/${this._appendExtension(path)}`;
+  createPage(userName, repository, pageName, content, commitMessage, oauthToken) {
+    return this._createOrUpdatePage(userName, repository, this._appendExtension(pageName), content, commitMessage, undefined, oauthToken);
+  }
+
+  updatedPage(userName, repository, page, content, commitMessage, oauthToken) {
+    return this._createOrUpdatePage(userName, repository, page.path, content, commitMessage, page.sha, oauthToken);
+  }
+
+  async _createOrUpdatePage(userName, repository, path, content, commitMessage, sha, oauthToken) {
+    const url = `/repos/${userName}/${repository}/contents/${path}`;
     const body = {
       message: commitMessage,
       content: this._encodeContent(content),
@@ -131,8 +139,9 @@ class GithubService {
     return this._mapPage(page);
   }
 
-  deletePage(userName, repository, path, commitMessage, sha, oauthToken) {
-    const url = `/repos/${userName}/${repository}/contents/${this._appendExtension(path)}`;
+  deletePage(userName, repository, page, commitMessage, oauthToken) {
+    const { path, sha } = page;
+    const url = `/repos/${userName}/${repository}/contents/${path}`;
     const body = {
       message: commitMessage,
       sha

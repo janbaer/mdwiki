@@ -36,7 +36,7 @@ export default class PageEditor extends Component {
     super(props);
 
     this.state = {
-      markdown: undefined,
+      content: undefined,
       isCommitMessageDialogShown: false
     };
 
@@ -63,7 +63,7 @@ export default class PageEditor extends Component {
 
   onHideCommitMessageDialog(dialogResult, commitMessage) {
     if (dialogResult) {
-      this.props.onSave(commitMessage, this.state.markdown);
+      this.props.onSave(this.state.content, commitMessage);
     }
     this.setState({ isCommitMessageDialogShown: false });
   }
@@ -82,8 +82,8 @@ export default class PageEditor extends Component {
     this.props.onCancel();
   }
 
-  changeState(markdown) {
-    this.setState({ markdown });
+  changeState(content) {
+    this.setState({ content });
   }
 
   renderCommitMessageDialog(defaultCommitMessage) {
@@ -97,7 +97,7 @@ export default class PageEditor extends Component {
   }
 
   render(props, state) {
-    const markdown = this.state.markdown || this.props.markdown;
+    const content = this.state.content || this.props.content;
     const defaultCommitMessage = state.selectedText || `Change page ${props.pageName}`;
 
     return (
@@ -106,7 +106,7 @@ export default class PageEditor extends Component {
         <SimpleMDE
           ref={simpleMDE => { this.simpleMDE = simpleMDE; }} // eslint-disable-line
           onChange={this.changeState}
-          value={markdown}
+          value={content}
           options={SimpleMDEOptions}
         />
       </div>
