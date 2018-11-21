@@ -104,7 +104,14 @@ export default class HomePage extends Component {
     this.toggleEditMode();
   }
 
-  deletePage() {
+  async deletePage() {
+    const { user, repository, oauthToken } = configuration;
+    const { pages, page } = this.state;
+    const commitMessage = `Create new page ${page.name}`;
+
+    await github.deletePage(user.loginName, repository, page.path, commitMessage, page.sha, oauthToken);
+    const index = pages.indexOf(p => p.name === page.name);
+    pages.splice(index, 1);
   }
 
   async newPage(pageName) {
@@ -113,17 +120,11 @@ export default class HomePage extends Component {
     const content = `# ${pageName}`;
     pageName = pageName.replace(/\s/g, '_');
 
-    await github.createOrUpdatePage(
-      user.loginName,
-      repository,
-      pageName,
-      commitMessage,
-      content,
-      undefined,
-      oauthToken
+    const page = await github.createOrUpdatePage(
+      user.loginName, repository, pageName, commitMessage, content, undefined, oauthToken
     );
 
-    await this.loadPages(user.loginName, repository, oauthToken);
+    this.state.pages.push(page);
     navigator.gotoPage(pageName);
   }
 
@@ -132,13 +133,13 @@ export default class HomePage extends Component {
     const { page } = this.state;
 
     const updatedPage = await github.createOrUpdatePage(
-      user.loginName, repository, page.name, commitMessage, markdown, page.sha, oauthToken
+      user.loginName, repository, page.path, commitMessage, markdown, page.sha, oauthToken
     );
 
     this.setState({ page: updatedPage }, () => this.toggleEditMode());
   }
 
-  renderPageContent(content) {
+  renderPageContent(pageName, content) {
     return (
       <PageContent
         content={content}
@@ -189,7 +190,7 @@ export default class HomePage extends Component {
               <Sidebar pages={pages} onClick={this.changePage} />
             </div>
             <div class="Home-contentContainer">
-              { !editMode && this.renderPageContent(page.content) }
+              { !editMode && this.renderPageContent(page.name, page.content) }
               { editMode && this.renderPageEditor(page.name, page.content) }
             </div>
           </div>

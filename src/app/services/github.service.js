@@ -61,7 +61,7 @@ class GithubService {
   }
 
   async _delete(url, body, oauthToken) {
-    const options = this.buildOptions('DELETE');
+    const options = this._buildOptions(oauthToken, 'DELETE');
     options.body = JSON.stringify(body);
 
     const response = await fetch(`${GITHUB_API_URL}${url}`, options);
