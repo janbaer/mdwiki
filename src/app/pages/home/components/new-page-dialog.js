@@ -62,7 +62,7 @@ export default class NewPageDialog extends Component {
         <dialog class="NewPageDialog-dialog" open>
           <h3>New page</h3>
 
-          <div>Please enter a name for the new page</div>
+          <div class="NewPageDialog-descriptionLabel">Please enter a name for the new page</div>
 
           <input
             class="uk-input"

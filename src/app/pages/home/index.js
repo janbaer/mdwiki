@@ -115,6 +115,7 @@ export default class HomePage extends Component {
   renderPageContent(pageName, content) {
     return (
       <PageContent
+        pageName={pageName}
         content={content}
         onNew={this.onNewPage}
         onEdit={this.onEditPage}

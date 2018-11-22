@@ -64,7 +64,7 @@ export default class CommitMessageDialog extends Component {
         <dialog class="CommitMessageDialog-dialog" open>
           <h3>Save changes</h3>
 
-          <div>Please enter a commit message to save your changes</div>
+          <div class="CommitMessageDialog-descriptionLabel">Please enter a commit message to save your changes</div>
 
           <input
             class="uk-input"

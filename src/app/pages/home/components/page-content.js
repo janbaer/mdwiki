@@ -74,7 +74,19 @@ export default class PageContent extends Component {
     );
   }
 
-  render({ content, onNew, onEdit, onDelete }, { isNewPageDialogShown, isDeletePageDialogShown }) {
+  renderDeleteButton(pageName) {
+    const isDisabled = pageName === 'index';
+    return (
+      <button
+        disabled={isDisabled}
+        onClick={() => this.toggleDeletePageDialog()}
+      >
+        <DeleteSvg />
+      </button>
+    );
+  }
+
+  render({ pageName, content, onNew, onEdit, onDelete }, { isNewPageDialogShown, isDeletePageDialogShown }) {
     return (
       <div class="PageContent-container">
         { this.renderNewPageDialog(isNewPageDialogShown) }
@@ -82,7 +94,7 @@ export default class PageContent extends Component {
         <div class="PageContent-toolbar editor-toolbar a">
           <a onClick={() => this.toggleNewPageDialog()}><AddSvg /></a>
           <a onClick={onEdit}><EditSvg /></a>
-          <a onClick={() => this.toggleDeletePageDialog()}><DeleteSvg /></a>
+          { this.renderDeleteButton(pageName) }
         </div>
         <div class="PageContent-body markdown-body">
           <ReactMarkdown source={content} renderers={{ link: Link }} />
