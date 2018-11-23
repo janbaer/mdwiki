@@ -1,3 +1,5 @@
+@import './../../../../styles/colors.less';
+
 .PageContent-container {
   overflow-y: auto;
   height: calc(~"100vh - 80px");
@@ -13,9 +15,30 @@
     opacity: 0.8;
   }
 
-  & > a {
+  & > button {
+    border: 1px solid transparent;
+    background-color: white;
+    cursor: pointer;
+
+    &:focus {
+      outline-color: transparent;
+    }
+
+    &.is-disabled {
+      cursor: not-allowed;
+    }
+
     & > svg {
       fill: #2c3e50;
+      &.is-disabled {
+        fill: #7b7a7a;
+      }
+      &:hover {
+        fill: black;
+        &.is-disabled {
+          fill: #7b7a7a;
+        }
+      }
     }
   }
 }

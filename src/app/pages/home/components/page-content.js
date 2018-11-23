@@ -1,4 +1,5 @@
 import { h, Component } from 'preact';
+import classnames from 'classnames';
 import ReactMarkdown from 'react-markdown';
 import Link from './link';
 
@@ -76,12 +77,17 @@ export default class PageContent extends Component {
 
   renderDeleteButton(pageName) {
     const isDisabled = pageName === 'index';
+    const classname = classnames(
+      { 'is-disabled': isDisabled }
+    );
+
     return (
       <button
+        class={classname}
         disabled={isDisabled}
         onClick={() => this.toggleDeletePageDialog()}
       >
-        <DeleteSvg />
+        <DeleteSvg class={classname} />
       </button>
     );
   }
@@ -91,9 +97,9 @@ export default class PageContent extends Component {
       <div class="PageContent-container">
         { this.renderNewPageDialog(isNewPageDialogShown) }
         { this.renderDeletePageDialog(isDeletePageDialogShown) }
-        <div class="PageContent-toolbar editor-toolbar a">
-          <a onClick={() => this.toggleNewPageDialog()}><AddSvg /></a>
-          <a onClick={onEdit}><EditSvg /></a>
+        <div class="PageContent-toolbar editor-toolbar">
+          <button onClick={() => this.toggleNewPageDialog()}><AddSvg /></button>
+          <button onClick={onEdit}><EditSvg /></button>
           { this.renderDeleteButton(pageName) }
         </div>
         <div class="PageContent-body markdown-body">
