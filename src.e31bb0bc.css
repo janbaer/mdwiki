@@ -224,8 +224,28 @@ footer {
 .PageContent-toolbar:hover {
   opacity: 0.8;
 }
-.PageContent-toolbar > a > svg {
+.PageContent-toolbar > button {
+  border: 1px solid transparent;
+  background-color: white;
+  cursor: pointer;
+}
+.PageContent-toolbar > button:focus {
+  outline-color: transparent;
+}
+.PageContent-toolbar > button.is-disabled {
+  cursor: not-allowed;
+}
+.PageContent-toolbar > button > svg {
   fill: #2c3e50;
+}
+.PageContent-toolbar > button > svg.is-disabled {
+  fill: #7b7a7a;
+}
+.PageContent-toolbar > button > svg:hover {
+  fill: black;
+}
+.PageContent-toolbar > button > svg:hover.is-disabled {
+  fill: #7b7a7a;
 }
 .PageContent-body {
   border: 1px solid #ddd;

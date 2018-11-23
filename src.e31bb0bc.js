@@ -20146,6 +20146,8 @@ var _react = _interopRequireDefault(require("react"));
 
 var _preact = require("preact");
 
+var _classnames = _interopRequireDefault(require("classnames"));
+
 var _reactMarkdown = _interopRequireDefault(require("react-markdown"));
 
 var _link = _interopRequireDefault(require("./link"));
@@ -20275,10 +20277,16 @@ class PageContent extends _preact.Component {
 
   renderDeleteButton(pageName) {
     const isDisabled = pageName === 'index';
+    const classname = (0, _classnames.default)({
+      'is-disabled': isDisabled
+    });
     return (0, _preact.h)("button", {
+      "class": classname,
       disabled: isDisabled,
       onClick: () => this.toggleDeletePageDialog()
-    }, (0, _preact.h)(DeleteSvg, null));
+    }, (0, _preact.h)(DeleteSvg, {
+      "class": classname
+    }));
   }
 
   render({
@@ -20294,10 +20302,10 @@ class PageContent extends _preact.Component {
     return (0, _preact.h)("div", {
       "class": "PageContent-container"
     }, this.renderNewPageDialog(isNewPageDialogShown), this.renderDeletePageDialog(isDeletePageDialogShown), (0, _preact.h)("div", {
-      "class": "PageContent-toolbar editor-toolbar a"
-    }, (0, _preact.h)("a", {
+      "class": "PageContent-toolbar editor-toolbar"
+    }, (0, _preact.h)("button", {
       onClick: () => this.toggleNewPageDialog()
-    }, (0, _preact.h)(AddSvg, null)), (0, _preact.h)("a", {
+    }, (0, _preact.h)(AddSvg, null)), (0, _preact.h)("button", {
       onClick: onEdit
     }, (0, _preact.h)(EditSvg, null)), this.renderDeleteButton(pageName)), (0, _preact.h)("div", {
       "class": "PageContent-body markdown-body"
@@ -20312,7 +20320,7 @@ class PageContent extends _preact.Component {
 }
 
 exports.default = PageContent;
-},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","react-markdown":"../node_modules/react-markdown/lib/react-markdown.js","./link":"app/pages/home/components/link.js","./new-page-dialog":"app/pages/home/components/new-page-dialog.js","./delete-page-dialog":"app/pages/home/components/delete-page-dialog.js","./../../../../../node_modules/simplemde/dist/simplemde.min.css":"../node_modules/simplemde/dist/simplemde.min.css","./page-content.less":"app/pages/home/components/page-content.less"}],"../node_modules/codemirror/lib/codemirror.js":[function(require,module,exports) {
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","classnames":"../node_modules/classnames/index.js","react-markdown":"../node_modules/react-markdown/lib/react-markdown.js","./link":"app/pages/home/components/link.js","./new-page-dialog":"app/pages/home/components/new-page-dialog.js","./delete-page-dialog":"app/pages/home/components/delete-page-dialog.js","./../../../../../node_modules/simplemde/dist/simplemde.min.css":"../node_modules/simplemde/dist/simplemde.min.css","./page-content.less":"app/pages/home/components/page-content.less"}],"../node_modules/codemirror/lib/codemirror.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
