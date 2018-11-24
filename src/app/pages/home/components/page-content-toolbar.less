@@ -1,0 +1,39 @@
+.PageContent-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 50px;
+  opacity: .6;
+  &:hover {
+    opacity: 0.8;
+  }
+
+  & > button {
+    border: 1px solid transparent;
+    background-color: white;
+    cursor: pointer;
+
+    &:focus {
+      outline-color: transparent;
+    }
+
+    &.is-disabled {
+      cursor: not-allowed;
+    }
+
+    & > svg {
+      fill: #2c3e50;
+      &.is-disabled {
+        fill: #7b7a7a;
+      }
+      &:hover {
+        fill: black;
+        &.is-disabled {
+          fill: #7b7a7a;
+        }
+      }
+    }
+  }
+}
+
+

@@ -1,14 +1,11 @@
 import { h, Component } from 'preact';
-import classnames from 'classnames';
 import ReactMarkdown from 'react-markdown';
 import Link from './link';
 
 import ModalDialog from '~/app/components/modal-dialog';
 import ModalInputDialog from '~/app/components/modal-input-dialog';
 
-import AddSvg from '../../../../images/add.svg';
-import EditSvg from '../../../../images/edit.svg';
-import DeleteSvg from '../../../../images/delete.svg';
+import PageContentToolbar from './page-content-toolbar';
 
 import './../../../../../node_modules/simplemde/dist/simplemde.min.css';
 import './page-content.less';
@@ -83,33 +80,19 @@ export default class PageContent extends Component {
     );
   }
 
-  renderDeleteButton(pageName) {
-    const isDisabled = pageName === 'index';
-    const classname = classnames(
-      { 'is-disabled': isDisabled }
-    );
-
-    return (
-      <button
-        class={classname}
-        disabled={isDisabled}
-        onClick={() => this.toggleDeletePageDialog()}
-      >
-        <DeleteSvg class={classname} />
-      </button>
-    );
-  }
-
   render({ pageName, content, onNew, onEdit, onDelete }, { isNewPageDialogShown, isDeletePageDialogShown }) {
+    const canDelete = pageName !== 'index';
+
     return (
       <div class="PageContent-container">
         { this.renderNewPageDialog(isNewPageDialogShown) }
         { this.renderDeletePageDialog(isDeletePageDialogShown) }
-        <div class="PageContent-toolbar editor-toolbar">
-          <button onClick={() => this.toggleNewPageDialog()}><AddSvg /></button>
-          <button onClick={onEdit}><EditSvg /></button>
-          { this.renderDeleteButton(pageName) }
-        </div>
+        <PageContentToolbar
+          onNewClick={() => this.toggleNewPageDialog()}
+          onEditClick={onEdit}
+          onDeleteClick={() => this.toggleDeletePageDialog()}
+          canDelete={canDelete}
+        />
         <div class="PageContent-body markdown-body">
           <ReactMarkdown source={content} renderers={{ link: Link }} />
         </div>
