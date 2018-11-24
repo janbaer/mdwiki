@@ -1,0 +1,18 @@
+@SHOW_DIALOG_ANIMATION_LENGTH: 0.3s;
+
+@keyframes ShowDialog {
+  from   {
+    transform: translateX(20%) scale(0.7);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.Animated-Dialog {
+  animation: ShowDialog @SHOW_DIALOG_ANIMATION_LENGTH ease-in-out;
+}
+
