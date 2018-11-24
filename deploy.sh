@@ -11,8 +11,6 @@ cd deploy
 
 git rm -r .
 
-mkdir images
-
 cp ../dist/*.* .
 cp ../CNAME .
 
