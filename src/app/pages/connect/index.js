@@ -1,8 +1,10 @@
 import { h, Component } from 'preact';
+import AppTitle from '~/app/components/app-title';
+import Footer from '~/app/components/footer';
+
 import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
 import navigator from '~/app/services/navigator.service';
-import Footer from '~/app/components/footer';
 
 import RepositoriesSelection from './components/repositories-selection';
 import LoginState from './components/login-state';
@@ -54,7 +56,7 @@ export default class ConnectPage extends Component {
   connect() {
     const { user, selectedRepository, oauthToken } = this.state;
     configuration.save(user, selectedRepository, oauthToken);
-    navigator.gotoHomePage();
+    navigator.gotoHome();
   }
 
   disconnect() {
@@ -65,7 +67,7 @@ export default class ConnectPage extends Component {
     return (
       <div class="App-container">
         <header>
-          <h1 class="appTitle">MDWiki</h1>
+          <AppTitle />
         </header>
         <main>
           <div class="ConnectPage-contentContainer">

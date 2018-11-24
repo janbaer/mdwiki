@@ -15,8 +15,6 @@ mkdir images
 
 cp ../dist/*.* .
 cp ../CNAME .
-cp ../src/images/favicon.ico ./images/
-cp ../src/images/wiki.png ./images/
 
 if [ -f "./styles/*.*.map" ]; then
   rm ./styles/*.*.map
