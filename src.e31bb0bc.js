@@ -19978,12 +19978,12 @@ const Link = ({
 
 var _default = Link;
 exports.default = _default;
-},{"preact":"../node_modules/preact/dist/preact.mjs","~/app/services/navigator.service":"app/services/navigator.service.js","./link.less":"app/pages/home/components/link.less"}],"app/pages/home/components/new-page-dialog.less":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.mjs","~/app/services/navigator.service":"app/services/navigator.service.js","./link.less":"app/pages/home/components/link.less"}],"app/components/modal-dialog.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/new-page-dialog.js":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/components/modal-dialog.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19993,17 +19993,61 @@ exports.default = void 0;
 
 var _preact = require("preact");
 
-require("./new-page-dialog.less");
+require("./modal-dialog.less");
 
-class NewPageDialog extends _preact.Component {
+const ModalDialog = ({
+  title,
+  description,
+  isValid = true,
+  onHideDialog,
+  children
+}) => {
+  return (0, _preact.h)("div", {
+    "class": "ModalDialog-backgroundContainer"
+  }, (0, _preact.h)("dialog", {
+    "class": "ModalDialog-dialog",
+    open: true
+  }, (0, _preact.h)("h3", null, title), (0, _preact.h)("div", {
+    "class": "ModalDialog-descriptionLabel"
+  }, description), children, (0, _preact.h)("div", {
+    "class": "ModalDialog-dialogContainer"
+  }, (0, _preact.h)("button", {
+    "class": "uk-button button",
+    onClick: () => onHideDialog(false)
+  }, "Cancel"), (0, _preact.h)("button", {
+    "class": "uk-button uk-button-primary button",
+    disabled: !isValid,
+    onClick: () => onHideDialog(true)
+  }, "Ok"))));
+};
+
+var _default = ModalDialog;
+exports.default = _default;
+},{"preact":"../node_modules/preact/dist/preact.mjs","./modal-dialog.less":"app/components/modal-dialog.less"}],"app/components/modal-input-dialog.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _preact = require("preact");
+
+var _modalDialog = _interopRequireDefault(require("./modal-dialog"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ModalInputDialog extends _preact.Component {
   constructor(props) {
     super(props);
+    const inputValue = props.inputValue || '';
     this.state = {
-      pageName: '',
-      isValid: false
+      inputValue,
+      isValid: this.validate(inputValue)
     };
     this.onInputKeyUp = this.onInputKeyUp.bind(this);
     this.onInputFocus = this.onInputFocus.bind(this);
+    this.hideDialog = this.hideDialog.bind(this);
   }
 
   componentDidMount() {
@@ -20012,36 +20056,36 @@ class NewPageDialog extends _preact.Component {
     }
   }
 
-  hide(dialogResult, pageName) {
-    this.props.onHideDialog(dialogResult, pageName || this.state.pageName);
+  hideDialog(dialogResult, inputValue) {
+    this.props.onHideDialog(dialogResult, dialogResult ? inputValue || this.state.inputValue : undefined);
   }
 
-  validate(pageName) {
-    return !!pageName;
+  validate(inputValue) {
+    return !!inputValue;
   }
 
-  async onChangeValue(pageName) {
-    const isValid = this.validate(pageName);
+  async onChangeValue(inputValue) {
+    const isValid = this.validate(inputValue);
     return new Promise(resolve => {
       this.setState({
         isValid,
-        pageName
+        inputValue
       }, resolve());
     });
   }
 
   async onInputKeyUp(e) {
     if (e.key === 'Escape') {
-      this.hide(false);
+      this.hideDialog(false);
       return;
     }
 
-    const pageName = e.target.value;
-    await this.onChangeValue(pageName);
+    const inputValue = e.target.value;
+    await this.onChangeValue(inputValue);
 
     if (e.key === 'Enter') {
-      if (this.validate(pageName)) {
-        this.hide(true, pageName);
+      if (this.validate(inputValue)) {
+        this.hideDialog(true, inputValue);
       }
     }
   }
@@ -20050,91 +20094,39 @@ class NewPageDialog extends _preact.Component {
     e.target.select();
   }
 
-  render(props, {
-    pageName,
+  render({
+    title,
+    description
+  }, {
+    inputValue,
     isValid
   }) {
-    return (0, _preact.h)("div", {
-      "class": "NewPageDialog-backgroundContainer"
-    }, (0, _preact.h)("dialog", {
-      "class": "NewPageDialog-dialog",
-      open: true
-    }, (0, _preact.h)("h3", null, "New page"), (0, _preact.h)("div", {
-      "class": "NewPageDialog-descriptionLabel"
-    }, "Please enter a name for the new page"), (0, _preact.h)("input", {
+    return (0, _preact.h)(_modalDialog.default, {
+      onHideDialog: this.hideDialog,
+      isValid: isValid,
+      title: title,
+      description: description
+    }, (0, _preact.h)("input", {
       "class": "uk-input",
       type: "text",
       ref: input => {
         this.input = input;
       },
-      value: pageName,
+      value: inputValue,
       onKeyUp: this.onInputKeyUp,
       onFocus: this.onInputFocus
-    }), (0, _preact.h)("div", {
-      "class": "NewPageDialog-dialogContainer"
-    }, (0, _preact.h)("button", {
-      "class": "uk-button button",
-      onClick: () => this.hide(false)
-    }, "Cancel"), (0, _preact.h)("button", {
-      "class": "uk-button uk-button-primary button",
-      disabled: !isValid,
-      onClick: () => this.hide(true)
-    }, "Ok"))));
+    }));
   }
 
 }
 
-exports.default = NewPageDialog;
-},{"preact":"../node_modules/preact/dist/preact.mjs","./new-page-dialog.less":"app/pages/home/components/new-page-dialog.less"}],"app/pages/home/components/delete-page-dialog.less":[function(require,module,exports) {
+exports.default = ModalInputDialog;
+},{"preact":"../node_modules/preact/dist/preact.mjs","./modal-dialog":"app/components/modal-dialog.js"}],"app/pages/home/components/page-content-toolbar.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/delete-page-dialog.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _preact = require("preact");
-
-require("./delete-page-dialog.less");
-
-const DeletePageDialog = ({
-  onHideDialog
-}) => {
-  return (0, _preact.h)("div", {
-    "class": "DeletePageDialog-backgroundContainer"
-  }, (0, _preact.h)("dialog", {
-    "class": "DeletePageDialog-dialog",
-    open: true
-  }, (0, _preact.h)("h3", null, "Delete page"), (0, _preact.h)("div", null, "Do you really want to delete the current page?"), (0, _preact.h)("div", {
-    "class": "DeletePageDialog-dialogContainer"
-  }, (0, _preact.h)("button", {
-    "class": "uk-button button",
-    onClick: () => onHideDialog(false)
-  }, "Cancel"), (0, _preact.h)("button", {
-    "class": "uk-button uk-button-primary button",
-    onClick: () => onHideDialog(true)
-  }, "Ok"))));
-};
-
-var _default = DeletePageDialog;
-exports.default = _default;
-},{"preact":"../node_modules/preact/dist/preact.mjs","./delete-page-dialog.less":"app/pages/home/components/delete-page-dialog.less"}],"../node_modules/simplemde/dist/simplemde.min.css":[function(require,module,exports) {
-
-        var reloadCSS = require('_css_loader');
-        module.hot.dispose(reloadCSS);
-        module.hot.accept(reloadCSS);
-      
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/page-content.less":[function(require,module,exports) {
-var reloadCSS = require('_css_loader');
-
-module.hot.dispose(reloadCSS);
-module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/page-content.js":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/page-content-toolbar.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20148,17 +20140,7 @@ var _preact = require("preact");
 
 var _classnames = _interopRequireDefault(require("classnames"));
 
-var _reactMarkdown = _interopRequireDefault(require("react-markdown"));
-
-var _link = _interopRequireDefault(require("./link"));
-
-var _newPageDialog = _interopRequireDefault(require("./new-page-dialog"));
-
-var _deletePageDialog = _interopRequireDefault(require("./delete-page-dialog"));
-
-require("./../../../../../node_modules/simplemde/dist/simplemde.min.css");
-
-require("./page-content.less");
+require("./page-content-toolbar.less");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20210,6 +20192,69 @@ DeleteSvg.defaultProps = {
   viewBox: "0 0 24 24"
 };
 
+const PageContentToolbar = ({
+  onNewClick,
+  onEditClick,
+  onDeleteClick,
+  canDelete
+}) => {
+  const classname = (0, _classnames.default)({
+    'is-disabled': !canDelete
+  });
+  return (0, _preact.h)("div", {
+    "class": "PageContent-toolbar editor-toolbar"
+  }, (0, _preact.h)("button", {
+    onClick: () => onNewClick()
+  }, (0, _preact.h)(AddSvg, null)), (0, _preact.h)("button", {
+    onClick: () => onEditClick()
+  }, (0, _preact.h)(EditSvg, null)), (0, _preact.h)("button", {
+    "class": classname,
+    disabled: !canDelete,
+    onClick: () => onDeleteClick()
+  }, (0, _preact.h)(DeleteSvg, {
+    "class": classname
+  })));
+};
+
+var _default = PageContentToolbar;
+exports.default = _default;
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","classnames":"../node_modules/classnames/index.js","./page-content-toolbar.less":"app/pages/home/components/page-content-toolbar.less"}],"../node_modules/simplemde/dist/simplemde.min.css":[function(require,module,exports) {
+
+        var reloadCSS = require('_css_loader');
+        module.hot.dispose(reloadCSS);
+        module.hot.accept(reloadCSS);
+      
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/page-content.less":[function(require,module,exports) {
+var reloadCSS = require('_css_loader');
+
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/page-content.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _preact = require("preact");
+
+var _reactMarkdown = _interopRequireDefault(require("react-markdown"));
+
+var _link = _interopRequireDefault(require("./link"));
+
+var _modalDialog = _interopRequireDefault(require("~/app/components/modal-dialog"));
+
+var _modalInputDialog = _interopRequireDefault(require("~/app/components/modal-input-dialog"));
+
+var _pageContentToolbar = _interopRequireDefault(require("./page-content-toolbar"));
+
+require("./../../../../../node_modules/simplemde/dist/simplemde.min.css");
+
+require("./page-content.less");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 class PageContent extends _preact.Component {
   constructor(props) {
     super(props);
@@ -20260,7 +20305,9 @@ class PageContent extends _preact.Component {
       return null;
     }
 
-    return (0, _preact.h)(_newPageDialog.default, {
+    return (0, _preact.h)(_modalInputDialog.default, {
+      title: "New page",
+      description: "Please enter a name for the new page",
       onHideDialog: this.onNewPageDialogHide
     });
   }
@@ -20270,23 +20317,11 @@ class PageContent extends _preact.Component {
       return null;
     }
 
-    return (0, _preact.h)(_deletePageDialog.default, {
+    return (0, _preact.h)(_modalDialog.default, {
+      title: "DeletePage",
+      description: "Do you really want to delete the current page",
       onHideDialog: this.onDeletePageHide
     });
-  }
-
-  renderDeleteButton(pageName) {
-    const isDisabled = pageName === 'index';
-    const classname = (0, _classnames.default)({
-      'is-disabled': isDisabled
-    });
-    return (0, _preact.h)("button", {
-      "class": classname,
-      disabled: isDisabled,
-      onClick: () => this.toggleDeletePageDialog()
-    }, (0, _preact.h)(DeleteSvg, {
-      "class": classname
-    }));
   }
 
   render({
@@ -20299,15 +20334,15 @@ class PageContent extends _preact.Component {
     isNewPageDialogShown,
     isDeletePageDialogShown
   }) {
+    const canDelete = pageName !== 'index';
     return (0, _preact.h)("div", {
       "class": "PageContent-container"
-    }, this.renderNewPageDialog(isNewPageDialogShown), this.renderDeletePageDialog(isDeletePageDialogShown), (0, _preact.h)("div", {
-      "class": "PageContent-toolbar editor-toolbar"
-    }, (0, _preact.h)("button", {
-      onClick: () => this.toggleNewPageDialog()
-    }, (0, _preact.h)(AddSvg, null)), (0, _preact.h)("button", {
-      onClick: onEdit
-    }, (0, _preact.h)(EditSvg, null)), this.renderDeleteButton(pageName)), (0, _preact.h)("div", {
+    }, this.renderNewPageDialog(isNewPageDialogShown), this.renderDeletePageDialog(isDeletePageDialogShown), (0, _preact.h)(_pageContentToolbar.default, {
+      onNewClick: () => this.toggleNewPageDialog(),
+      onEditClick: onEdit,
+      onDeleteClick: () => this.toggleDeletePageDialog(),
+      canDelete: canDelete
+    }), (0, _preact.h)("div", {
       "class": "PageContent-body markdown-body"
     }, (0, _preact.h)(_reactMarkdown.default, {
       source: content,
@@ -20320,7 +20355,7 @@ class PageContent extends _preact.Component {
 }
 
 exports.default = PageContent;
-},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","classnames":"../node_modules/classnames/index.js","react-markdown":"../node_modules/react-markdown/lib/react-markdown.js","./link":"app/pages/home/components/link.js","./new-page-dialog":"app/pages/home/components/new-page-dialog.js","./delete-page-dialog":"app/pages/home/components/delete-page-dialog.js","./../../../../../node_modules/simplemde/dist/simplemde.min.css":"../node_modules/simplemde/dist/simplemde.min.css","./page-content.less":"app/pages/home/components/page-content.less"}],"../node_modules/codemirror/lib/codemirror.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.mjs","react-markdown":"../node_modules/react-markdown/lib/react-markdown.js","./link":"app/pages/home/components/link.js","~/app/components/modal-dialog":"app/components/modal-dialog.js","~/app/components/modal-input-dialog":"app/components/modal-input-dialog.js","./page-content-toolbar":"app/pages/home/components/page-content-toolbar.js","./../../../../../node_modules/simplemde/dist/simplemde.min.css":"../node_modules/simplemde/dist/simplemde.min.css","./page-content.less":"app/pages/home/components/page-content.less"}],"../node_modules/codemirror/lib/codemirror.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -38941,117 +38976,7 @@ SimpleMDEEditor.defaultProps = {
   options: {}
 };
 
-},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","simplemde":"../node_modules/simplemde/src/js/simplemde.js"}],"app/pages/home/components/commit-message-dialog.less":[function(require,module,exports) {
-var reloadCSS = require('_css_loader');
-
-module.hot.dispose(reloadCSS);
-module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/commit-message-dialog.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _preact = require("preact");
-
-require("./commit-message-dialog.less");
-
-class CommitMessageDialog extends _preact.Component {
-  constructor(props) {
-    super(props);
-    const {
-      message
-    } = this.props;
-    this.state = {
-      message,
-      isValid: true
-    };
-    this.onInputKeyUp = this.onInputKeyUp.bind(this);
-    this.onInputFocus = this.onInputFocus.bind(this);
-  }
-
-  componentDidMount() {
-    if (this.input) {
-      this.input.focus();
-    }
-  }
-
-  hide(dialogResult, message) {
-    this.props.onHideDialog(dialogResult, message || this.state.message);
-  }
-
-  validate(message) {
-    return !!message;
-  }
-
-  async onChangeValue(message) {
-    const isValid = this.validate(message);
-    return new Promise(resolve => {
-      this.setState({
-        isValid,
-        message
-      }, resolve());
-    });
-  }
-
-  async onInputKeyUp(e) {
-    if (e.key === 'Escape') {
-      this.hide(false);
-      return;
-    }
-
-    const message = e.target.value;
-    await this.onChangeValue(message);
-
-    if (e.key === 'Enter') {
-      if (this.validate(message)) {
-        this.hide(true, message);
-      }
-    }
-  }
-
-  onInputFocus(e) {
-    e.target.select();
-  }
-
-  render(props, {
-    message,
-    isValid
-  }) {
-    return (0, _preact.h)("div", {
-      "class": "CommitMessageDialog-backgroundContainer"
-    }, (0, _preact.h)("dialog", {
-      "class": "CommitMessageDialog-dialog",
-      open: true
-    }, (0, _preact.h)("h3", null, "Save changes"), (0, _preact.h)("div", {
-      "class": "CommitMessageDialog-descriptionLabel"
-    }, "Please enter a commit message to save your changes"), (0, _preact.h)("input", {
-      "class": "uk-input",
-      type: "text",
-      ref: input => {
-        this.input = input;
-      },
-      value: message,
-      onKeyUp: this.onInputKeyUp,
-      onFocus: this.onInputFocus
-    }), (0, _preact.h)("div", {
-      "class": "CommitMessageDialog-dialogContainer"
-    }, (0, _preact.h)("button", {
-      "class": "uk-button button",
-      onClick: () => this.hide(false)
-    }, "Cancel"), (0, _preact.h)("button", {
-      "class": "uk-button uk-button-primary button",
-      disabled: !isValid,
-      onClick: () => this.hide(true)
-    }, "Ok"))));
-  }
-
-}
-
-exports.default = CommitMessageDialog;
-},{"preact":"../node_modules/preact/dist/preact.mjs","./commit-message-dialog.less":"app/pages/home/components/commit-message-dialog.less"}],"app/pages/home/components/page-editor.less":[function(require,module,exports) {
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","simplemde":"../node_modules/simplemde/src/js/simplemde.js"}],"app/pages/home/components/page-editor.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -39068,7 +38993,7 @@ var _preact = require("preact");
 
 var _reactSimplemdeEditor = _interopRequireDefault(require("react-simplemde-editor"));
 
-var _commitMessageDialog = _interopRequireDefault(require("./commit-message-dialog"));
+var _modalInputDialog = _interopRequireDefault(require("~/app/components/modal-input-dialog"));
 
 require("./page-editor.less");
 
@@ -39156,8 +39081,10 @@ class PageEditor extends _preact.Component {
       return null;
     }
 
-    return (0, _preact.h)(_commitMessageDialog.default, {
-      message: defaultCommitMessage,
+    return (0, _preact.h)(_modalInputDialog.default, {
+      title: "Save changes",
+      description: "Please enter a commit message to save your changes",
+      inputValue: defaultCommitMessage,
       onHideDialog: this.onHideCommitMessageDialog
     });
   }
@@ -39179,7 +39106,7 @@ class PageEditor extends _preact.Component {
 }
 
 exports.default = PageEditor;
-},{"preact":"../node_modules/preact/dist/preact.mjs","react-simplemde-editor":"../node_modules/react-simplemde-editor/lib/index.js","./commit-message-dialog":"app/pages/home/components/commit-message-dialog.js","./page-editor.less":"app/pages/home/components/page-editor.less"}],"app/services/storage.service.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.mjs","react-simplemde-editor":"../node_modules/react-simplemde-editor/lib/index.js","~/app/components/modal-input-dialog":"app/components/modal-input-dialog.js","./page-editor.less":"app/pages/home/components/page-editor.less"}],"app/services/storage.service.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -40316,7 +40243,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36865" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39697" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
