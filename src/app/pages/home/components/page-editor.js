@@ -1,7 +1,7 @@
 import { h, Component } from 'preact';
 import SimpleMDE from 'react-simplemde-editor';
 
-import CommitMessageDialog from './commit-message-dialog';
+import ModalInputDialog from '~/app/components/modal-input-dialog';
 
 import './page-editor.less';
 
@@ -92,7 +92,12 @@ export default class PageEditor extends Component {
     }
 
     return (
-      <CommitMessageDialog message={defaultCommitMessage} onHideDialog={this.onHideCommitMessageDialog} />
+      <ModalInputDialog
+        title="Save changes"
+        description="Please enter a commit message to save your changes"
+        inputValue={defaultCommitMessage}
+        onHideDialog={this.onHideCommitMessageDialog}
+      />
     );
   }
 

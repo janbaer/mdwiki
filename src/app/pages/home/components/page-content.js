@@ -3,8 +3,8 @@ import classnames from 'classnames';
 import ReactMarkdown from 'react-markdown';
 import Link from './link';
 
-import NewPageDialog from './new-page-dialog';
-import DeletePageDialog from './delete-page-dialog';
+import ModalDialog from '~/app/components/modal-dialog';
+import ModalInputDialog from '~/app/components/modal-input-dialog';
 
 import AddSvg from '../../../../images/add.svg';
 import EditSvg from '../../../../images/edit.svg';
@@ -61,7 +61,11 @@ export default class PageContent extends Component {
     }
 
     return (
-      <NewPageDialog onHideDialog={this.onNewPageDialogHide} />
+      <ModalInputDialog
+        title="New page"
+        description="Please enter a name for the new page"
+        onHideDialog={this.onNewPageDialogHide}
+      />
     );
   }
 
@@ -71,7 +75,11 @@ export default class PageContent extends Component {
     }
 
     return (
-      <DeletePageDialog onHideDialog={this.onDeletePageHide} />
+      <ModalDialog
+        title="DeletePage"
+        description="Do you really want to delete the current page"
+        onHideDialog={this.onDeletePageHide}
+      />
     );
   }
 
