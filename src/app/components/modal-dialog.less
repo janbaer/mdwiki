@@ -1,4 +1,5 @@
 @import './../../styles/animations.less';
+@import './../../styles/screen-sizes.less';
 
 .ModalDialog-backgroundContainer {
   display: flex;
@@ -15,11 +16,15 @@
 }
 
 .ModalDialog-dialog {
-  width: 600px;
+  width: 325px;
   display: flex;
   flex-direction: column;
   color: grey;
   .Animated-Dialog();
+
+  @media (min-width: @TABLET_PORTRAIT_WIDTH) {
+    width: 600px;
+  }
 }
 
 .ModalDialog-descriptionLabel {

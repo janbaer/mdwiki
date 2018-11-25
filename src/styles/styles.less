@@ -1,3 +1,5 @@
+@import './screen-sizes.less';
+
 html, body {
   margin: 0;
   height: 100vh;
@@ -26,7 +28,7 @@ html, body {
       width: 40px;
       display: flex;
 
-      @media (min-width: 1024px) {
+      @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
         display: none;
       }
     }
@@ -39,7 +41,7 @@ html, body {
       margin-left: 5px;
       margin-right: 5px;
 
-      @media (min-width: 1024px) {
+      @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
         margin-top: 0 !important;
       }
 
