@@ -11,8 +11,11 @@
   height: 100vh;
   background-color: grey;
   z-index: 2;
-  opacity: 0.9;
+  opacity: 0.98;
 
+  @media (min-width: @TABLET_PORTRAIT_WIDTH) {
+    opacity: 0.9;
+  }
 }
 
 .ModalDialog-dialog {
