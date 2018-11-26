@@ -5,6 +5,15 @@ footer {
   align-items: center;
   justify-content: center;
 }
+@media (min-width: 1024px) {
+  .App-title {
+    margin-left: 5px;
+  }
+}
+.App-title svg {
+  height: 40px;
+  width: 40px;
+}
 .NavbarButton-button {
   border: none;
   border-radius: 25px;
@@ -197,6 +206,9 @@ footer {
   margin-right: 10px;
 }
 .PageContent-toolbar {
+  position: sticky !important;
+  top: 0px;
+  border-bottom: 1px solid #ddd;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -240,7 +252,6 @@ footer {
   height: calc(100vh - 80px);
 }
 .PageContent-body {
-  border: 1px solid #ddd;
   height: calc(100% - 55px);
 }
 .PageContent-body > div {
@@ -270,7 +281,6 @@ footer {
   .Home-sidebarContainer {
     position: static;
     height: unset;
-    border-right: none;
   }
 }
 .Home-contentContainer {

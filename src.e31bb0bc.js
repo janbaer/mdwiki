@@ -9371,27 +9371,7 @@ const Footer = () => (0, _preact.h)("footer", null, (0, _preact.h)("strong", nul
 
 var _default = Footer;
 exports.default = _default;
-},{"preact":"../node_modules/preact/dist/preact.mjs","./footer.less":"app/components/footer.less"}],"app/components/app-title.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _preact = require("preact");
-
-const AppTitle = () => {
-  return (0, _preact.h)("h1", {
-    "class": "App-title"
-  }, (0, _preact.h)("a", {
-    href: "/"
-  }, "MDWiki"));
-};
-
-var _default = AppTitle;
-exports.default = _default;
-},{"preact":"../node_modules/preact/dist/preact.mjs"}],"../node_modules/object-assign/index.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.mjs","./footer.less":"app/components/footer.less"}],"../node_modules/object-assign/index.js":[function(require,module,exports) {
 /*
 object-assign
 (c) Sindre Sorhus
@@ -10980,7 +10960,74 @@ var index = {
 };
 var _default = index;
 exports.default = _default;
-},{"prop-types":"../node_modules/prop-types/index.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/navbar-button.less":[function(require,module,exports) {
+},{"prop-types":"../node_modules/prop-types/index.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/app-title.less":[function(require,module,exports) {
+var reloadCSS = require('_css_loader');
+
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/components/app-title.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _preact = require("preact");
+
+require("./app-title.less");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var LogoSvg = function LogoSvg(props) {
+  return (0, _preact.h)("svg", props, (0, _preact.h)("path", {
+    d: "M141.657 103.538c5.277 66.026 16.797 129.944 51.198 191.49l13.01.097 82.29-73.42-78.434-198.2-56.54 54.01-11.524 26.023z",
+    fill: "#fdfcf8",
+    fillRule: "evenodd"
+  }), (0, _preact.h)("path", {
+    d: "M75.84 103.608c5.278 66.025 18.78 130.786 53.18 192.331l20.335.183 61.968-77.718-67.418-194.829-56.54 54.008-11.524 26.025z",
+    fill: "#f4eed7",
+    fillRule: "evenodd"
+  }), (0, _preact.h)("path", {
+    d: "M.219 102.194c5.377 69.284 27.015 131.34 52.459 191.705l26.802-.33 70.4-80.038L68.284 22.16l-56.54 54.01L.219 102.193z",
+    fill: "#e9ddaf",
+    fillRule: "evenodd"
+  }), (0, _preact.h)("path", {
+    d: "M213.327 4.063c-27.187 26.301-54.062 52.374-54.062 52.374l9.656 19.657C182.015 63.113 195.182 51.696 207.733 39c26.434 58.035 44.445 104.812 66.599 166.647 7.253 20.088 5.774 20.987-11.563 31.844-27.854 13.851-36.672 22.937-69.87 58.259h22.718c27.754-25.092 38.056-33.947 72.809-52.26 12.294-7.097 13.98-16.058 8.937-30-16.261-45.196-51.49-142.605-84.036-209.428z",
+    fill: "#5f96d3"
+  }), (0, _preact.h)("path", {
+    d: "M142.452 4.688C122.565 18.111 107.224 37.431 89.921 54l7.094 22.625c13.54-10.67 25.325-23.536 37.5-35.719l65.656 164.688c3.786 11.15-2.176 21.072-14.156 31.875-14.35 11.532-43.893 38.42-57.282 58.906h20.375c21.385-21.966 25.246-24.947 49.594-46.031 16.347-16.679 31.114-25.221 23.406-46.594L142.452 4.687z",
+    fill: "#2a62a1",
+    fillRule: "evenodd"
+  }), (0, _preact.h)("path", {
+    d: "M75.327 3.625c-5.301 1.78-9.712 5.198-13.844 8.813C5.395 66.41 3.14 68.688 3.14 68.688.188 71.43-.058 75.44-.017 79.468l.236 22.726s25.904-25.181 64.577-62.413C85.614 94.02 107.341 147.968 128.733 202c2.93 8.163-4.082 14.853-12.968 23.781-12.274 11.974-37.945 36.622-64.219 69.531H77.89l63.312-69.437c6.02-8.278 13.503-16.371 10.344-23.875L75.327 3.625z",
+    fill: "#15304f",
+    fillRule: "evenodd"
+  }));
+};
+
+LogoSvg.defaultProps = {
+  xmlns: "http://www.w3.org/2000/svg",
+  version: "1",
+  width: "300",
+  height: "300",
+  viewBox: "0 0 300 300"
+};
+
+const AppTitle = () => {
+  return (0, _preact.h)("div", {
+    "class": "App-title"
+  }, (0, _preact.h)("a", {
+    href: "/",
+    title: "MDWiki"
+  }, (0, _preact.h)(LogoSvg, null)));
+};
+
+var _default = AppTitle;
+exports.default = _default;
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","./app-title.less":"app/components/app-title.less"}],"app/components/navbar-button.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -40243,7 +40290,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45651" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36961" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
