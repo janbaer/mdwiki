@@ -23,6 +23,7 @@ html, body {
     color: @PANEL_COLOR;
     background-color: @PANEL_BACKGROUND_COLOR;
     display: flex;
+    align-items: center;
 
     nav.App-leftNavbar {
       width: 40px;
@@ -30,27 +31,6 @@ html, body {
 
       @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
         display: none;
-      }
-    }
-
-    h1 {
-      display: block;
-      color: @PANEL_COLOR;
-      margin-top: 5px !important;
-      margin-bottom: 0px !important;
-      margin-left: 5px;
-      margin-right: 5px;
-
-      @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
-        margin-top: 0 !important;
-      }
-
-      & > a {
-        color: white;
-        &:hover {
-          color: white;
-          text-decoration: none;
-        }
       }
     }
 

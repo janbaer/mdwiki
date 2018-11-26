@@ -1,0 +1,13 @@
+@import './../../styles/screen-sizes.less';
+
+@LOGO_SIZE: 40px;
+
+.App-title {
+  @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
+    margin-left: 5px;
+  }
+  & svg {
+    height: @LOGO_SIZE;
+    width: @LOGO_SIZE;
+  }
+}
