@@ -7,44 +7,18 @@ body {
 .App-container {
   height: 100vh;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px 1fr 30px;
+  grid-template-rows: 55px 1fr 30px;
   grid-template-areas: "toolbar" "content" "footer";
 }
-.App-container header {
+header {
   grid-area: toolbar;
   color: white;
   background-color: #1e87f0;
-  display: flex;
-  align-items: center;
 }
-.App-container header nav.App-leftNavbar {
-  width: 40px;
-  display: flex;
-}
-@media (min-width: 1024px) {
-  .App-container header nav.App-leftNavbar {
-    display: none;
-  }
-}
-.App-container header nav.App-middleNavbar {
-  flex: 2;
-  margin: 5px 10px;
-  min-width: 40px;
-}
-.App-container header nav.App-rightNavbar {
-  min-width: 96px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-left: auto;
-  margin-right: 10px;
-  height: 100%;
-}
-.App-container main {
+main {
   grid-area: content;
   overflow-y: auto;
 }
-.App-container footer {
+footer {
   grid-area: footer;
 }

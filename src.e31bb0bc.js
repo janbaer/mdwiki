@@ -11017,12 +11017,10 @@ LogoSvg.defaultProps = {
 };
 
 const AppTitle = () => {
-  return (0, _preact.h)("div", {
-    "class": "App-title"
-  }, (0, _preact.h)("a", {
+  return (0, _preact.h)("a", {
     href: "/",
     title: "MDWiki"
-  }, (0, _preact.h)(LogoSvg, null)));
+  }, (0, _preact.h)(LogoSvg, null));
 };
 
 var _default = AppTitle;
@@ -39734,34 +39732,32 @@ class HomePage extends _preact.Component {
     pages,
     page
   }) {
-    const leftSidebarContainerClassname = (0, _classnames.default)('Home-sidebarContainer', {
+    const leftSidebarContainerClassname = (0, _classnames.default)('HomePage-sidebarContainer', {
       'is-shown': showSidebar
     });
     const user = _configuration.default.user;
     return (0, _preact.h)("div", {
       "class": "App-container"
-    }, (0, _preact.h)("header", null, (0, _preact.h)("nav", {
-      "class": "App-leftNavbar"
+    }, (0, _preact.h)("header", {
+      "class": "HomePage-header"
+    }, (0, _preact.h)("nav", {
+      "class": "HomePage-leftNavbar"
     }, (0, _preact.h)(_sidebarButton.default, {
       onClick: this.toggleSidebar,
       showSidebar: showSidebar
-    })), (0, _preact.h)(_appTitle.default, null), (0, _preact.h)("nav", {
-      "class": "App-middleNavbar"
-    }, (0, _preact.h)(_searchBox.default, {
+    })), (0, _preact.h)(_appTitle.default, null), (0, _preact.h)("nav", null, (0, _preact.h)(_searchBox.default, {
       onSearch: this.onStartSearch
-    })), (0, _preact.h)("nav", {
-      "class": "App-rightNavbar"
-    }, (0, _preact.h)(_connectButton.default, null), (0, _preact.h)(_loginButton.default, {
+    })), (0, _preact.h)("nav", null, (0, _preact.h)(_connectButton.default, null), (0, _preact.h)(_loginButton.default, {
       user: user
     }))), (0, _preact.h)("main", null, (0, _preact.h)("div", {
-      "class": "Home-container"
+      "class": "HomePage-container"
     }, (0, _preact.h)("div", {
       "class": leftSidebarContainerClassname
     }, (0, _preact.h)(_sidebar.default, {
       pages: pages,
       onClick: this.onGotoPage
     })), (0, _preact.h)("div", {
-      "class": "Home-contentContainer"
+      "class": "HomePage-contentContainer"
     }, !isInEditMode && this.renderPageContent(page.name, page.content), isInEditMode && this.renderPageEditor(page.name, page.content)))), (0, _preact.h)(_footer.default, null));
   }
 
@@ -39958,7 +39954,9 @@ class ConnectPage extends _preact.Component {
   }) {
     return (0, _preact.h)("div", {
       "class": "App-container"
-    }, (0, _preact.h)("header", null, (0, _preact.h)(_appTitle.default, null)), (0, _preact.h)("main", null, (0, _preact.h)("div", {
+    }, (0, _preact.h)("header", {
+      "class": "ConnectPage-header"
+    }, (0, _preact.h)(_appTitle.default, null)), (0, _preact.h)("main", null, (0, _preact.h)("div", {
       "class": "ConnectPage-contentContainer"
     }, (0, _preact.h)("h2", null, "Login and connect"), (0, _preact.h)("p", {
       "class": "ConnectPage-description"
@@ -40156,9 +40154,9 @@ class SearchPage extends _preact.Component {
     } = _configuration.default;
     return (0, _preact.h)("div", {
       "class": "App-container"
-    }, (0, _preact.h)("header", null, (0, _preact.h)(_appTitle.default, null), (0, _preact.h)("nav", {
-      "class": "App-rightNavbar"
-    }, (0, _preact.h)(_connectButton.default, null), (0, _preact.h)(_loginButton.default, {
+    }, (0, _preact.h)("header", {
+      "class": "SearchPage-header"
+    }, (0, _preact.h)(_appTitle.default, null), (0, _preact.h)("nav", null, (0, _preact.h)(_connectButton.default, null), (0, _preact.h)(_loginButton.default, {
       user: user
     }))), (0, _preact.h)("main", null, (0, _preact.h)("div", {
       "class": "SearchPage-container"
@@ -40290,7 +40288,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36961" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38905" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
