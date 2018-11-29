@@ -4,9 +4,7 @@ import './app-title.less';
 
 const AppTitle = () => {
   return (
-    <div class="App-title">
-      <a href="/" title="MDWiki"><LogoSvg /></a>
-    </div>
+    <a href="/" title="MDWiki"><LogoSvg /></a>
   );
 };
 

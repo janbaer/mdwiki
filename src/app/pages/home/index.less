@@ -1,12 +1,32 @@
 @import './../../../styles/colors.less';
 @import './../../../styles/screen-sizes.less';
 
-.Home-container {
+.HomePage-header {
+  display: grid;
+
+  grid-template-columns: 40px 40px 1fr 100px;
+
+  @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
+    padding-left: 10px;
+    grid-template-columns: 40px 1fr 100px;
+  }
+
+  grid-column-gap: 10px;
+  align-items: center;
+}
+
+.HomePage-leftNavbar {
+  @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
+    display: none;
+  }
+}
+
+.HomePage-container {
   display: flex;
   height: 100%;
 }
 
-.Home-sidebarContainer {
+.HomePage-sidebarContainer {
   width: 250px;
   position: absolute;
   height: calc(~"100vh - 100px");
@@ -22,11 +42,11 @@
   }
 
   @media only screen and (min-width: @TABLET_LANDSCAPE_WIDTH) {
-    position: static;
+    position: inherit;;
     height: unset;
   }
 }
 
-.Home-contentContainer {
+.HomePage-contentContainer {
   flex: 1;
 }

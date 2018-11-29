@@ -11,53 +11,24 @@ html, body {
 .App-container {
   height: 100vh;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px 1fr 30px;
+  grid-template-rows: 55px 1fr 30px;
   grid-template-areas: 
     "toolbar"
     "content"
     "footer";
+}
 
-  header {
-    grid-area: toolbar;
-    color: @PANEL_COLOR;
-    background-color: @PANEL_BACKGROUND_COLOR;
-    display: flex;
-    align-items: center;
+header {
+  grid-area: toolbar;
+  color: @PANEL_COLOR;
+  background-color: @PANEL_BACKGROUND_COLOR;
+}
 
-    nav.App-leftNavbar {
-      width: 40px;
-      display: flex;
+main {
+  grid-area: content;
+  overflow-y: auto;
+}
 
-      @media (min-width: @TABLET_LANDSCAPE_WIDTH) {
-        display: none;
-      }
-    }
-
-    nav.App-middleNavbar {
-      flex: 2;
-      margin: 5px 10px;;
-      min-width: 40px;
-    }
-
-    nav.App-rightNavbar {
-      min-width: 96px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      margin-left: auto;
-      margin-right: 10px;
-      height: 100%;
-    }
-  }
-
-  main {
-    grid-area: content;
-    overflow-y: auto;
-  }
-
-  footer {
-    grid-area: footer;
-  }
-
+footer {
+  grid-area: footer;
 }

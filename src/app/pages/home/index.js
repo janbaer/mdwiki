@@ -137,7 +137,7 @@ export default class HomePage extends Component {
 
   render(props, { showSidebar, isInEditMode, pages, page }) {
     const leftSidebarContainerClassname = classnames(
-      'Home-sidebarContainer',
+      'HomePage-sidebarContainer',
       { 'is-shown': showSidebar }
     );
 
@@ -145,25 +145,25 @@ export default class HomePage extends Component {
 
     return (
       <div class="App-container">
-        <header>
-          <nav class="App-leftNavbar">
+        <header class="HomePage-header">
+          <nav class="HomePage-leftNavbar">
             <SidebarButton onClick={this.toggleSidebar} showSidebar={showSidebar} />
           </nav>
           <AppTitle />
-          <nav class="App-middleNavbar">
+          <nav>
             <Searchbox onSearch={this.onStartSearch} />
           </nav>
-          <nav class="App-rightNavbar">
+          <nav>
             <ConnectButton />
             <LoginButton user={user} />
           </nav>
         </header>
         <main>
-          <div class="Home-container">
+          <div class="HomePage-container">
             <div class={leftSidebarContainerClassname}>
               <Sidebar pages={pages} onClick={this.onGotoPage} />
             </div>
-            <div class="Home-contentContainer">
+            <div class="HomePage-contentContainer">
               { !isInEditMode && this.renderPageContent(page.name, page.content) }
               { isInEditMode && this.renderPageEditor(page.name, page.content) }
             </div>

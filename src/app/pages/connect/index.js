@@ -66,7 +66,7 @@ export default class ConnectPage extends Component {
   render(props, { user, repositories, selectedRepository }) {
     return (
       <div class="App-container">
-        <header>
+        <header class="ConnectPage-header">
           <AppTitle />
         </header>
         <main>

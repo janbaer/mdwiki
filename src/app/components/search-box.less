@@ -3,7 +3,6 @@
 
 .Searchbox-container {
   display: flex;
-  height: 100%;
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
@@ -36,6 +35,12 @@
       outline: none;
       opacity: 1;
       transition: opacity 0.5s ease-in-out;
+    }
+
+    &:-webkit-autofill, -webkit-autofill:hover, -webkit-autofill:focus {
+      -webkit-text-fill-color: white;
+      -webkit-box-shadow: 0 0 0px 1000px @SEARCHBOX_PANEL_COLOR inset !important;
+      transition: background-color 5000s ease-in-out 0s;
     }
 
   }

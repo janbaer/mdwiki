@@ -48,9 +48,9 @@ export default class SearchPage extends Component {
 
     return (
       <div class="App-container">
-        <header>
+        <header class="SearchPage-header">
           <AppTitle />
-          <nav class="App-rightNavbar">
+          <nav>
             <ConnectButton />
             <LoginButton user={user} />
           </nav>
