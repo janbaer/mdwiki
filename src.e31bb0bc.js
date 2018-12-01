@@ -11326,7 +11326,32 @@ class Searchbox extends _preact.Component {
 }
 
 exports.default = Searchbox;
-},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","./search-box.less":"app/components/search-box.less"}],"app/pages/home/components/sidebar.less":[function(require,module,exports) {
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","./search-box.less":"app/components/search-box.less"}],"app/helpers/page-grouper.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = groupPages;
+
+function groupPages(pages) {
+  return pages.reduce((groups, page) => {
+    const currentGroup = groups.length > 0 ? groups[groups.length - 1] : undefined;
+    const firstLetter = page.name.substr(0, 1).toUpperCase();
+
+    if (!currentGroup || currentGroup.letter !== firstLetter) {
+      groups.push({
+        letter: firstLetter,
+        pages: [page]
+      });
+    } else {
+      currentGroup.pages.push(page);
+    }
+
+    return groups;
+  }, []);
+}
+},{}],"app/pages/home/components/sidebar.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -11341,16 +11366,30 @@ exports.default = void 0;
 
 var _preact = require("preact");
 
+var _pageGrouper = _interopRequireDefault(require("~/app/helpers/page-grouper"));
+
 require("./sidebar.less");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Sidebar extends _preact.Component {
   constructor(props) {
     super(props);
     this.renderPageEntry = this.renderPageEntry.bind(this);
+    this.renderGroup = this.renderGroup.bind(this);
+    this.renderGroupLink = this.renderGroupLink.bind(this);
+    this.scrollTo = this.scrollTo.bind(this);
   }
 
   gotoPage(page) {
     this.props.onClick(page.name);
+  }
+
+  scrollTo(e) {
+    e.preventDefault();
+    document.querySelector(`#group${e.target.innerText}`).scrollIntoView({
+      behavior: 'smooth'
+    });
   }
 
   renderPageEntry(page) {
@@ -11359,18 +11398,37 @@ class Sidebar extends _preact.Component {
     }, page.name));
   }
 
+  renderGroup(group) {
+    return (0, _preact.h)("div", null, (0, _preact.h)("h4", {
+      id: `group${group.letter}`,
+      "class": "Sidebar-pageGroupHeader"
+    }, group.letter), (0, _preact.h)("ul", {
+      "class": "Sidebar-list"
+    }, group.pages.map(this.renderPageEntry)));
+  }
+
+  renderGroupLink(group) {
+    return (0, _preact.h)("a", {
+      href: "#",
+      onClick: this.scrollTo
+    }, group.letter);
+  }
+
   render({
     pages
   }, state) {
-    return (0, _preact.h)("ul", {
-      "class": "Sidebar-list"
-    }, pages.map(this.renderPageEntry));
+    const groups = (0, _pageGrouper.default)(pages);
+    return (0, _preact.h)("div", {
+      "class": "Sidebar-listContainer"
+    }, (0, _preact.h)("div", {
+      "class": "Sidebar-groupLinkContainer"
+    }, groups.map(this.renderGroupLink)), groups.map(this.renderGroup));
   }
 
 }
 
 exports.default = Sidebar;
-},{"preact":"../node_modules/preact/dist/preact.mjs","./sidebar.less":"app/pages/home/components/sidebar.less"}],"../node_modules/xtend/immutable.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.mjs","~/app/helpers/page-grouper":"app/helpers/page-grouper.js","./sidebar.less":"app/pages/home/components/sidebar.less"}],"../node_modules/xtend/immutable.js":[function(require,module,exports) {
 module.exports = extend;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
