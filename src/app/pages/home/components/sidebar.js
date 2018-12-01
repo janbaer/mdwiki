@@ -1,4 +1,5 @@
 import { h, Component } from 'preact';
+import groupPages from '~/app/helpers/page-grouper';
 
 import './sidebar.less';
 
@@ -6,6 +7,7 @@ export default class Sidebar extends Component {
   constructor(props) {
     super(props);
     this.renderPageEntry = this.renderPageEntry.bind(this);
+    this.renderGroup = this.renderGroup.bind(this);
   }
 
   gotoPage(page) {
@@ -20,11 +22,25 @@ export default class Sidebar extends Component {
     );
   }
 
-  render({ pages }, state) {
+  renderGroup(group) {
     return (
-      <ul class="Sidebar-list">
-        {pages.map(this.renderPageEntry)}
-      </ul>
+      <div>
+        <h4 class="Sidebar-pageGroupHeader">{group.letter}</h4>
+
+        <ul class="Sidebar-list">
+          {group.pages.map(this.renderPageEntry)}
+        </ul>
+      </div>
+    );
+  }
+
+  render({ pages }, state) {
+    console.log('pages', pages);
+    const groups = groupPages(pages);
+    return (
+      <div class="Sidebar-listContainer">
+        {groups.map(this.renderGroup)}
+      </div>
     );
   }
 }
