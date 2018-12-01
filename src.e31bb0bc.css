@@ -160,6 +160,7 @@ footer {
   background-color: white;
   padding-left: 10px;
   grid-template-columns: repeat(10, 20px);
+  z-index: 1;
 }
 .Sidebar-groupLinkContainer > a {
   color: black;
