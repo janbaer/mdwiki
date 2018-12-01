@@ -309,7 +309,7 @@ footer {
 .HomePage-sidebarContainer {
   width: 250px;
   position: absolute;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 85px);
   background-color: white;
   border-right: 1px solid #e0e0e0;
   left: -250px;
