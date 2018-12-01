@@ -262,7 +262,7 @@ footer {
   margin: 0 10px;
 }
 .CodeMirror-scroll {
-  height: calc(100vh - 155px);
+  height: calc(100vh - 160px);
 }
 .HomePage-header {
   display: grid;
