@@ -5,6 +5,7 @@ const STORE_KEY = 'mdwiki-config';
 class ConfigurationService {
   constructor() {
     this.isLocal = window.location.host.startsWith('localhost');
+    this.isLan = window.location.host.startsWith('192.168.178');
     this.config = storage.getObject(STORE_KEY);
   }
 
@@ -21,7 +22,12 @@ class ConfigurationService {
   }
 
   get oauthLoginUrl() {
-    const oauthClientId = this.isLocal ? '80a8ebcf2785af9f5c32' : 'ca7d513bb2a616052f76';
+    let oauthClientId = 'ca7d513bb2a616052f76';
+    if (this.isLocal) {
+      oauthClientId = '80a8ebcf2785af9f5c32';
+    } else if (this.isLan) {
+      oauthClientId = '5e9db2b459c52458a8a2';
+    }
     return `https://github-oauth-bridge.now.sh/login?clientId=${oauthClientId}`;
   }
 
