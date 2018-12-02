@@ -1,6 +1,7 @@
 import { h, Component } from 'preact';
 import SimpleMDE from 'react-simplemde-editor';
 
+import HotKey from '~/app/components/hotkey';
 import ModalInputDialog from '~/app/components/modal-input-dialog';
 
 import './page-editor.less';
@@ -42,6 +43,8 @@ export default class PageEditor extends Component {
 
     this.changeState = this.changeState.bind(this);
     this.onHideCommitMessageDialog = this.onHideCommitMessageDialog.bind(this);
+    this.onCancelEditButtonClicked = this.onCancelEditButtonClicked.bind(this);
+    this.onSaveButtonClicked = this.onSaveButtonClicked.bind(this);
 
     this._prependCustomButtonsToToolbar();
   }
@@ -53,9 +56,9 @@ export default class PageEditor extends Component {
     }
 
     const myButtons = [{
-      name: 'save', action: () => this.onSaveButtonClicked(), className: 'fa fa-floppy-o', title: 'Save (Alt+S)'
+      name: 'save', action: this.onSaveButtonClicked, className: 'fa fa-floppy-o', title: 'Save (Alt+S)'
     }, {
-      name: 'cancel', action: () => this.onCancelEditButtonClicked(), className: 'fa fa-times', title: 'Cancel (ESC)'
+      name: 'cancel', action: this.onCancelEditButtonClicked, className: 'fa fa-times', title: 'Cancel (ESC)'
     }];
 
     SimpleMDEOptions.toolbar = [...myButtons, ...defaultToolbar];
@@ -79,6 +82,9 @@ export default class PageEditor extends Component {
   }
 
   onCancelEditButtonClicked() {
+    if (this.state.isCommitMessageDialogShown) {
+      return;
+    }
     this.props.onCancel();
   }
 
@@ -113,6 +119,17 @@ export default class PageEditor extends Component {
           onChange={this.changeState}
           value={content}
           options={SimpleMDEOptions}
+        />
+        <HotKey
+          keys={['alt', 's']}
+          simultaneous
+          onKeysCoincide={this.onSaveButtonClicked}
+        />
+
+        <HotKey
+          keys={['escape']}
+          simultaneous
+          onKeysCoincide={this.onCancelEditButtonClicked}
         />
       </div>
     );

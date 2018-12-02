@@ -4,6 +4,7 @@ import Link from './link';
 
 import ModalDialog from '~/app/components/modal-dialog';
 import ModalInputDialog from '~/app/components/modal-input-dialog';
+import HotKey from '~/app/components/hotkey';
 
 import PageContentToolbar from './page-content-toolbar';
 
@@ -96,6 +97,17 @@ export default class PageContent extends Component {
         <div class="PageContent-body markdown-body">
           <ReactMarkdown source={content} renderers={{ link: Link }} />
         </div>
+        <HotKey
+          keys={['shift', 'e']}
+          simultaneous
+          onKeysCoincide={onEdit}
+        />
+        <HotKey
+          keys={['alt', 'n']}
+          simultaneous
+          onKeysCoincide={() => this.toggleNewPageDialog()}
+        />
+
       </div>
     );
   }
