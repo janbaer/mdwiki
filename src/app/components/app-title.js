@@ -1,6 +1,5 @@
 import { h } from 'preact';
 import LogoSvg from './../../images/wiki.svg';
-import './app-title.less';
 
 const AppTitle = () => {
   return (
