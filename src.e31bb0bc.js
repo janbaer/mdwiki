@@ -10960,12 +10960,7 @@ var index = {
 };
 var _default = index;
 exports.default = _default;
-},{"prop-types":"../node_modules/prop-types/index.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/app-title.less":[function(require,module,exports) {
-var reloadCSS = require('_css_loader');
-
-module.hot.dispose(reloadCSS);
-module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/components/app-title.js":[function(require,module,exports) {
+},{"prop-types":"../node_modules/prop-types/index.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/app-title.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10976,8 +10971,6 @@ exports.default = void 0;
 var _react = _interopRequireDefault(require("react"));
 
 var _preact = require("preact");
-
-require("./app-title.less");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -11025,7 +11018,7 @@ const AppTitle = () => {
 
 var _default = AppTitle;
 exports.default = _default;
-},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","./app-title.less":"app/components/app-title.less"}],"app/components/navbar-button.less":[function(require,module,exports) {
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/navbar-button.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -40346,7 +40339,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38905" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35305" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);

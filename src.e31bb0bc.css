@@ -5,13 +5,6 @@ footer {
   align-items: center;
   justify-content: center;
 }
-.App-title {
-  margin-left: 5px;
-}
-.App-title svg {
-  height: 40px;
-  width: 40px;
-}
 .NavbarButton-button {
   border: none;
   border-radius: 25px;
