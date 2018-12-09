@@ -8,10 +8,25 @@
   <link rel="stylesheet" href="./styles/styles.less">
   <link rel="manifest" href="manifest.webmanifest" />
   <script async src="./../node_modules/uikit/dist/js/uikit.js"></script>
-  <script async src="./../node_modules/uikit/dist/js/uikit-icons.js"></script>
   <script defer src="./index.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    if ('serviceWorker' in window.navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(error => {
+            console.log('Registration of ServiceWorker failed', error);
+          });
+      });
+
+      window.navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.type === 'update') {
+          console.log('Receive message about update from serviceWorker');
+        }
+      });
+    }
+  </script>
 </head>
 <body>
-  <a href="manifest.webmanifest"><!--This is a hack so that Parcel does'nt change the manifest file name --></a>
+  <a href="manifest.webmanifest" style="display:none"><!--This is a hack so that Parcel does'nt change the manifest file name --></a>
 </body>
 </html>
