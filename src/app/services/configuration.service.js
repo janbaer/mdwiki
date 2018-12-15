@@ -6,7 +6,17 @@ class ConfigurationService {
   constructor() {
     this.isLocal = window.location.host.startsWith('localhost');
     this.isLan = window.location.host.startsWith('192.168.178');
+
     this.config = storage.getObject(STORE_KEY);
+
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data.type === 'update') {
+        if (event.data.version > this.appVersion) {
+          this.config.appVersion = event.data.version;
+          storage.setObject(STORE_KEY, this.config);
+        }
+      }
+    });
   }
 
   save(user, repository, oauthToken) {
@@ -46,6 +56,12 @@ class ConfigurationService {
   get oauthToken() {
     if (this.config) {
       return this.config.oauthToken;
+    }
+  }
+
+  get appVersion() {
+    if (this.config) {
+      return this.config.appVersion || 1;
     }
   }
 }

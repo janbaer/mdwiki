@@ -38,5 +38,5 @@ git add -u && git add .
 
 git commit -m "Version ${VERSION}"
 
-# git push -u origin gh-pages
+git push -u origin gh-pages
 

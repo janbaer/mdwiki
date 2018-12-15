@@ -10,17 +10,14 @@ const appFiles = [];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  // console.log(`ServiceWorker ${APP_VERSION} installing...`);
   event.waitUntil(installServiceWorker());
 });
 
 self.addEventListener('activate', event => {
-  // console.log(`ServiceWorker ${APP_VERSION} activating...`);
   event.waitUntil(cleanOldCaches());
 });
 
 self.addEventListener('fetch', event => {
-  // console.log(`ServiceWorker ${APP_VERSION} fetching`);
   if (event.request.method !== 'GET') {
     return;
   }
@@ -37,12 +34,11 @@ async function installServiceWorker() {
 
 async function checkIfIsUpdate() {
   const existingCacheKeys = await caches.keys();
-  return existingCacheKeys.some(key => key === APP_CACHE_NAME);
+  return existingCacheKeys.some(key => key === GITHUB_CACHE_NAME);
 }
 
 async function notifyUpdate() {
   const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
-  // console.log(`Send update notification to ${allClients.length} clients...`);
   for (const client of allClients) {
     client.postMessage({ type: 'update', version: APP_VERSION });
   }
@@ -53,7 +49,6 @@ async function handleFetch(request) {
 
   if (requestUrl.host === GITHUB_API_HOST) {
     if (!navigator.onLine) {
-      // console.log('Browser is offline - trye to read from cache first');
       return cacheFirst(GITHUB_CACHE_NAME, request, requestUrl.pathname);
     }
     return networkFirst(GITHUB_CACHE_NAME, requestUrl, requestUrl.pathname);
@@ -67,7 +62,6 @@ async function cacheFirst(cacheName, request, cacheKey = request) {
 
   const responseFromCache = await cache.match(cacheKey);
   if (responseFromCache) {
-    // console.log(`Found ${cacheKey} in cache...`);
     return responseFromCache;
   }
 
