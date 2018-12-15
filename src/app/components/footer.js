@@ -2,9 +2,9 @@ import { h } from 'preact';
 
 import './footer.less';
 
-const Footer = () => (
+const Footer = ({ appVersion }) => (
   <footer>
-    <strong>MDWiki</strong>&nbsp;-&nbsp;Copyright 2018 by Jan Baer
+    <strong>MDWiki 3.{ appVersion }</strong>&nbsp;-&nbsp;Copyright 2018 by Jan Baer
   </footer>
 );
 

@@ -169,7 +169,7 @@ export default class HomePage extends Component {
             </div>
           </div>
         </main>
-        <Footer />
+        <Footer appVersion={configuration.appVersion} />
       </div>
     );
   }

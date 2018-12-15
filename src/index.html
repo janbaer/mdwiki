@@ -1,17 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MDWiki 3.0</title>
+  <title>MDWiki 3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="./../node_modules/github-markdown-css/github-markdown.css">
   <link rel="stylesheet" href="./../node_modules/uikit/dist/css/uikit.css">
   <link rel="stylesheet" href="./styles/styles.less">
   <link rel="manifest" href="manifest.webmanifest" />
   <script async src="./../node_modules/uikit/dist/js/uikit.js"></script>
-  <script async src="./../node_modules/uikit/dist/js/uikit-icons.js"></script>
   <script defer src="./index.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    if ('serviceWorker' in window.navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(error => {
+            console.log('Registration of ServiceWorker failed', error);
+          });
+      });
+
+      if (window.Notification.permission !== 'granted') {
+        window.Notification.requestPermission();
+      }
+
+      window.navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.type === 'update') {
+          if (window.Notification.permission === 'granted') {
+            const notification = new window.Notification('MDWiki Update', {
+              body: `We updated MDWiki to version 3.${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
+              tag: 'mdwiki_update'
+            });
+
+            notification.onclick = () => {
+              notification.close();
+              window.location.reload();
+            };
+          }
+        }
+      });
+    }
+  </script>
 </head>
 <body>
-  <a href="manifest.webmanifest"><!--This is a hack so that Parcel does'nt change the manifest file name --></a>
+  <a href="manifest.webmanifest" style="display:none"><!--This is a hack so that Parcel does'nt change the manifest file name --></a>
 </body>
 </html>

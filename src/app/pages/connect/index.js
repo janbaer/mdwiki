@@ -95,7 +95,7 @@ export default class ConnectPage extends Component {
             }
           </div>
         </main>
-        <Footer />
+        <Footer appVersion={configuration.appVersion} />
       </div>
     );
   }
