@@ -4,7 +4,7 @@ const path = require('path');
 let appVersion = 1;
 let deployFolder = 'deploy';
 
-const FILES_NOT_TO_CACHE = ['service-worker.js', 'service-worker.map'];
+const FILES_NOT_TO_CACHE = ['.git', 'CNAME', 'service-worker.js', 'service-worker.map'];
 
 if (process.argv.length >= 2) {
   appVersion = process.argv[2];
