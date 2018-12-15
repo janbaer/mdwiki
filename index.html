@@ -1,17 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MDWiki 3.0</title>
+  <title>MDWiki 3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/github-markdown.5386ff48.css">
   <link rel="stylesheet" href="/uikit.e371eedf.css">
   <link rel="stylesheet" href="/styles.45de0957.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <script async="" src="/uikit.e9aa4cfd.js"></script>
-  <script async="" src="/uikit-icons.9ee4fb5a.js"></script>
   <script defer="" src="/src.e31bb0bc.js"></script>
+  <script charset="utf-8">if ('serviceWorker' in window.navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(error => {
+      console.log('Registration of ServiceWorker failed', error);
+    });
+  });
+
+  if (window.Notification.permission !== 'granted') {
+    window.Notification.requestPermission();
+  }
+
+  window.navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data.type === 'update') {
+      if (window.Notification.permission === 'granted') {
+        const notification = new window.Notification('MDWiki Update', {
+          body: `We updated MDWiki to version 3.${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
+          tag: 'mdwiki_update'
+        });
+
+        notification.onclick = () => {
+          notification.close();
+          window.location.reload();
+        };
+      }
+    }
+  });
+}</script>
 <script src="/github-markdown.5386ff48.js"></script><script src="/uikit.e371eedf.js"></script><script src="/styles.45de0957.js"></script><link rel="stylesheet" href="/src.e31bb0bc.css"></head>
 <body>
-  <a href="/manifest.webmanifest"><!--This is a hack so that Parcel does'nt change the manifest file name --></a>
+  <a href="/manifest.webmanifest" style="display:none"><!--This is a hack so that Parcel does'nt change the manifest file name --></a>
 </body>
 </html>

@@ -107,7 +107,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"../node_modules/uikit/dist/js/uikit-icons.js":[function(require,module,exports) {
 var define;
 var global = arguments[3];
-/*! UIkit 3.0.0-rc.20 | http://www.getuikit.com | (c) 2014 - 2018 YOOtheme | MIT License */
+/*! UIkit 3.0.0-rc.25 | http://www.getuikit.com | (c) 2014 - 2018 YOOtheme | MIT License */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -301,7 +301,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35141" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38843" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);

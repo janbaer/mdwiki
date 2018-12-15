@@ -1,0 +1,1 @@
+body,html{margin:0;height:100vh;overflow:hidden}.App-container{height:100vh;display:grid;grid-template-rows:55px 1fr 30px;grid-template-areas:"toolbar" "content" "footer"}header{grid-area:toolbar;color:#fff;background-color:#1e87f0}main{grid-area:content;overflow-y:hidden}footer{grid-area:footer}

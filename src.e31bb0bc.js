@@ -7686,6 +7686,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createElement = exports.h = h;
 exports.cloneElement = cloneElement;
+exports.createRef = createRef;
 exports.Component = Component;
 exports.render = render;
 exports.rerender = rerender;
@@ -7755,6 +7756,12 @@ function extend(obj, props) {
   return obj;
 }
 
+function applyRef(ref, value) {
+  if (ref != null) {
+    if (typeof ref == 'function') ref(value);else ref.current = value;
+  }
+}
+
 var defer = typeof Promise == 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
 
 function cloneElement(vnode, props) {
@@ -7771,11 +7778,9 @@ function enqueueRender(component) {
 }
 
 function rerender() {
-  var p,
-      list = items;
-  items = [];
+  var p;
 
-  while (p = list.pop()) {
+  while (p = items.pop()) {
     if (p._dirty) renderComponent(p);
   }
 }
@@ -7827,8 +7832,8 @@ function setAccessor(node, name, old, value, isSvg) {
   if (name === 'className') name = 'class';
 
   if (name === 'key') {} else if (name === 'ref') {
-    if (old) old(null);
-    if (value) value(node);
+    applyRef(old, null);
+    applyRef(value, node);
   } else if (name === 'class' && !isSvg) {
     node.className = value || '';
   } else if (name === 'style') {
@@ -7889,7 +7894,7 @@ var hydrating = false;
 function flushMounts() {
   var c;
 
-  while (c = mounts.pop()) {
+  while (c = mounts.shift()) {
     if (options.afterMount) options.afterMount(c);
     if (c.componentDidMount) c.componentDidMount();
   }
@@ -8068,7 +8073,7 @@ function recollectNodeTree(node, unmountOnly) {
   if (component) {
     unmountComponent(component);
   } else {
-    if (node['__preactattr_'] != null && node['__preactattr_'].ref) node['__preactattr_'].ref(null);
+    if (node['__preactattr_'] != null) applyRef(node['__preactattr_'].ref, null);
 
     if (unmountOnly === false || node['__preactattr_'] == null) {
       removeNode(node);
@@ -8167,7 +8172,7 @@ function setComponentProps(component, props, renderMode, context, mountAll) {
     }
   }
 
-  if (component.__ref) component.__ref(component);
+  applyRef(component.__ref, component);
 }
 
 function renderComponent(component, renderMode, mountAll, isChild) {
@@ -8290,7 +8295,7 @@ function renderComponent(component, renderMode, mountAll, isChild) {
   }
 
   if (!isUpdate || mountAll) {
-    mounts.unshift(component);
+    mounts.push(component);
   } else if (!skip) {
     if (component.componentDidUpdate) {
       component.componentDidUpdate(previousProps, previousState, snapshot);
@@ -8357,14 +8362,14 @@ function unmountComponent(component) {
   if (inner) {
     unmountComponent(inner);
   } else if (base) {
-    if (base['__preactattr_'] && base['__preactattr_'].ref) base['__preactattr_'].ref(null);
+    if (base['__preactattr_'] != null) applyRef(base['__preactattr_'].ref, null);
     component.nextBase = base;
     removeNode(base);
     recyclerComponents.push(component);
     removeChildren(base);
   }
 
-  if (component.__ref) component.__ref(null);
+  applyRef(component.__ref, null);
 }
 
 function Component(props, context) {
@@ -8393,10 +8398,15 @@ function render(vnode, parent, merge) {
   return diff(merge, vnode, {}, false, parent, false);
 }
 
+function createRef() {
+  return {};
+}
+
 var preact = {
   h: h,
   createElement: h,
   cloneElement: cloneElement,
+  createRef: createRef,
   Component: Component,
   render: render,
   rerender: rerender,
@@ -9367,7 +9377,9 @@ var _preact = require("preact");
 
 require("./footer.less");
 
-const Footer = () => (0, _preact.h)("footer", null, (0, _preact.h)("strong", null, "MDWiki"), "\xA0-\xA0Copyright 2018 by Jan Baer");
+const Footer = ({
+  appVersion
+}) => (0, _preact.h)("footer", null, (0, _preact.h)("strong", null, "MDWiki 3.", appVersion), "\xA0-\xA0Copyright 2018 by Jan Baer");
 
 var _default = Footer;
 exports.default = _default;
@@ -42511,6 +42523,15 @@ class ConfigurationService {
     this.isLocal = window.location.host.startsWith('localhost');
     this.isLan = window.location.host.startsWith('192.168.178');
     this.config = _storage.default.getObject(STORE_KEY);
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data.type === 'update') {
+        if (event.data.version > this.appVersion) {
+          this.config.appVersion = event.data.version;
+
+          _storage.default.setObject(STORE_KEY, this.config);
+        }
+      }
+    });
   }
 
   save(user, repository, oauthToken) {
@@ -42556,6 +42577,12 @@ class ConfigurationService {
   get oauthToken() {
     if (this.config) {
       return this.config.oauthToken;
+    }
+  }
+
+  get appVersion() {
+    if (this.config) {
+      return this.config.appVersion || 1;
     }
   }
 
@@ -43063,7 +43090,9 @@ class HomePage extends _preact.Component {
       onClick: this.onGotoPage
     })), (0, _preact.h)("div", {
       "class": "HomePage-contentContainer"
-    }, !isInEditMode && this.renderPageContent(page.name, page.content), isInEditMode && this.renderPageEditor(page.name, page.content)))), (0, _preact.h)(_footer.default, null));
+    }, !isInEditMode && this.renderPageContent(page.name, page.content), isInEditMode && this.renderPageEditor(page.name, page.content)))), (0, _preact.h)(_footer.default, {
+      appVersion: _configuration.default.appVersion
+    }));
   }
 
 }
@@ -43273,7 +43302,9 @@ class ConnectPage extends _preact.Component {
       selectedRepository: selectedRepository,
       onSelectedRepositoryChanged: this.changeSelectedRepository,
       onConnectClick: () => this.connect()
-    }))), (0, _preact.h)(_footer.default, null));
+    }))), (0, _preact.h)(_footer.default, {
+      appVersion: _configuration.default.appVersion
+    }));
   }
 
 }
@@ -43593,7 +43624,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35141" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40091" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
