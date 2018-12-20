@@ -1,6 +1,7 @@
 import storage from './storage.service';
 
 const STORE_KEY = 'mdwiki-config';
+const APP_VERSION_STORE_KEY = 'mdwiki-version';
 
 class ConfigurationService {
   constructor() {
@@ -11,8 +12,7 @@ class ConfigurationService {
 
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data.type === 'update') {
-        this.config.appVersion = event.data.version;
-        storage.setObject(STORE_KEY, this.config);
+        storage.set(APP_VERSION_STORE_KEY, event.data.version);
       }
     });
   }
@@ -58,9 +58,7 @@ class ConfigurationService {
   }
 
   get appVersion() {
-    if (this.config) {
-      return this.config.appVersion || 1;
-    }
+    return storage.get(APP_VERSION_STORE_KEY) || 1;
   }
 }
 
