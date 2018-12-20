@@ -43486,7 +43486,8 @@ class SearchPage extends _preact.Component {
     searchResult
   }) {
     const {
-      user
+      user,
+      appVersion
     } = _configuration.default;
     return (0, _preact.h)("div", {
       "class": "App-container"
@@ -43502,7 +43503,9 @@ class SearchPage extends _preact.Component {
     }), (0, _preact.h)(_searchResult.default, {
       searchResultItems: searchResult.items,
       onSearchItemClicked: this.onSearchItemClicked
-    }))), (0, _preact.h)(_footer.default, null));
+    }))), (0, _preact.h)(_footer.default, {
+      appVersion: appVersion
+    }));
   }
 
 }
@@ -43624,7 +43627,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40091" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "42503" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
