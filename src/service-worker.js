@@ -42,7 +42,7 @@ async function checkIfIsUpdate() {
 async function notifyUpdate() {
   const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
   for (const client of allClients) {
-    client.postMessage({ type: 'update', version: APP_VERSION });
+    client.postMessage({ type: 'update', version: Number(APP_VERSION) });
   }
 }
 
