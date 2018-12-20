@@ -44,7 +44,7 @@ export default class SearchPage extends Component {
   }
 
   render(props, { searchTerm, searchResult }) {
-    const { user } = configuration;
+    const { user, appVersion } = configuration;
 
     return (
       <div class="App-container">
@@ -61,7 +61,7 @@ export default class SearchPage extends Component {
             <SearchResult searchResultItems={searchResult.items} onSearchItemClicked={this.onSearchItemClicked} />
           </div>
         </main>
-        <Footer />
+        <Footer appVersion={appVersion} />
       </div>
     );
   }
