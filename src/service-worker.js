@@ -8,6 +8,8 @@ const GITHUB_CACHE_NAME = 'mdwiki-github-cache';
 const GITHUB_API_HOST = 'api.github.com';
 const appFiles = [];
 
+const pathToIgnore = ['/user'];
+
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(installServiceWorker());
@@ -46,6 +48,9 @@ async function notifyUpdate() {
 
 async function handleFetch(request) {
   const requestUrl = new URL(request.url);
+  if (pathToIgnore.indexOf(requestUrl.pathname) >= 0) {
+    return fetch(request);
+  }
 
   if (requestUrl.host === GITHUB_API_HOST) {
     if (!navigator.onLine) {
