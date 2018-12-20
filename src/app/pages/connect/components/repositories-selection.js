@@ -6,7 +6,7 @@ const RepositoriesSelection = ({ repositories, selectedRepository, onSelectedRep
       <h3>Select an existing repository where the data should be saved</h3>
       <form onSubmit={e => e.preventDefault()}>
         <select
-          class="uk-select"
+          class="select"
           onChange={e => onSelectedRepositoryChanged(e.target.value)}
         >
           <option disabled selected value> -- select a repository -- </option>
@@ -14,7 +14,7 @@ const RepositoriesSelection = ({ repositories, selectedRepository, onSelectedRep
         </select>
         <br /><br />
         <button
-          class="uk-button uk-button-primary"
+          class="button button-primary"
           onClick={() => onConnectClick()}
           disabled={!selectedRepository}
         >

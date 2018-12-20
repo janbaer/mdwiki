@@ -70,7 +70,7 @@ export default class ModalInputDialog extends Component {
         description={description}
       >
         <input
-          class="uk-input"
+          class="input"
           type="text"
           ref={input => { this.input = input; }}
           value={inputValue}

@@ -28,12 +28,12 @@ export default class SearchInput extends Component {
 
     return (
       <div class="SearchInput-container">
-        <input class="uk-input" type="text" value={searchTerm}
+        <input class="input" type="text" value={searchTerm}
           onChange={e => this.setState({ searchTerm: e.target.value })}
           onKeyDown={this.onInputKeyDown}
         />
         <button
-          class="uk-button uk-button-primary uk-button-small"
+          class="button button-primary button-small"
           onClick={() => this.onSearch(searchTerm)}>
           Search
         </button>

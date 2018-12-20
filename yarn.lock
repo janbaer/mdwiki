@@ -8806,11 +8806,6 @@ uglify-js@^3.1.4:
     commander "~2.17.1"
     source-map "~0.6.1"
 
-uikit@3.0.0-rc.25:
-  version "3.0.0-rc.25"
-  resolved "https://registry.yarnpkg.com/uikit/-/uikit-3.0.0-rc.25.tgz#81d4ed1995c9cc8bdba2cf1cf83dc6d7c69031a8"
-  integrity sha512-3RdOdn3kr4N8huG9rpGMg8QenD77/eKsR3nsja7/gIl8MLTlZC6K/R/TCcwpb+VY5duOH9bS5vz+3Gd5XXJ53A==
-
 underscore.string.fp@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/underscore.string.fp/-/underscore.string.fp-1.0.4.tgz#054b3f1843bcae561286c87de5e8879b4fc98364"

@@ -17,7 +17,7 @@ const LoginState = ({ user, onLoginClick }) => {
     <div>
       <div>
         <button
-          class="uk-button uk-button-primary ConnectPage-githubButton"
+          class="button button-primary ConnectPage-githubButton"
           onClick={() => onLoginClick()}
         >
           <GithubSvg />

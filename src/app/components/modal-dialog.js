@@ -13,9 +13,9 @@ const ModalDialog = ({ title, description, isValid = true, onHideDialog, childre
         { children }
 
         <div class="ModalDialog-dialogContainer">
-          <button class="uk-button button" onClick={() => onHideDialog(false)}>Cancel</button>
+          <button class="button" onClick={() => onHideDialog(false)}>Cancel</button>
           <button
-            class="uk-button uk-button-primary button"
+            class="button button-primary"
             disabled={!isValid}
             onClick={() => onHideDialog(true)}>
             Ok
