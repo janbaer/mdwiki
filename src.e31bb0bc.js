@@ -10972,7 +10972,12 @@ var index = {
 };
 var _default = index;
 exports.default = _default;
-},{"prop-types":"../node_modules/prop-types/index.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/app-title.js":[function(require,module,exports) {
+},{"prop-types":"../node_modules/prop-types/index.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/app-title.less":[function(require,module,exports) {
+var reloadCSS = require('_css_loader');
+
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/components/app-title.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10983,6 +10988,8 @@ exports.default = void 0;
 var _react = _interopRequireDefault(require("react"));
 
 var _preact = require("preact");
+
+require("./app-title.less");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -11025,12 +11032,14 @@ const AppTitle = () => {
   return (0, _preact.h)("a", {
     href: "/",
     title: "MDWiki"
-  }, (0, _preact.h)(LogoSvg, null));
+  }, (0, _preact.h)(LogoSvg, {
+    "class": "AppTitle-logoSvg"
+  }));
 };
 
 var _default = AppTitle;
 exports.default = _default;
-},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs"}],"app/components/navbar-button.less":[function(require,module,exports) {
+},{"react":"../node_modules/preact-compat/dist/preact-compat.es.js","preact":"../node_modules/preact/dist/preact.mjs","./app-title.less":"app/components/app-title.less"}],"app/components/navbar-button.less":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -20120,10 +20129,10 @@ const ModalDialog = ({
   }, description), children, (0, _preact.h)("div", {
     "class": "ModalDialog-dialogContainer"
   }, (0, _preact.h)("button", {
-    "class": "uk-button button",
+    "class": "button",
     onClick: () => onHideDialog(false)
   }, "Cancel"), (0, _preact.h)("button", {
-    "class": "uk-button uk-button-primary button",
+    "class": "button button-primary",
     disabled: !isValid,
     onClick: () => onHideDialog(true)
   }, "Ok"))));
@@ -20215,7 +20224,7 @@ class ModalInputDialog extends _preact.Component {
       title: title,
       description: description
     }, (0, _preact.h)("input", {
-      "class": "uk-input",
+      "class": "input",
       type: "text",
       ref: input => {
         this.input = input;
@@ -42517,6 +42526,7 @@ var _storage = _interopRequireDefault(require("./storage.service"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const STORE_KEY = 'mdwiki-config';
+const APP_VERSION_STORE_KEY = 'mdwiki-version';
 
 class ConfigurationService {
   constructor() {
@@ -42525,9 +42535,7 @@ class ConfigurationService {
     this.config = _storage.default.getObject(STORE_KEY);
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data.type === 'update') {
-        this.config.appVersion = event.data.version;
-
-        _storage.default.setObject(STORE_KEY, this.config);
+        _storage.default.set(APP_VERSION_STORE_KEY, event.data.version);
       }
     });
   }
@@ -42579,9 +42587,7 @@ class ConfigurationService {
   }
 
   get appVersion() {
-    if (this.config) {
-      return this.config.appVersion || 1;
-    }
+    return _storage.default.get(APP_VERSION_STORE_KEY) || 1;
   }
 
 }
@@ -43117,7 +43123,7 @@ const RepositoriesSelection = ({
   return (0, _preact.h)("div", null, (0, _preact.h)("h3", null, "Select an existing repository where the data should be saved"), (0, _preact.h)("form", {
     onSubmit: e => e.preventDefault()
   }, (0, _preact.h)("select", {
-    "class": "uk-select",
+    "class": "select",
     onChange: e => onSelectedRepositoryChanged(e.target.value)
   }, (0, _preact.h)("option", {
     disabled: true,
@@ -43126,7 +43132,7 @@ const RepositoriesSelection = ({
   }, " -- select a repository -- "), repositories.map(r => (0, _preact.h)("option", {
     value: r.name
   }, r.name))), (0, _preact.h)("br", null), (0, _preact.h)("br", null), (0, _preact.h)("button", {
-    "class": "uk-button uk-button-primary",
+    "class": "button button-primary",
     onClick: () => onConnectClick(),
     disabled: !selectedRepository
   }, "Connect")));
@@ -43176,7 +43182,7 @@ const LoginState = ({
   }
 
   return (0, _preact.h)("div", null, (0, _preact.h)("div", null, (0, _preact.h)("button", {
-    "class": "uk-button uk-button-primary ConnectPage-githubButton",
+    "class": "button button-primary ConnectPage-githubButton",
     onClick: () => onLoginClick()
   }, (0, _preact.h)(GithubSvg, null), "Login with using Github")));
 };
@@ -43390,7 +43396,7 @@ class SearchInput extends _preact.Component {
     return (0, _preact.h)("div", {
       "class": "SearchInput-container"
     }, (0, _preact.h)("input", {
-      "class": "uk-input",
+      "class": "input",
       type: "text",
       value: searchTerm,
       onChange: e => this.setState({
@@ -43398,7 +43404,7 @@ class SearchInput extends _preact.Component {
       }),
       onKeyDown: this.onInputKeyDown
     }), (0, _preact.h)("button", {
-      "class": "uk-button uk-button-primary uk-button-small",
+      "class": "button button-primary button-small",
       onClick: () => this.onSearch(searchTerm)
     }, "Search"));
   }
@@ -43627,7 +43633,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39859" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38407" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
