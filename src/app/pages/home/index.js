@@ -153,7 +153,7 @@ export default class HomePage extends Component {
           <nav>
             <Searchbox onSearch={this.onStartSearch} />
           </nav>
-          <nav>
+          <nav class="HomePage-rightNavbar">
             <ConnectButton />
             <LoginButton user={user} />
           </nav>
