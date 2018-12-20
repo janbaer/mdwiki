@@ -11,10 +11,8 @@ class ConfigurationService {
 
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data.type === 'update') {
-        if (event.data.version > this.appVersion) {
-          this.config.appVersion = event.data.version;
-          storage.setObject(STORE_KEY, this.config);
-        }
+        this.config.appVersion = event.data.version;
+        storage.setObject(STORE_KEY, this.config);
       }
     });
   }
