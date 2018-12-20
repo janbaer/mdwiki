@@ -201,6 +201,9 @@ footer {
   display: flex;
   flex-direction: column;
   color: grey;
+  background-color: white;
+  padding: 1em;
+  margin: auto;
   animation: ShowDialog 0.3s ease-in-out;
 }
 @media (min-width: 768px) {
@@ -294,6 +297,9 @@ footer {
   .HomePage-leftNavbar {
     display: none;
   }
+}
+.HomePage-rightNavbar {
+  display: flex;
 }
 .HomePage-container {
   display: flex;

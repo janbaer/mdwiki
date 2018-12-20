@@ -43079,7 +43079,9 @@ class HomePage extends _preact.Component {
       showSidebar: showSidebar
     })), (0, _preact.h)(_appTitle.default, null), (0, _preact.h)("nav", null, (0, _preact.h)(_searchBox.default, {
       onSearch: this.onStartSearch
-    })), (0, _preact.h)("nav", null, (0, _preact.h)(_connectButton.default, null), (0, _preact.h)(_loginButton.default, {
+    })), (0, _preact.h)("nav", {
+      "class": "HomePage-rightNavbar"
+    }, (0, _preact.h)(_connectButton.default, null), (0, _preact.h)(_loginButton.default, {
       user: user
     }))), (0, _preact.h)("main", null, (0, _preact.h)("div", {
       "class": "HomePage-container"
