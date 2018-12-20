@@ -42525,11 +42525,9 @@ class ConfigurationService {
     this.config = _storage.default.getObject(STORE_KEY);
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data.type === 'update') {
-        if (event.data.version > this.appVersion) {
-          this.config.appVersion = event.data.version;
+        this.config.appVersion = event.data.version;
 
-          _storage.default.setObject(STORE_KEY, this.config);
-        }
+        _storage.default.setObject(STORE_KEY, this.config);
       }
     });
   }
@@ -43629,7 +43627,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "42503" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39859" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
