@@ -3,12 +3,21 @@
 .SidebarButton-button {
   border: 1px solid transparent;
   background-color: @PANEL_BACKGROUND_COLOR;
+  transition: .1s ease-in-out;
+  transition-property: color, background-color, border-color;
+  margin-left: 5px;
+
+  &:focus {
+    outline-color: transparent;
+  }
+
+  &:active {
+    background-color: @COLOR_DARK_BLUE;
+  }
+
   & svg {
     fill: white;
     height: 28px;
     width: 28px;
-  }
-  &:focus {
-    outline-color: transparent;
   }
 }
