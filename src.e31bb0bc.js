@@ -11211,36 +11211,17 @@ require("./sidebar-button.less");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var LeftArrow = function LeftArrow(props) {
+var HamburgerMenuSvg = function HamburgerMenuSvg(props) {
   return (0, _preact.h)("svg", props, (0, _preact.h)("path", {
-    d: "M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"
-  }), (0, _preact.h)("path", {
-    fill: "none",
-    d: "M0 0h24v24H0V0z"
+    d: "M4 10h24a2 2 0 0 0 0-4H4a2 2 0 0 0 0 4zm24 4H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zm0 8H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4z"
   }));
 };
 
-LeftArrow.defaultProps = {
-  xmlns: "http://www.w3.org/2000/svg",
-  width: "24",
-  height: "24",
-  viewBox: "0 0 24 24"
-};
-
-var RightArrow = function RightArrow(props) {
-  return (0, _preact.h)("svg", props, (0, _preact.h)("path", {
-    d: "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
-  }), (0, _preact.h)("path", {
-    fill: "none",
-    d: "M0 0h24v24H0V0z"
-  }));
-};
-
-RightArrow.defaultProps = {
-  xmlns: "http://www.w3.org/2000/svg",
-  width: "24",
-  height: "24",
-  viewBox: "0 0 24 24"
+HamburgerMenuSvg.defaultProps = {
+  height: "32",
+  viewBox: "0 0 32 32",
+  width: "32",
+  xmlns: "http://www.w3.org/2000/svg"
 };
 
 const SidebarButton = ({
@@ -11251,7 +11232,7 @@ const SidebarButton = ({
     "class": "SidebarButton-button",
     title: "Add",
     onClick: onClick
-  }, showSidebar && (0, _preact.h)(LeftArrow, null), !showSidebar && (0, _preact.h)(RightArrow, null));
+  }, (0, _preact.h)(HamburgerMenuSvg, null));
 };
 
 var _default = SidebarButton;
@@ -43633,7 +43614,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38407" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45767" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
