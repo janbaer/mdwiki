@@ -8,7 +8,7 @@ import HotKey from '~/app/components/hotkey';
 
 import PageContentToolbar from './page-content-toolbar';
 
-import './../../../../../node_modules/simplemde/dist/simplemde.min.css';
+import './../../../../../node_modules/easymde/dist/easymde.min.css';
 import './page-content.less';
 
 export default class PageContent extends Component {
