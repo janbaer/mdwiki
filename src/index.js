@@ -1,5 +1,4 @@
 import 'babel-polyfill';
-import 'preact/devtools';
 import { h, render } from 'preact';
 import App from './app/app.js';
 
