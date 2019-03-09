@@ -4,7 +4,7 @@ import App from './app/app.js';
 
 function renderApp() {
   render(
-    <App />, document.body, document.body.lastChild
+    <App />, document.body
   );
 }
 
