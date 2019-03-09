@@ -20,6 +20,7 @@ export default class ConnectPage extends Component {
     };
 
     this.changeSelectedRepository = this.changeSelectedRepository.bind(this);
+    this.navigateToGithub = this.navigateToGithub.bind(this);
   }
 
   componentDidMount() {
@@ -84,7 +85,7 @@ export default class ConnectPage extends Component {
               you can use and change it also outside from MDWiki.
             </p>
 
-            <LoginState user={user} onLoginClick={() => this.navigateToGithub()} />
+            <LoginState user={user} onLoginClick={this.navigateToGithub} />
             { user &&
               <RepositoriesSelection
                 repositories={repositories}

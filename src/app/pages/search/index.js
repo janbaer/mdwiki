@@ -45,6 +45,7 @@ export default class SearchPage extends Component {
 
   render(props, { searchTerm, searchResult }) {
     const { user, appVersion } = configuration;
+    searchTerm = searchTerm || props.q;
 
     return (
       <div class="App-container">
@@ -57,7 +58,7 @@ export default class SearchPage extends Component {
         </header>
         <main>
           <div class="SearchPage-container">
-            <SearchInput searchTerm={searchTerm} onSearchButtonClicked={this.search} />
+            <SearchInput searchTerm={searchTerm} onSearch={this.search} />
             <SearchResult searchResultItems={searchResult.items} onSearchItemClicked={this.onSearchItemClicked} />
           </div>
         </main>

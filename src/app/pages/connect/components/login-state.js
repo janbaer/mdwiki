@@ -14,17 +14,13 @@ const LoginState = ({ user, onLoginClick }) => {
   }
 
   return (
-    <div>
-      <div>
-        <button
-          class="button button-primary ConnectPage-githubButton"
-          onClick={() => onLoginClick()}
-        >
-          <GithubSvg />
-          Login with using Github
-        </button>
-      </div>
-    </div>
+    <button
+      class="button button-primary ConnectPage-githubButton"
+      onClick={() => onLoginClick()}
+    >
+      <GithubSvg />
+      Login with using Github
+    </button>
   );
 };
 

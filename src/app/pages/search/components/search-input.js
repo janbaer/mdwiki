@@ -1,43 +1,37 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { useState, useEffect, useRef } from 'preact/hooks';
 
 import './search-input.less';
 
-export default class SearchInput extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      searchTerm: ''
-    };
+const SearchInput = (props) => {
+  const searchInputRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState(props.searchTerm);
 
-    this.onInputKeyDown = this.onInputKeyDown.bind(this);
-    this.onSearch = this.onSearch.bind(this);
-  }
+  useEffect(() => {
+    searchInputRef.current.focus();
+  }, []);
 
-  onInputKeyDown(e) {
+  function onInputKeyDown(e) {
     if (e.code === 'Enter') {
-      this.onSearch(e.target.value);
+      props.onSearch(e.target.value);
     }
   }
 
-  onSearch(searchTerm) {
-    this.setState({ searchTerm }, this.props.onSearchButtonClicked(searchTerm));
-  }
+  return (
+    <div class="SearchInput-container">
+      <input
+        class="input" type="text" value={searchTerm}
+        ref={searchInputRef}
+        onChange={e => setSearchTerm(e.target.value)}
+        onKeyDown={onInputKeyDown}
+      />
+      <button
+        class="button button-primary button-small"
+        onClick={() => props.onSearch(searchTerm)}>
+        Search
+      </button>
+    </div>
+  );
+};
 
-  render(props, state) {
-    const searchTerm = this.state.searchTerm || this.props.searchTerm;
-
-    return (
-      <div class="SearchInput-container">
-        <input class="input" type="text" value={searchTerm}
-          onChange={e => this.setState({ searchTerm: e.target.value })}
-          onKeyDown={this.onInputKeyDown}
-        />
-        <button
-          class="button button-primary button-small"
-          onClick={() => this.onSearch(searchTerm)}>
-          Search
-        </button>
-      </div>
-    );
-  }
-}
+export default SearchInput;

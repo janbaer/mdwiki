@@ -19,7 +19,8 @@
 }
 
 .ModalDialog-dialog {
-  width: 325px;
+  width: 80%;
+  max-width: 640px;
   display: flex;
   flex-direction: column;
   color: grey;
@@ -27,10 +28,6 @@
   padding: 1em;
   margin: auto;
   .Animated-Dialog();
-
-  @media (min-width: @TABLET_PORTRAIT_WIDTH) {
-    width: 600px;
-  }
 }
 
 .ModalDialog-descriptionLabel {
