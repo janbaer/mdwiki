@@ -12,7 +12,7 @@
     "deploy": "yarn build && ./deploy.sh",
     "serve": "live-server --port=4002 --no-browser ./dist",
     "lint": "eslint ./src",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "test:watch": "yarn test --watch"
   },
   "browserslist": [
@@ -21,7 +21,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "yarn lint"
+      "pre-push": "yarn lint && yarn test"
     }
   },
   "alias": {
@@ -100,7 +100,7 @@
     "classnames": "2.2.6",
     "github-markdown-css": "3.0.1",
     "lodash": "4.17.11",
-    "preact": "10.0.0-alpha.1",
+    "preact": "10.0.0-alpha.2",
     "preact-router": "3.0.0",
     "react-markdown": "4.0.6",
     "react-simplemde-editor": "4.0.0"
@@ -122,15 +122,15 @@
     "eslint-config-standard-jsx": "6.0.2",
     "eslint-config-standard-preact": "1.1.6",
     "eslint-plugin-import": "2.16.0",
-    "eslint-plugin-jest": "22.3.0",
+    "eslint-plugin-jest": "22.3.2",
     "eslint-plugin-node": "8.0.1",
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-react": "7.12.4",
     "eslint-plugin-standard": "4.0.0",
     "husky": "1.3.1",
-    "jest": "24.3.1",
+    "jest": "24.5.0",
     "less": "3.9.0",
     "lint-staged": "8.1.5",
-    "parcel-bundler": "1.12.0"
+    "parcel-bundler": "1.12.2"
   }
 }
