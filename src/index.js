@@ -1,5 +1,5 @@
-import 'babel-polyfill';
 import { h, render } from 'preact';
+import 'preact/debug';
 import App from './app/app.js';
 
 function renderApp() {
