@@ -30,7 +30,7 @@
   },
   "babel": {
     "presets": [
-      "env",
+      "@babel/preset-env",
       "preact"
     ],
     "plugins": [
@@ -111,6 +111,7 @@
     "@babel/preset-env": "7.4.2",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.1",
+    "babel-jest": "24.5.0",
     "babel-minify": "0.5.0",
     "babel-plugin-inline-react-svg": "1.0.1",
     "babel-plugin-module-resolver": "3.2.0",
