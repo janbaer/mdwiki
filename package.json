@@ -117,7 +117,7 @@
     "babel-polyfill": "6.26.0",
     "babel-preset-env": "1.7.0",
     "babel-preset-preact": "git://github.com/tomasdev/babel-preset-preact#patch-1",
-    "eslint": "5.15.3",
+    "eslint": "5.16.0",
     "eslint-config-standard": "12.0.0",
     "eslint-config-standard-jsx": "6.0.2",
     "eslint-config-standard-preact": "1.1.6",
