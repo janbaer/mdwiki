@@ -100,15 +100,15 @@
     "classnames": "2.2.6",
     "github-markdown-css": "3.0.1",
     "lodash": "4.17.11",
-    "preact": "10.0.0-beta.1",
+    "preact": "10.0.0-beta.2",
     "preact-router": "3.0.0",
     "react-markdown": "4.0.8",
-    "react-simplemde-editor": "4.0.1"
+    "react-simplemde-editor": "4.0.2"
   },
   "devDependencies": {
-    "@babel/core": "7.4.4",
+    "@babel/core": "7.4.5",
     "@babel/plugin-proposal-object-rest-spread": "7.4.4",
-    "@babel/preset-env": "7.4.4",
+    "@babel/preset-env": "7.4.5",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.1",
     "babel-jest": "24.8.0",
@@ -121,16 +121,16 @@
     "eslint-config-standard": "12.0.0",
     "eslint-config-standard-jsx": "6.0.2",
     "eslint-config-standard-preact": "1.1.6",
-    "eslint-plugin-import": "2.17.2",
-    "eslint-plugin-jest": "22.5.1",
-    "eslint-plugin-node": "9.0.1",
+    "eslint-plugin-import": "2.17.3",
+    "eslint-plugin-jest": "22.6.4",
+    "eslint-plugin-node": "9.1.0",
     "eslint-plugin-promise": "4.1.1",
     "eslint-plugin-react": "7.13.0",
     "eslint-plugin-standard": "4.0.0",
-    "husky": "2.2.0",
+    "husky": "2.4.1",
     "jest": "24.8.0",
     "less": "3.9.0",
-    "lint-staged": "8.1.6",
+    "lint-staged": "8.2.1",
     "parcel-bundler": "1.12.3"
   }
 }
