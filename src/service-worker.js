@@ -31,7 +31,7 @@ async function installServiceWorker() {
   const isUpdate = await checkIfIsUpdate();
   await addToCache(APP_CACHE_NAME, appFiles);
   if (isUpdate) {
-    await notifyClient();
+    await notifyClient('update');
   }
 }
 
