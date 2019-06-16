@@ -11,8 +11,12 @@ class ConfigurationService {
     this.config = storage.getObject(STORE_KEY);
 
     navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data.type === 'update') {
-        storage.set(APP_VERSION_STORE_KEY, event.data.version);
+      switch (event.data.type) {
+        case 'update':
+        case 'activate':
+          if (event.data.version) {
+            storage.set(APP_VERSION_STORE_KEY, event.data.version);
+          }
       }
     });
   }
