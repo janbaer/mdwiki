@@ -1,4 +1,5 @@
 import { h, Component } from 'preact';
+import { Suspense, lazy } from 'preact/compat';
 import classnames from 'classnames';
 import Footer from '~/app/components/footer';
 import AppTitle from '~/app/components/app-title';
@@ -8,7 +9,6 @@ import SidebarButton from '~/app/components/sidebar-button';
 import Searchbox from '~/app/components/search-box';
 import Sidebar from './components/sidebar';
 import PageContent from './components/page-content';
-import PageEditor from './components/page-editor';
 
 import configuration from '~/app/services/configuration.service';
 import navigator from '~/app/services/navigator.service';
@@ -16,6 +16,8 @@ import navigator from '~/app/services/navigator.service';
 import PageStore from './../../stores/page.store';
 
 import './index.less';
+
+const PageEditor = lazy(() => import('./components/page-editor'));
 
 export default class HomePage extends Component {
   constructor(props) {
@@ -126,12 +128,14 @@ export default class HomePage extends Component {
 
   renderPageEditor(pageName, content) {
     return (
-      <PageEditor
-        pageName={pageName}
-        content={content}
-        onSave={this.onSavePage}
-        onCancel={this.onCancelEditPage}
-      />
+      <Suspense fallback={<div>Loading Markdown-editor...</div>}>
+        <PageEditor
+          pageName={pageName}
+          content={content}
+          onSave={this.onSavePage}
+          onCancel={this.onCancelEditPage}
+        />
+      </Suspense>
     );
   }
 
