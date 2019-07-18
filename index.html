@@ -1,2 +1,40 @@
-<!DOCTYPE html><html><head><title>MDWiki 3</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/github-markdown.3e2452ff.css"><link rel="stylesheet" href="/styles.827ccd78.css"><link rel="manifest" href="/manifest.webmanifest"><script defer="" src="/src.b9df8150.js"></script><script charset="utf-8">"serviceWorker"in window.navigator&&(window.addEventListener("load",()=>{navigator.serviceWorker.register("/service-worker.js").catch(i=>{console.log("Registration of ServiceWorker failed",i)})}),"granted"!==window.Notification.permission&&window.Notification.requestPermission(),window.navigator.serviceWorker.addEventListener("message",i=>{if("update"===i.data.type&&"granted"===window.Notification.permission){const e=new window.Notification("MDWiki Update",{body:`We updated MDWiki to version 3.${i.data.version}, you should refresh your browser or click on this message to use the latest version`,tag:"mdwiki_update"});e.onclick=(()=>{e.close(),window.location.reload()})}}));</script><link rel="stylesheet" href="/src.81b37e2a.css"></head><body>
-</body></html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MDWiki 3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/github-markdown.5386ff48.css">
+  <link rel="stylesheet" href="/styles.45de0957.css">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <script defer="" src="/src.e31bb0bc.js"></script>
+  <script charset="utf-8">if ('serviceWorker' in window.navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(error => {
+      console.log('Registration of ServiceWorker failed', error);
+    });
+  });
+
+  if (window.Notification.permission !== 'granted') {
+    window.Notification.requestPermission();
+  }
+
+  window.navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data.type === 'update') {
+      if (window.Notification.permission === 'granted') {
+        const notification = new window.Notification('MDWiki Update', {
+          body: `We updated MDWiki to version 3.${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
+          tag: 'mdwiki_update'
+        });
+
+        notification.onclick = () => {
+          notification.close();
+          window.location.reload();
+        };
+      }
+    }
+  });
+}</script>
+<script src="/github-markdown.5386ff48.js"></script><script src="/styles.45de0957.js"></script><link rel="stylesheet" href="/src.e31bb0bc.css"></head>
+<body>
+</body>
+</html>
