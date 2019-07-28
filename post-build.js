@@ -23,7 +23,7 @@ let serviceWorkerCode = fs.readFileSync(SERVICEWORKER_FILEPATH, { encoding: 'utf
 const filesToCache = readDir(path.join(__dirname, deployFolder));
 
 serviceWorkerCode = serviceWorkerCode
-  .replace('APP_VERSION = \'1\'', `APP_VERSION = '${appVersion}'`)
+  .replace(/#1/g, appVersion)
   .replace('appFiles = []', `appFiles = [${filesToCache.join(', ')}]`);
 
 fs.writeFileSync(SERVICEWORKER_FILEPATH, serviceWorkerCode, { encoding: 'utf8' });

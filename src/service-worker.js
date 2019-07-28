@@ -1,9 +1,9 @@
 /* eslint-env worker, serviceworker */
 /* eslint no-restricted-globals: ["off", "self"] */
 
-const APP_VERSION = '1';
+const APP_VERSION = '#1';
 
-const APP_CACHE_NAME = `mdwiki-app-cache-v${APP_VERSION}`;
+const APP_CACHE_NAME = `mdwiki-app-cache-v#1`;
 const GITHUB_CACHE_NAME = 'mdwiki-github-cache';
 const GITHUB_API_HOST = 'api.github.com';
 const appFiles = [];
@@ -17,6 +17,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(cleanOldCaches());
+  notifyClient('activate');
 });
 
 self.addEventListener('fetch', event => {
@@ -30,7 +31,7 @@ async function installServiceWorker() {
   const isUpdate = await checkIfIsUpdate();
   await addToCache(APP_CACHE_NAME, appFiles);
   if (isUpdate) {
-    await notifyUpdate();
+    await notifyClient('update');
   }
 }
 
@@ -39,10 +40,10 @@ async function checkIfIsUpdate() {
   return existingCacheKeys.some(key => key === GITHUB_CACHE_NAME);
 }
 
-async function notifyUpdate() {
+async function notifyClient(eventType) {
   const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
   for (const client of allClients) {
-    client.postMessage({ type: 'update', version: Number(APP_VERSION) });
+    client.postMessage({ type: eventType, version: Number(APP_VERSION) });
   }
 }
 

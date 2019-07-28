@@ -12,7 +12,7 @@
     "deploy": "yarn build && ./deploy.sh",
     "serve": "live-server --port=4002 --no-browser ./dist",
     "lint": "eslint ./src",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "test:watch": "yarn test --watch"
   },
   "browserslist": [
@@ -21,20 +21,21 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "yarn lint"
+      "pre-push": "yarn lint && yarn test"
     }
   },
   "alias": {
-    "react": "preact-compat",
-    "react-dom": "preact-compat"
+    "react": "preact/compat",
+    "react-dom": "preact/compat"
   },
   "babel": {
     "presets": [
-      "env",
+      "@babel/preset-env",
       "preact"
     ],
     "plugins": [
       "inline-react-svg",
+      "@babel/plugin-transform-modules-commonjs",
       "@babel/plugin-proposal-object-rest-spread"
     ]
   },
@@ -99,39 +100,39 @@
   "dependencies": {
     "classnames": "2.2.6",
     "github-markdown-css": "3.0.1",
-    "lodash": "4.17.11",
-    "preact": "8.4.2",
-    "preact-compat": "3.18.4",
-    "preact-router": "2.6.1",
-    "react-markdown": "4.0.6",
-    "react-simplemde-editor": "4.0.0"
+    "lodash": "4.17.15",
+    "preact": "10.0.0-beta.3",
+    "preact-router": "3.0.0",
+    "react-markdown": "4.1.0",
+    "react-simplemde-editor": "4.1.0"
   },
   "devDependencies": {
-    "@babel/core": "7.2.2",
-    "@babel/plugin-proposal-object-rest-spread": "7.3.2",
-    "@babel/preset-env": "7.3.1",
+    "@babel/core": "7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "7.5.5",
+    "@babel/plugin-transform-modules-commonjs": "7.5.0",
+    "@babel/preset-env": "7.5.5",
     "babel-core": "7.0.0-bridge.0",
-    "babel-eslint": "10.0.1",
+    "babel-eslint": "10.0.2",
+    "babel-jest": "24.8.0",
     "babel-minify": "0.5.0",
-    "babel-plugin-inline-react-svg": "1.0.1",
+    "babel-plugin-inline-react-svg": "1.1.0",
     "babel-plugin-module-resolver": "3.2.0",
     "babel-polyfill": "6.26.0",
-    "babel-preset-env": "1.7.0",
-    "babel-preset-preact": "git://github.com/tomasdev/babel-preset-preact#patch-1",
-    "eslint": "5.13.0",
-    "eslint-config-standard": "12.0.0",
-    "eslint-config-standard-jsx": "6.0.2",
+    "babel-preset-preact": "2.0.0",
+    "eslint": "6.1.0",
+    "eslint-config-standard": "13.0.1",
+    "eslint-config-standard-jsx": "7.0.0",
     "eslint-config-standard-preact": "1.1.6",
-    "eslint-plugin-import": "2.16.0",
-    "eslint-plugin-jest": "22.2.2",
-    "eslint-plugin-node": "8.0.1",
-    "eslint-plugin-promise": "4.0.1",
-    "eslint-plugin-react": "7.12.4",
+    "eslint-plugin-import": "2.18.2",
+    "eslint-plugin-jest": "22.14.0",
+    "eslint-plugin-node": "9.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-react": "7.14.3",
     "eslint-plugin-standard": "4.0.0",
-    "husky": "1.3.1",
-    "jest": "24.1.0",
+    "husky": "3.0.1",
+    "jest": "24.8.0",
     "less": "3.9.0",
-    "lint-staged": "8.1.3",
-    "parcel-bundler": "1.11.0"
+    "lint-staged": "9.2.1",
+    "parcel-bundler": "1.12.3"
   }
 }

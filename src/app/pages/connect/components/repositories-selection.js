@@ -1,8 +1,8 @@
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 
 const RepositoriesSelection = ({ repositories, selectedRepository, onSelectedRepositoryChanged, onConnectClick }) => {
   return (
-    <div>
+    <Fragment>
       <h3>Select an existing repository where the data should be saved</h3>
       <form onSubmit={e => e.preventDefault()}>
         <select
@@ -21,7 +21,7 @@ const RepositoriesSelection = ({ repositories, selectedRepository, onSelectedRep
           Connect
         </button>
       </form>
-    </div>
+    </Fragment>
   );
 };
 
