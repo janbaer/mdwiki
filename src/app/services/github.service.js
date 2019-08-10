@@ -149,17 +149,15 @@ class GithubService {
   }
 
   createNewRepository(userName, repository, isPrivateRepository, oauthToken) {
-    const url = `/repos/${userName}/repos`;
+    const url = `/user/repos`;
     const body = {
       name: repository,
+      description: `A personal wiki for ${userName} created by MDWiki`,
       private: isPrivateRepository,
       has_issues: false,
       has_projects: false,
       has_wiki: false,
       is_template: false,
-      allow_squash_merge: false,
-      allow_merge_commit: false,
-      allow_rebase_merge: false,
     };
     return this._post(url, body, oauthToken);
   }

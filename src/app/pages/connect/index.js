@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 import AppTitle from '~/app/components/app-title';
 import Footer from '~/app/components/footer';
 
@@ -6,7 +6,8 @@ import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
 import navigator from '~/app/services/navigator.service';
 
-import RepositoriesSelection from './components/repositories-selection';
+import SelectExistingRepository from './components/select-existing-repository';
+import CreateNewRepository from './components/create-new-repository';
 import LoginState from './components/login-state';
 
 import './index.less';
@@ -60,6 +61,27 @@ export default class ConnectPage extends Component {
     navigator.gotoHome();
   }
 
+  canCreateNewRepository(repositoryName) {
+    if (!repositoryName || repositoryName === '') {
+      return false;
+    }
+
+    return !this.state.repositories.some(r => r.name.toLowerCase() === repositoryName.toLowerCase());
+  }
+
+  async createNewRepository(repositoryName, isPrivateRepository = false) {
+    const { user, oauthToken } = this.state;
+    const userName = user.loginName;
+
+    await github.createNewRepository(userName, repositoryName, isPrivateRepository, oauthToken);
+    await github.createPage(
+      userName, repositoryName, 'index.md', `# ${repositoryName} index page`, 'Create new repository', oauthToken
+    );
+
+    configuration.save(user, repositoryName, oauthToken);
+    navigator.gotoHome();
+  }
+
   disconnect() {
     configuration.clear();
   }
@@ -87,12 +109,19 @@ export default class ConnectPage extends Component {
 
             <LoginState user={user} onLoginClick={this.navigateToGithub} />
             { user &&
-              <RepositoriesSelection
-                repositories={repositories}
-                selectedRepository={selectedRepository}
-                onSelectedRepositoryChanged={this.changeSelectedRepository}
-                onConnectClick={() => this.connect()}
-              />
+              <Fragment>
+                <SelectExistingRepository
+                  repositories={repositories}
+                  selectedRepository={selectedRepository}
+                  onSelectedRepositoryChanged={this.changeSelectedRepository}
+                  onConnectClick={() => this.connect()}
+                />
+                <br />
+                <CreateNewRepository
+                  onCreateClick={repositoryName => this.createNewRepository(repositoryName)}
+                  onValidateRepositoryName={repositoryName => this.canCreateNewRepository(repositoryName)}
+                />
+              </Fragment>
             }
           </div>
         </main>
