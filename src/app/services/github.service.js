@@ -38,34 +38,32 @@ class GithubService {
     return page.name.endsWith('.md');
   }
 
-  async _get(url, oauthToken) {
+  _get(url, oauthToken) {
     const options = this._buildOptions(oauthToken, 'GET');
-    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
-    if (response.status === 200) {
-      return response.json();
-    }
-    return undefined;
+    return this._send(url, options, [200]);
   }
 
-  async _put(url, body, oauthToken) {
-    const EXPECTED_STATUS = [200, 201];
-
+  _put(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'PUT');
     options.body = JSON.stringify(body);
-
-    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
-    if (EXPECTED_STATUS.some(s => s === response.status)) {
-      return response.json();
-    }
-    return undefined;
+    return this._send(url, options, [200, 201]);
   }
 
-  async _delete(url, body, oauthToken) {
+  _post(url, body, oauthToken) {
+    const options = this._buildOptions(oauthToken, 'POST');
+    options.body = JSON.stringify(body);
+    return this._send(url, options, [201]);
+  }
+
+  _delete(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'DELETE');
     options.body = JSON.stringify(body);
+    return this._send(url, options, [200]);
+  }
 
+  async _send(url, options, expectedStatus) {
     const response = await fetch(`${GITHUB_API_URL}${url}`, options);
-    if (response.status === 200) {
+    if (expectedStatus.some(s => s === response.status)) {
       return response.json();
     }
     return undefined;
@@ -133,6 +131,7 @@ class GithubService {
       sha
     };
 
+    // GitHub-API uses always PUT for creating and updating of content
     const response = await this._put(url, body, oauthToken);
     const page = response.content;
     page.content = body.content;
@@ -147,6 +146,22 @@ class GithubService {
       sha
     };
     return this._delete(url, body, oauthToken);
+  }
+
+  createNewRepository(userName, repository, isPrivateRepository, oauthToken) {
+    const url = `/repos/${userName}/repos`;
+    const body = {
+      name: repository,
+      private: isPrivateRepository,
+      has_issues: false,
+      has_projects: false,
+      has_wiki: false,
+      is_template: false,
+      allow_squash_merge: false,
+      allow_merge_commit: false,
+      allow_rebase_merge: false,
+    };
+    return this._post(url, body, oauthToken);
   }
 }
 
