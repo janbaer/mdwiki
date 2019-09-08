@@ -3106,7 +3106,7 @@ require("./footer.less");
 
 const Footer = ({
   appVersion
-}) => (0, _preact.h)("footer", null, (0, _preact.h)("strong", null, "MDWiki 3.", appVersion), "\xA0-\xA0Copyright 2018 by Jan Baer");
+}) => (0, _preact.h)("footer", null, (0, _preact.h)("strong", null, "MDWiki 3.", appVersion), "\xA0-\xA0Copyright ", new Date().getFullYear(), " by Jan Baer");
 
 var _default = Footer;
 exports.default = _default;
