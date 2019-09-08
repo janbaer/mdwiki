@@ -185,6 +185,8 @@ function reloadCSS() {
 
 module.exports = reloadCSS;
 },{"./bundle-url":"../node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"styles/styles.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -217,7 +219,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41681" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46291" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

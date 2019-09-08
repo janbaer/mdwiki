@@ -7,7 +7,9 @@
   <link rel="stylesheet" href="/styles.45de0957.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <script defer="" src="/src.e31bb0bc.js"></script>
-  <script charset="utf-8">if ('serviceWorker' in window.navigator) {
+  <script charset="utf-8">"use strict";
+
+if ('serviceWorker' in window.navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register("/service-worker.js").catch(error => {
       console.log('Registration of ServiceWorker failed', error);

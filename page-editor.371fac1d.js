@@ -5269,8 +5269,15 @@ var global = arguments[3];
     var line = getLine(doc, pos.line);
     if (line.markedSpans) { for (var i = 0; i < line.markedSpans.length; ++i) {
       var sp = line.markedSpans[i], m = sp.marker;
-      if ((sp.from == null || (m.inclusiveLeft ? sp.from <= pos.ch : sp.from < pos.ch)) &&
-          (sp.to == null || (m.inclusiveRight ? sp.to >= pos.ch : sp.to > pos.ch))) {
+
+      // Determine if we should prevent the cursor being placed to the left/right of an atomic marker
+      // Historically this was determined using the inclusiveLeft/Right option, but the new way to control it
+      // is with selectLeft/Right
+      var preventCursorLeft = ("selectLeft" in m) ? !m.selectLeft : m.inclusiveLeft;
+      var preventCursorRight = ("selectRight" in m) ? !m.selectRight : m.inclusiveRight;
+
+      if ((sp.from == null || (preventCursorLeft ? sp.from <= pos.ch : sp.from < pos.ch)) &&
+          (sp.to == null || (preventCursorRight ? sp.to >= pos.ch : sp.to > pos.ch))) {
         if (mayClear) {
           signal(m, "beforeCursorEnter");
           if (m.explicitlyCleared) {
@@ -5282,14 +5289,14 @@ var global = arguments[3];
 
         if (oldPos) {
           var near = m.find(dir < 0 ? 1 : -1), diff = (void 0);
-          if (dir < 0 ? m.inclusiveRight : m.inclusiveLeft)
+          if (dir < 0 ? preventCursorRight : preventCursorLeft)
             { near = movePos(doc, near, -dir, near && near.line == pos.line ? line : null); }
           if (near && near.line == pos.line && (diff = cmp(near, oldPos)) && (dir < 0 ? diff < 0 : diff > 0))
             { return skipAtomicInner(doc, near, pos, dir, mayClear) }
         }
 
         var far = m.find(dir < 0 ? -1 : 1);
-        if (dir < 0 ? m.inclusiveLeft : m.inclusiveRight)
+        if (dir < 0 ? preventCursorLeft : preventCursorRight)
           { far = movePos(doc, far, dir, far.line == pos.line ? line : null); }
         return far ? skipAtomicInner(doc, far, pos, dir, mayClear) : null
       }
@@ -7822,7 +7829,7 @@ var global = arguments[3];
       for (var i = newBreaks.length - 1; i >= 0; i--)
         { replaceRange(cm.doc, val, newBreaks[i], Pos(newBreaks[i].line, newBreaks[i].ch + val.length)); }
     });
-    option("specialChars", /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff]/g, function (cm, val, old) {
+    option("specialChars", /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff\ufff9-\ufffc]/g, function (cm, val, old) {
       cm.state.specialChars = new RegExp(val.source + (val.test("\t") ? "" : "|\t"), "g");
       if (old != Init) { cm.refresh(); }
     });
@@ -9870,7 +9877,7 @@ var global = arguments[3];
 
   addLegacyProps(CodeMirror);
 
-  CodeMirror.version = "5.46.0";
+  CodeMirror.version = "5.48.2";
 
   return CodeMirror;
 
@@ -10497,7 +10504,7 @@ var define;
     {name: "C", mime: "text/x-csrc", mode: "clike", ext: ["c", "h", "ino"]},
     {name: "C++", mime: "text/x-c++src", mode: "clike", ext: ["cpp", "c++", "cc", "cxx", "hpp", "h++", "hh", "hxx"], alias: ["cpp"]},
     {name: "Cobol", mime: "text/x-cobol", mode: "cobol", ext: ["cob", "cpy"]},
-    {name: "C#", mime: "text/x-csharp", mode: "clike", ext: ["cs"], alias: ["csharp"]},
+    {name: "C#", mime: "text/x-csharp", mode: "clike", ext: ["cs"], alias: ["csharp", "cs"]},
     {name: "Clojure", mime: "text/x-clojure", mode: "clojure", ext: ["clj", "cljc", "cljx"]},
     {name: "ClojureScript", mime: "text/x-clojurescript", mode: "clojure", ext: ["cljs"]},
     {name: "Closure Stylesheets (GSS)", mime: "text/x-gss", mode: "css", ext: ["gss"]},
@@ -10582,6 +10589,7 @@ var define;
     {name: "Pig", mime: "text/x-pig", mode: "pig", ext: ["pig"]},
     {name: "Plain Text", mime: "text/plain", mode: "null", ext: ["txt", "text", "conf", "def", "list", "log"]},
     {name: "PLSQL", mime: "text/x-plsql", mode: "sql", ext: ["pls"]},
+    {name: "PostgreSQL", mime: "text/x-pgsql", mode: "sql"},
     {name: "PowerShell", mime: "application/x-powershell", mode: "powershell", ext: ["ps1", "psd1", "psm1"]},
     {name: "Properties files", mime: "text/x-properties", mode: "properties", ext: ["properties", "ini", "in"], alias: ["ini", "properties"]},
     {name: "ProtoBuf", mime: "text/x-protobuf", mode: "protobuf", ext: ["proto"]},
@@ -15403,10 +15411,9 @@ var global = arguments[3];
   var block = {
     newline: /^\n+/,
     code: /^( {4}[^\n]+\n*)+/,
-    fences: noop,
+    fences: /^ {0,3}(`{3,}|~{3,})([^`~\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?:\n+|$)|$)/,
     hr: /^ {0,3}((?:- *){3,}|(?:_ *){3,}|(?:\* *){3,})(?:\n+|$)/,
-    heading: /^ *(#{1,6}) *([^\n]+?) *(?:#+ *)?(?:\n+|$)/,
-    nptable: noop,
+    heading: /^ {0,3}(#{1,6}) +([^\n]*?)(?: +#+)? *(?:\n+|$)/,
     blockquote: /^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/,
     list: /^( {0,3})(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
     html: '^ {0,3}(?:' // optional indentation
@@ -15420,9 +15427,12 @@ var global = arguments[3];
     + '|</(?!script|pre|style)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:\\n{2,}|$)' // (7) closing tag
     + ')',
     def: /^ {0,3}\[(label)\]: *\n? *<?([^\s>]+)>?(?:(?: +\n? *| *\n *)(title))? *(?:\n+|$)/,
+    nptable: noop,
     table: noop,
-    lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
-    paragraph: /^([^\n]+(?:\n(?!hr|heading|lheading| {0,3}>|<\/?(?:tag)(?: +|\n|\/?>)|<(?:script|pre|style|!--))[^\n]+)*)/,
+    lheading: /^([^\n]+)\n {0,3}(=+|-+) *(?:\n+|$)/,
+    // regex template, placeholders will be replaced according to different paragraph
+    // interruption rules of commonmark and the original markdown spec:
+    _paragraph: /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html)[^\n]+)*)/,
     text: /^[^\n]+/
   };
   block._label = /(?!\s*\])(?:\\[\[\]]|[^\[\]])+/;
@@ -15435,7 +15445,9 @@ var global = arguments[3];
   block._tag = 'address|article|aside|base|basefont|blockquote|body|caption' + '|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption' + '|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe' + '|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option' + '|p|param|section|source|summary|table|tbody|td|tfoot|th|thead|title|tr' + '|track|ul';
   block._comment = /<!--(?!-?>)[\s\S]*?-->/;
   block.html = edit(block.html, 'i').replace('comment', block._comment).replace('tag', block._tag).replace('attribute', / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex();
-  block.paragraph = edit(block.paragraph).replace('hr', block.hr).replace('heading', block.heading).replace('lheading', block.lheading).replace('tag', block._tag) // pars can be interrupted by type (6) html blocks
+  block.paragraph = edit(block._paragraph).replace('hr', block.hr).replace('heading', ' {0,3}#{1,6} +').replace('|lheading', '') // setex headings don't interrupt commonmark paragraphs
+  .replace('blockquote', ' {0,3}>').replace('fences', ' {0,3}(?:`{3,}|~{3,})[^`\\n]*\\n').replace('list', ' {0,3}(?:[*+-]|1[.)]) ') // only lists starting from 1 can interrupt
+  .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|!--)').replace('tag', block._tag) // pars can be interrupted by type (6) html blocks
   .getRegex();
   block.blockquote = edit(block.blockquote).replace('paragraph', block.paragraph).getRegex();
   /**
@@ -15448,27 +15460,21 @@ var global = arguments[3];
    */
 
   block.gfm = merge({}, block.normal, {
-    fences: /^ {0,3}(`{3,}|~{3,})([^`\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?:\n+|$)|$)/,
-    paragraph: /^/,
-    heading: /^ *(#{1,6}) +([^\n]+?) *#* *(?:\n+|$)/
-  });
-  block.gfm.paragraph = edit(block.paragraph).replace('(?!', '(?!' + block.gfm.fences.source.replace('\\1', '\\2') + '|' + block.list.source.replace('\\1', '\\3') + '|').getRegex();
-  /**
-   * GFM + Tables Block Grammar
-   */
-
-  block.tables = merge({}, block.gfm, {
     nptable: /^ *([^|\n ].*\|.*)\n *([-:]+ *\|[-| :]*)(?:\n((?:.*[^>\n ].*(?:\n|$))*)\n*|$)/,
     table: /^ *\|(.+)\n *\|?( *[-:]+[-| :]*)(?:\n((?: *[^>\n ].*(?:\n|$))*)\n*|$)/
   });
   /**
-   * Pedantic grammar
+   * Pedantic grammar (original John Gruber's loose markdown specification)
    */
 
   block.pedantic = merge({}, block.normal, {
     html: edit('^ *(?:comment *(?:\\n|\\s*$)' + '|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)' // closed tag
     + '|<tag(?:"[^"]*"|\'[^\']*\'|\\s[^\'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))').replace('comment', block._comment).replace(/tag/g, '(?!(?:' + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub' + '|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)' + '\\b)\\w+(?!:|[^\\w\\s@]*@)\\b').getRegex(),
-    def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/
+    def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
+    heading: /^ *(#{1,6}) *([^\n]+?) *(?:#+ *)?(?:\n+|$)/,
+    fences: noop,
+    // fences not supported
+    paragraph: edit(block.normal._paragraph).replace('hr', block.hr).replace('heading', ' *#{1,6} *[^\n]').replace('lheading', block.lheading).replace('blockquote', ' {0,3}>').replace('|fences', '').replace('|list', '').replace('|html', '').getRegex()
   });
   /**
    * Block Lexer
@@ -15483,11 +15489,7 @@ var global = arguments[3];
     if (this.options.pedantic) {
       this.rules = block.pedantic;
     } else if (this.options.gfm) {
-      if (this.options.tables) {
-        this.rules = block.tables;
-      } else {
-        this.rules = block.gfm;
-      }
+      this.rules = block.gfm;
     }
   }
   /**
@@ -15536,14 +15538,22 @@ var global = arguments[3];
 
 
       if (cap = this.rules.code.exec(src)) {
-        src = src.substring(cap[0].length);
-        cap = cap[0].replace(/^ {4}/gm, '');
-        this.tokens.push({
-          type: 'code',
-          text: !this.options.pedantic ? rtrim(cap, '\n') : cap
-        });
+        var lastToken = this.tokens[this.tokens.length - 1];
+        src = src.substring(cap[0].length); // An indented code block cannot interrupt a paragraph.
+
+        if (lastToken && lastToken.type === 'paragraph') {
+          lastToken.text += '\n' + cap[0].trimRight();
+        } else {
+          cap = cap[0].replace(/^ {4}/gm, '');
+          this.tokens.push({
+            type: 'code',
+            codeBlockStyle: 'indented',
+            text: !this.options.pedantic ? rtrim(cap, '\n') : cap
+          });
+        }
+
         continue;
-      } // fences (gfm)
+      } // fences
 
 
       if (cap = this.rules.fences.exec(src)) {
@@ -15728,7 +15738,7 @@ var global = arguments[3];
         this.tokens.push({
           type: this.options.sanitize ? 'paragraph' : 'html',
           pre: !this.options.sanitizer && (cap[1] === 'pre' || cap[1] === 'script' || cap[1] === 'style'),
-          text: cap[0]
+          text: this.options.sanitize ? this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape(cap[0]) : cap[0]
         });
         continue;
       } // def
@@ -15787,7 +15797,7 @@ var global = arguments[3];
         src = src.substring(cap[0].length);
         this.tokens.push({
           type: 'heading',
-          depth: cap[2] === '=' ? 1 : 2,
+          depth: cap[2].charAt(0) === '=' ? 1 : 2,
           text: cap[1]
         });
         continue;
@@ -15836,11 +15846,11 @@ var global = arguments[3];
     + '|^<![a-zA-Z]+\\s[\\s\\S]*?>' // declaration, e.g. <!DOCTYPE html>
     + '|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>',
     // CDATA section
-    link: /^!?\[(label)\]\(href(?:\s+(title))?\s*\)/,
+    link: /^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/,
     reflink: /^!?\[(label)\]\[(?!\s*\])((?:\\[\[\]]?|[^\[\]\\])+)\]/,
     nolink: /^!?\[(?!\s*\])((?:\[[^\[\]]*\]|\\[\[\]]|[^\[\]])*)\](?:\[\])?/,
     strong: /^__([^\s_])__(?!_)|^\*\*([^\s*])\*\*(?!\*)|^__([^\s][\s\S]*?[^\s])__(?!_)|^\*\*([^\s][\s\S]*?[^\s])\*\*(?!\*)/,
-    em: /^_([^\s_])_(?!_)|^\*([^\s*"<\[])\*(?!\*)|^_([^\s][\s\S]*?[^\s_])_(?!_|[^\spunctuation])|^_([^\s_][\s\S]*?[^\s])_(?!_|[^\spunctuation])|^\*([^\s"<\[][\s\S]*?[^\s*])\*(?!\*)|^\*([^\s*"<\[][\s\S]*?[^\s])\*(?!\*)/,
+    em: /^_([^\s_])_(?!_)|^\*([^\s*<\[])\*(?!\*)|^_([^\s<][\s\S]*?[^\s_])_(?!_|[^\spunctuation])|^_([^\s_<][\s\S]*?[^\s])_(?!_|[^\spunctuation])|^\*([^\s<"][\s\S]*?[^\s\*])\*(?!\*|[^\spunctuation])|^\*([^\s*"<\[][\s\S]*?[^\s])\*(?!\*)/,
     code: /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/,
     br: /^( {2,}|\\)\n(?!\s*$)/,
     del: noop,
@@ -15856,8 +15866,8 @@ var global = arguments[3];
   inline.autolink = edit(inline.autolink).replace('scheme', inline._scheme).replace('email', inline._email).getRegex();
   inline._attribute = /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/;
   inline.tag = edit(inline.tag).replace('comment', block._comment).replace('attribute', inline._attribute).getRegex();
-  inline._label = /(?:\[[^\[\]]*\]|\\[\[\]]?|`[^`]*`|`(?!`)|[^\[\]\\`])*?/;
-  inline._href = /\s*(<(?:\\[<>]?|[^\s<>\\])*>|[^\s\x00-\x1f]*)/;
+  inline._label = /(?:\[[^\[\]]*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
+  inline._href = /<(?:\\[<>]?|[^\s<>\\])*>|[^\s\x00-\x1f]*/;
   inline._title = /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/;
   inline.link = edit(inline.link).replace('label', inline._label).replace('href', inline._href).replace('title', inline._title).getRegex();
   inline.reflink = edit(inline.reflink).replace('label', inline._label).getRegex();
@@ -15895,7 +15905,7 @@ var global = arguments[3];
 
   inline.breaks = merge({}, inline.gfm, {
     br: edit(inline.br).replace('{2,}', '*').getRegex(),
-    text: edit(inline.gfm.text).replace(/\{2,\}/g, '*').getRegex()
+    text: edit(inline.gfm.text).replace('\\b_', '\\b_| {2,}\\n').replace(/\{2,\}/g, '*').getRegex()
   });
   /**
    * Inline Lexer & Compiler
@@ -15982,7 +15992,7 @@ var global = arguments[3];
         var lastParenIndex = findClosingBracket(cap[2], '()');
 
         if (lastParenIndex > -1) {
-          var linkLen = cap[0].length - (cap[2].length - lastParenIndex) - (cap[3] || '').length;
+          var linkLen = 4 + cap[1].length + lastParenIndex;
           cap[2] = cap[2].substring(0, lastParenIndex);
           cap[0] = cap[0].substring(0, linkLen).trim();
           cap[3] = '';
@@ -16114,7 +16124,7 @@ var global = arguments[3];
         src = src.substring(cap[0].length);
 
         if (this.inRawBlock) {
-          out += this.renderer.text(cap[0]);
+          out += this.renderer.text(this.options.sanitize ? this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape(cap[0]) : cap[0]);
         } else {
           out += this.renderer.text(escape(this.smartypants(cap[0])));
         }
@@ -16392,7 +16402,8 @@ var global = arguments[3];
 
 
   Parser.prototype.next = function () {
-    return this.token = this.tokens.pop();
+    this.token = this.tokens.pop();
+    return this.token;
   };
   /**
    * Preview Next Token
@@ -16801,6 +16812,12 @@ var global = arguments[3];
 
     return -1;
   }
+
+  function checkSanitizeDeprecation(opt) {
+    if (opt && opt.sanitize && !opt.silent) {
+      console.warn('marked(): sanitize and sanitizer parameters are deprecated since version 0.7.0, should not be used and will be removed in the future. Read more here: https://marked.js.org/#/USING_ADVANCED.md#options');
+    }
+  }
   /**
    * Marked
    */
@@ -16823,6 +16840,7 @@ var global = arguments[3];
       }
 
       opt = merge({}, marked.defaults, opt || {});
+      checkSanitizeDeprecation(opt);
       var highlight = opt.highlight,
           tokens,
           pending,
@@ -16886,6 +16904,7 @@ var global = arguments[3];
 
     try {
       if (opt) opt = merge({}, marked.defaults, opt);
+      checkSanitizeDeprecation(opt);
       return Parser.parse(Lexer.lex(src, opt), opt);
     } catch (e) {
       e.message += '\nPlease report this to https://github.com/markedjs/marked.';
@@ -16924,7 +16943,6 @@ var global = arguments[3];
       silent: false,
       smartLists: false,
       smartypants: false,
-      tables: true,
       xhtml: false
     };
   };
@@ -16956,7 +16974,6 @@ var global = arguments[3];
   }
 })(this || (typeof window !== 'undefined' ? window : global));
 },{}],"../node_modules/easymde/src/js/easymde.js":[function(require,module,exports) {
-/*global require,module*/
 'use strict';
 var CodeMirror = require('codemirror');
 require('codemirror/addon/edit/continuelist.js');
@@ -17079,6 +17096,11 @@ function createToolbarButton(options, enableTooltips, shortcuts) {
     el.className = options.name;
     el.setAttribute('type', 'button');
     enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
+
+    // Properly hande custom shortcuts
+    if (options.name && options.name in shortcuts) {
+        bindings[options.name] = options.action;
+    }
 
     if (options.title && enableTooltips) {
         el.title = createTooltip(options.title, options.action, shortcuts);
@@ -17238,7 +17260,7 @@ function toggleFullScreen(editor) {
     if (/editor-preview-active-side/.test(sidebyside.className))
         toggleSideBySide(editor);
 
-	if (editor.options.onToggleFullScreen) {
+    if (editor.options.onToggleFullScreen) {
         editor.options.onToggleFullScreen(cm.getOption('fullScreen') || false);
     }
 }
@@ -17662,6 +17684,33 @@ function drawImage(editor) {
 }
 
 /**
+ * Action for opening the browse-file window to upload an image to a server.
+ * @param editor {EasyMDE} The EasyMDE object
+ */
+function drawUploadedImage(editor) {
+    // TODO: Draw the image template with a fake url? ie: '![](importing foo.png...)'
+    editor.openBrowseFileWindow();
+}
+
+/**
+ * Action executed after an image have been successfully imported on the server.
+ * @param editor {EasyMDE} The EasyMDE object
+ * @param url {string} The url of the uploaded image
+ */
+function afterImageUploaded(editor, url) {
+    var cm = editor.codemirror;
+    var stat = getState(cm);
+    var options = editor.options;
+    var imageName = url.substr(url.lastIndexOf('/') + 1);
+    _replaceSelection(cm, stat.image, options.insertTexts.uploadedImage, url);
+    // show uploaded image filename for 1000ms
+    editor.updateStatusBar('upload-image', editor.options.imageTexts.sbOnUploaded.replace('#image_name#', imageName));
+    setTimeout(function () {
+        editor.updateStatusBar('upload-image', editor.options.imageTexts.sbInit);
+    }, 1000);
+}
+
+/**
  * Action for drawing a table.
  */
 function drawTable(editor) {
@@ -17772,9 +17821,23 @@ function togglePreview(editor) {
     var toolbar_div = wrapper.previousSibling;
     var toolbar = editor.options.toolbar ? editor.toolbarElements.preview : false;
     var preview = wrapper.lastChild;
-    if (!preview || !/editor-preview/.test(preview.className)) {
+    if (!preview || !/editor-preview-full/.test(preview.className)) {
+
         preview = document.createElement('div');
-        preview.className = 'editor-preview';
+        preview.className = 'editor-preview-full';
+
+        if (editor.options.previewClass) {
+
+            if (Array.isArray(editor.options.previewClass)) {
+                for (var i = 0; i < editor.options.previewClass.length; i++) {
+                    preview.className += (' ' + editor.options.previewClass[i]);
+                }
+
+            } else if (typeof editor.options.previewClass === 'string') {
+                preview.className += (' ' + editor.options.previewClass);
+            }
+        }
+
         wrapper.appendChild(preview);
     }
     if (/editor-preview-active/.test(preview.className)) {
@@ -17817,6 +17880,7 @@ function _replaceSelection(cm, active, startEnd, url) {
     Object.assign(startPoint, cm.getCursor('start'));
     Object.assign(endPoint, cm.getCursor('end'));
     if (url) {
+        start = start.replace('#url#', url);  // url is in start for upload-image
         end = end.replace('#url#', url);
     }
     if (active) {
@@ -17941,11 +18005,25 @@ function _toggleLine(cm, name) {
         var map = {
             'quote': '>',
             'unordered-list': '*',
-            'ordered-list': 'd+.',
+            'ordered-list': '\\d+.',
         };
         var rt = new RegExp(map[name]);
 
         return char && rt.test(char);
+    };
+
+    var _toggle = function (name, text, untoggleOnly) {
+        var arr = listRegexp.exec(text);
+        var char = _getChar(name, line);
+        if (arr !== null) {
+            if (_checkChar(name, arr[2])) {
+                char = '';
+            }
+            text = arr[1] + char + arr[3] + text.replace(whitespacesRegexp, '').replace(repl[name], '$1');
+        } else if (untoggleOnly == false) {
+            text = char + ' ' + text;
+        }
+        return text;
     };
 
     var line = 1;
@@ -17955,16 +18033,13 @@ function _toggleLine(cm, name) {
             if (stat[name]) {
                 text = text.replace(repl[name], '$1');
             } else {
-                var arr = listRegexp.exec(text);
-                var char = _getChar(name, line);
-                if (arr !== null) {
-                    if (_checkChar(name, arr[2])) {
-                        char = '';
-                    }
-                    text = arr[1] + char + arr[3] + text.replace(whitespacesRegexp, '').replace(repl[name], '$1');
-                } else {
-                    text = char + ' ' + text;
+                // If we're toggling unordered-list formatting, check if the current line
+                // is part of an ordered-list, and if so, untoggle that first.
+                // Workaround for https://github.com/Ionaru/easy-markdown-editor/issues/92
+                if (name == 'unordered-list') {
+                    text = _toggle('ordered-list', text, true);
                 }
+                text = _toggle(name, text, false);
                 line += 1;
             }
             cm.replaceRange(text, {
@@ -18070,10 +18145,28 @@ function _cleanBlock(cm) {
     }
 }
 
+/**
+ * Convert a number of bytes to a human-readable file size.
+ * @param bytes {integer} A number of bytes, as integer. Ex: 421137
+ * @param units {number[]} An array of human-readable units, ie. ['b', 'Kb', 'Mb']
+ * @returns string A human-readable file size. Ex: '412Kb'
+ */
+function humanFileSize(bytes, units) {
+    if (Math.abs(bytes) < 1024) {
+        return '' + bytes + units[0];
+    }
+    var u = 0;
+    do {
+        bytes /= 1024;
+        ++u;
+    } while (Math.abs(bytes) >= 1024 && u < units.length);
+    return '' + bytes.toFixed(1) + units[u];
+}
+
 // Merge the properties of one object into another.
 function _mergeProperties(target, source) {
     for (var property in source) {
-        if (source.hasOwnProperty(property)) {
+        if (Object.prototype.hasOwnProperty.call(source, property)) {
             if (source[property] instanceof Array) {
                 target[property] = source[property].concat(target[property] instanceof Array ? target[property] : []);
             } else if (
@@ -18227,6 +18320,12 @@ var toolbarBuiltInButtons = {
         title: 'Insert Image',
         default: true,
     },
+    'upload-image': {
+        name: 'upload-image',
+        action: drawUploadedImage,
+        className: 'fa fa-image',
+        title: 'Import an image',
+    },
     'table': {
         name: 'table',
         action: drawTable,
@@ -18301,6 +18400,8 @@ var toolbarBuiltInButtons = {
 var insertTexts = {
     link: ['[', '](#url#)'],
     image: ['![](', '#url#)'],
+    uploadedImage: ['![](#url#)', ''],
+    // uploadedImage: ['![](#url#)\n', ''], // TODO: New line insertion doesn't work here.
     table: ['', '\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text     | Text     |\n\n'],
     horizontalRule: ['', '\n\n-----\n\n'],
 };
@@ -18314,6 +18415,31 @@ var blockStyles = {
     'bold': '**',
     'code': '```',
     'italic': '*',
+};
+
+/**
+ * Texts displayed to the user (mainly on the status bar) for the import image
+ * feature. Can be used for customization or internationalization.
+ */
+var imageTexts = {
+    sbInit: 'Attach files by drag and dropping or pasting from clipboard.',
+    sbOnDragEnter: 'Drop image to upload it.',
+    sbOnDrop: 'Uploading image #images_names#...',
+    sbProgress: 'Uploading #file_name#: #progress#%',
+    sbOnUploaded: 'Uploaded #image_name#',
+    sizeUnits: 'b,Kb,Mb',
+};
+
+/**
+ * Errors displayed to the user, using the `errorCallback` option. Can be used for
+ * customization or internationalization.
+ */
+var errorMessages = {
+    noFileGiven: 'You must select a file.',
+    typeNotAllowed: 'This image type is not allowed.',
+    fileTooLarge: 'Image #image_name# is too big (#image_size#).\n' +
+        'Maximum file size is #image_max_size#.',
+    importError: 'Something went wrong when uploading the image #image_name#.',
 };
 
 /**
@@ -18371,7 +18497,7 @@ function EasyMDE(options) {
 
         // Loop over the built in buttons, to get the preferred order
         for (var key in toolbarBuiltInButtons) {
-            if (toolbarBuiltInButtons.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(toolbarBuiltInButtons, key)) {
                 if (key.indexOf('separator-') != -1) {
                     options.toolbar.push('|');
                 }
@@ -18383,10 +18509,18 @@ function EasyMDE(options) {
         }
     }
 
+    // Editor preview styling class.
+    if (!Object.prototype.hasOwnProperty.call(options, 'previewClass')) {
+        options.previewClass = 'editor-preview';
+    }
 
     // Handle status bar
-    if (!options.hasOwnProperty('status')) {
+    if (!Object.prototype.hasOwnProperty.call(options, 'status')) {
         options.status = ['autosave', 'lines', 'words', 'cursor'];
+
+        if (options.uploadImage) {
+            options.status.unshift('upload-image');
+        }
     }
 
 
@@ -18422,6 +18556,17 @@ function EasyMDE(options) {
 
     options.minHeight = options.minHeight || '300px';
 
+    options.errorCallback = options.errorCallback || function (errorMessage) {
+        alert(errorMessage);
+    };
+
+    // Import-image default configuration
+    options.uploadImage = options.uploadImage || false;
+    options.imageMaxSize = options.imageMaxSize || 2097152; // 1024 * 1024 * 2
+    options.imageAccept = options.imageAccept || 'image/png, image/jpeg';
+    options.imageTexts = extend({}, imageTexts, options.imageTexts || {});
+    options.errorMessages = extend({}, errorMessages, options.errorMessages || {});
+
 
     // Change unique_id to uniqueId for backwards compatibility
     if (options.autosave != undefined && options.autosave.unique_id != undefined && options.autosave.unique_id != '')
@@ -18442,7 +18587,106 @@ function EasyMDE(options) {
     if (options.initialValue && (!this.options.autosave || this.options.autosave.foundSavedValue !== true)) {
         this.value(options.initialValue);
     }
+
+    if (options.uploadImage) {
+        var self = this;
+
+        this.codemirror.on('dragenter', function (cm, event) {
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbOnDragEnter);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+        this.codemirror.on('dragend', function (cm, event) {
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbInit);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+        this.codemirror.on('dragleave', function (cm, event) {
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbInit);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+
+        this.codemirror.on('dragover', function (cm, event) {
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbOnDragEnter);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+
+        this.codemirror.on('drop', function (cm, event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (options.imageUploadFunction) {
+                self.uploadImagesUsingCustomFunction(options.imageUploadFunction, event.dataTransfer.files);
+            } else {
+                self.uploadImages(event.dataTransfer.files);
+            }
+        });
+
+        this.codemirror.on('paste', function (cm, event) {
+            if (options.imageUploadFunction) {
+                self.uploadImagesUsingCustomFunction(options.imageUploadFunction, event.clipboardData.files);
+            } else {
+                self.uploadImages(event.clipboardData.files);
+            }
+        });
+    }
 }
+
+/**
+ * Upload asynchronously a list of images to a server.
+ *
+ * Can be triggered by:
+ * - drag&drop;
+ * - copy-paste;
+ * - the browse-file window (opened when the user clicks on the *upload-image* icon).
+ * @param {FileList} files The files to upload the the server.
+ * @param [onSuccess] {function} see EasyMDE.prototype.uploadImage
+ * @param [onError] {function} see EasyMDE.prototype.uploadImage
+ */
+EasyMDE.prototype.uploadImages = function (files, onSuccess, onError) {
+    var names = [];
+    for (var i = 0; i < files.length; i++) {
+        names.push(files[i].name);
+        this.uploadImage(files[i], onSuccess, onError);
+    }
+    this.updateStatusBar('upload-image', this.options.imageTexts.sbOnDrop.replace('#images_names#', names.join(', ')));
+};
+
+/**
+ * Upload asynchronously a list of images to a server.
+ *
+ * Can be triggered by:
+ * - drag&drop;
+ * - copy-paste;
+ * - the browse-file window (opened when the user clicks on the *upload-image* icon).
+ * @param imageUploadFunction {Function} The custom function to upload the image passed in options.
+ * @param {FileList} files The files to upload the the server.
+ */
+EasyMDE.prototype.uploadImagesUsingCustomFunction = function (imageUploadFunction, files) {
+    var names = [];
+    for (var i = 0; i < files.length; i++) {
+        names.push(files[i].name);
+        this.uploadImageUsingCustomFunction(imageUploadFunction, files[i]);
+    }
+    this.updateStatusBar('upload-image', this.options.imageTexts.sbOnDrop.replace('#images_names#', names.join(', ')));
+};
+
+/**
+ * Update an item in the status bar.
+ * @param itemName {string} The name of the item to update (ie. 'upload-image', 'autosave', etc.).
+ * @param content {string} the new content of the item to write in the status bar.
+ */
+EasyMDE.prototype.updateStatusBar = function (itemName, content) {
+    var matchingClasses = this.gui.statusbar.getElementsByClassName(itemName);
+    if (matchingClasses.length === 1) {
+        this.gui.statusbar.getElementsByClassName(itemName)[0].textContent = content;
+    } else if (matchingClasses.length === 0) {
+        console.log('EasyMDE: status bar item ' + itemName + ' was not found.');
+    } else {
+        console.log('EasyMDE: Several status bar items named ' + itemName + ' was found.');
+    }
+};
 
 /**
  * Default markdown render.
@@ -18514,7 +18758,12 @@ EasyMDE.prototype.render = function (el) {
         if (options.shortcuts[key] !== null && bindings[key] !== null) {
             (function (key) {
                 keyMaps[fixShortcut(options.shortcuts[key])] = function () {
-                    bindings[key](self);
+                    var action = bindings[key];
+                    if (typeof action === 'function') {
+                        action(self);
+                    } else if (typeof action === 'string') {
+                        window.open(action, '_blank');
+                    }
                 };
             })(key);
         }
@@ -18632,23 +18881,23 @@ EasyMDE.prototype.autosave = function () {
             console.log('EasyMDE: You must set a uniqueId to use the autosave feature');
             return;
         }
-        
-        if(this.options.autosave.binded !== true) {
-          if (easyMDE.element.form != null && easyMDE.element.form != undefined) {
-              easyMDE.element.form.addEventListener('submit', function () {
-                  clearTimeout(easyMDE.autosaveTimeoutId);
-                  easyMDE.autosaveTimeoutId = undefined;
-                
-                  localStorage.removeItem('smde_' + easyMDE.options.autosave.uniqueId);
-                  
-                  // Restart autosaving in case the submit will be cancelled down the line
-                  setTimeout(function() {
-                    easyMDE.autosave();
-                  }, easyMDE.options.autosave.delay || 10000);
-              });
-          }
-          
-          this.options.autosave.binded = true;
+
+        if (this.options.autosave.binded !== true) {
+            if (easyMDE.element.form != null && easyMDE.element.form != undefined) {
+                easyMDE.element.form.addEventListener('submit', function () {
+                    clearTimeout(easyMDE.autosaveTimeoutId);
+                    easyMDE.autosaveTimeoutId = undefined;
+
+                    localStorage.removeItem('smde_' + easyMDE.options.autosave.uniqueId);
+
+                    // Restart autosaving in case the submit will be cancelled down the line
+                    setTimeout(function () {
+                        easyMDE.autosave();
+                    }, easyMDE.options.autosave.delay || 10000);
+                });
+            }
+
+            this.options.autosave.binded = true;
         }
 
         if (this.options.autosave.loaded !== true) {
@@ -18702,6 +18951,152 @@ EasyMDE.prototype.clearAutosavedValue = function () {
     }
 };
 
+/**
+ * Open the browse-file window to upload an image to a server.
+ * @param [onSuccess] {function} see EasyMDE.prototype.uploadImage
+ * @param [onError] {function} see EasyMDE.prototype.uploadImage
+ */
+EasyMDE.prototype.openBrowseFileWindow = function (onSuccess, onError) {
+    var self = this;
+    var imageInput = this.gui.toolbar.getElementsByClassName('imageInput')[0];
+    imageInput.click(); //dispatchEvent(new MouseEvent('click'));  // replaced with click() for IE11 compatibility.
+    function onChange(event) {
+        self.uploadImages(event.target.files, onSuccess, onError);
+        imageInput.removeEventListener('change', onChange);
+    }
+
+    imageInput.addEventListener('change', onChange);
+};
+
+/**
+ * Upload an image to the server.
+ *
+ * @param file {File} The image to upload, as a HTML5 File object (https://developer.mozilla.org/en-US/docs/Web/API/File)
+ * @param [onSuccess] {function} A callback function to execute after the image has been successfully uploaded, with one parameter:
+ * - url (string): The URL of the uploaded image.
+ * @param [onError] {function} A callback function to execute when the image upload fails, with one parameter:
+ * - error (string): the detailed error to display to the user (based on messages from options.errorMessages).
+ */
+EasyMDE.prototype.uploadImage = function (file, onSuccess, onError) {
+    var self = this;
+    onSuccess = onSuccess || function onSuccess(imageUrl) {
+        afterImageUploaded(self, imageUrl);
+    };
+
+    function onErrorSup(errorMessage) {
+        // show error on status bar and reset after 10000ms
+        self.updateStatusBar('upload-image', errorMessage);
+
+        setTimeout(function () {
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbInit);
+        }, 10000);
+
+        // run custom error handler
+        if (onError && typeof onError === 'function') {
+            onError(errorMessage);
+        }
+        // run error handler from options, this alerts the message.
+        self.options.errorCallback(errorMessage);
+    }
+
+    function fillErrorMessage(errorMessage) {
+        var units = self.options.imageTexts.sizeUnits.split(',');
+        return errorMessage
+            .replace('#image_name#', file.name)
+            .replace('#image_size#', humanFileSize(file.size, units))
+            .replace('#image_max_size#', humanFileSize(self.options.imageMaxSize, units));
+    }
+
+    if (file.size > this.options.imageMaxSize) {
+        onErrorSup(fillErrorMessage(this.options.errorMessages.fileTooLarge));
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('image', file);
+
+    // insert CSRF token if provided in config.
+    if (self.options.imageCSRFToken) {
+        formData.append('csrfmiddlewaretoken', self.options.imageCSRFToken);
+    }
+    var request = new XMLHttpRequest();
+    request.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+            var progress = '' + Math.round((event.loaded * 100) / event.total);
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbProgress.replace('#file_name#', file.name).replace('#progress#', progress));
+        }
+    };
+    request.open('POST', this.options.imageUploadEndpoint);
+
+    request.onload = function () {
+        try {
+            var response = JSON.parse(this.responseText);
+        } catch (error) {
+            console.error('EasyMDE: The server did not return a valid json.');
+            onErrorSup(fillErrorMessage(self.options.errorMessages.importError));
+            return;
+        }
+        if (this.status === 200 && response && !response.error && response.data && response.data.filePath) {
+            onSuccess(window.location.origin + '/' + response.data.filePath);
+        } else {
+            if (response.error && response.error in self.options.errorMessages) {  // preformatted error message
+                onErrorSup(fillErrorMessage(self.options.errorMessages[response.error]));
+            } else if (response.error) {  // server side generated error message
+                onErrorSup(fillErrorMessage(response.error));
+            } else {  //unknown error
+                console.error('EasyMDE: Received an unexpected response after uploading the image.'
+                    + this.status + ' (' + this.statusText + ')');
+                onErrorSup(fillErrorMessage(self.options.errorMessages.importError));
+            }
+        }
+    };
+
+    request.onerror = function (event) {
+        console.error('EasyMDE: An unexpected error occurred when trying to upload the image.'
+            + event.target.status + ' (' + event.target.statusText + ')');
+        onErrorSup(self.options.errorMessages.importError);
+    };
+
+    request.send(formData);
+
+};
+
+/**
+ * Upload an image to the server using a custom upload function.
+ *
+ * @param imageUploadFunction {Function} The custom function to upload the image passed in options
+ * @param file {File} The image to upload, as a HTML5 File object (https://developer.mozilla.org/en-US/docs/Web/API/File).
+ */
+EasyMDE.prototype.uploadImageUsingCustomFunction = function(imageUploadFunction, file) {
+    var self = this;
+    function onSuccess(imageUrl) {
+        afterImageUploaded(self, imageUrl);
+    }
+
+    function onError(errorMessage) {
+        var filledErrorMessage = fillErrorMessage(errorMessage);
+        // show error on status bar and reset after 10000ms
+        self.updateStatusBar('upload-image', filledErrorMessage);
+
+        setTimeout(function () {
+            self.updateStatusBar('upload-image', self.options.imageTexts.sbInit);
+        }, 10000);
+
+        // run error handler from options, this alerts the message.
+        self.options.errorCallback(filledErrorMessage);
+    }
+
+    function fillErrorMessage(errorMessage) {
+        var units = self.options.imageTexts.sizeUnits.split(',');
+        return errorMessage
+            .replace('#image_name#', file.name)
+            .replace('#image_size#', humanFileSize(file.size, units))
+            .replace('#image_max_size#', humanFileSize(self.options.imageMaxSize, units));
+    }
+
+    imageUploadFunction(file, onSuccess, onError);
+};
+
 EasyMDE.prototype.createSideBySide = function () {
     var cm = this.codemirror;
     var wrapper = cm.getWrapperElement();
@@ -18710,6 +19105,19 @@ EasyMDE.prototype.createSideBySide = function () {
     if (!preview || !/editor-preview-side/.test(preview.className)) {
         preview = document.createElement('div');
         preview.className = 'editor-preview-side';
+
+        if (this.options.previewClass) {
+
+            if (Array.isArray(this.options.previewClass)) {
+                for (var i = 0; i < this.options.previewClass.length; i++) {
+                    preview.className += (' ' + this.options.previewClass[i]);
+                }
+
+            } else if (typeof this.options.previewClass === 'string') {
+                preview.className += (' ' + this.options.previewClass);
+            }
+        }
+
         wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);
     }
 
@@ -18819,6 +19227,20 @@ EasyMDE.prototype.createToolbar = function (items) {
 
             toolbarData[item.name || item] = el;
             bar.appendChild(el);
+
+            // Create the input element (ie. <input type='file'>), used among
+            // with the 'import-image' icon to open the browse-file window.
+            if (item.name === 'upload-image') {
+                var imageInput = document.createElement('input');
+                imageInput.className = 'imageInput';
+                imageInput.type = 'file';
+                imageInput.multiple = true;
+                imageInput.name = 'image';
+                imageInput.accept = self.options.imageAccept;
+                imageInput.style.display = 'none';
+                imageInput.style.opacity = 0;
+                bar.appendChild(imageInput);
+            }
         })(items[i]);
     }
 
@@ -18851,11 +19273,10 @@ EasyMDE.prototype.createStatusbar = function (status) {
     var options = this.options;
     var cm = this.codemirror;
 
-
     // Make sure the status variable is valid
-    if (!status || status.length === 0)
+    if (!status || status.length === 0) {
         return;
-
+    }
 
     // Set up the built-in items
     var items = [];
@@ -18904,6 +19325,10 @@ EasyMDE.prototype.createStatusbar = function (status) {
                     if (options.autosave != undefined && options.autosave.enabled === true) {
                         el.setAttribute('id', 'autosaved');
                     }
+                };
+            } else if (name === 'upload-image') {
+                defaultValue = function (el) {
+                    el.innerHTML = options.imageTexts.sbInit;
                 };
             }
 
@@ -19353,6 +19778,8 @@ SimpleMDEEditor.defaultProps = {
 };
 
 },{"react":"../node_modules/preact/compat/dist/compat.module.js","easymde":"../node_modules/easymde/src/js/easymde.js"}],"app/pages/home/components/page-editor.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -19526,7 +19953,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41681" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46291" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

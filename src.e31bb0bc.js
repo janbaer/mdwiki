@@ -125,49 +125,48 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.render = D;
 exports.hydrate = H;
-exports.h = exports.createElement = a;
-exports.Fragment = p;
-exports.createRef = v;
-exports.Component = d;
+exports.h = exports.createElement = s;
+exports.Fragment = v;
+exports.createRef = h;
+exports.Component = y;
 exports.cloneElement = I;
 exports.createContext = L;
 exports.toChildArray = _;
-exports._unmount = O;
+exports._unmount = z;
 exports.options = void 0;
 var n,
     l,
     u,
     t,
     i,
-    r,
-    f = {},
-    e = [],
+    r = {},
+    f = [],
     o = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|^--/i;
 exports.options = n;
 
-function c(n, l) {
+function e(n, l) {
   for (var u in l) n[u] = l[u];
 
   return n;
 }
 
-function s(n) {
+function c(n) {
   var l = n.parentNode;
   l && l.removeChild(n);
 }
 
-function a(n, l, u) {
+function s(n, l, u) {
   var t,
       i,
       r,
       f,
-      e = arguments;
-  if (l = c({}, l), arguments.length > 3) for (u = [u], t = 3; t < arguments.length; t++) u.push(e[t]);
+      o = arguments;
+  if (l = e({}, l), arguments.length > 3) for (u = [u], t = 3; t < arguments.length; t++) u.push(o[t]);
   if (null != u && (l.children = u), null != n && null != n.defaultProps) for (i in n.defaultProps) void 0 === l[i] && (l[i] = n.defaultProps[i]);
-  return f = l.key, null != (r = l.ref) && delete l.ref, null != f && delete l.key, h(n, l, f, r);
+  return f = l.key, null != (r = l.ref) && delete l.ref, null != f && delete l.key, a(n, l, f, r);
 }
 
-function h(l, u, t, i) {
+function a(l, u, t, i) {
   var r = {
     type: l,
     props: u,
@@ -184,39 +183,39 @@ function h(l, u, t, i) {
   return n.vnode && n.vnode(r), r;
 }
 
-function v() {
+function h() {
   return {};
 }
 
-function p(n) {
+function v(n) {
   return n.children;
 }
 
-function y(n) {
+function p(n) {
   if (null == n || "boolean" == typeof n) return null;
-  if ("string" == typeof n || "number" == typeof n) return h(null, n, null, null);
+  if ("string" == typeof n || "number" == typeof n) return a(null, n, null, null);
 
   if (null != n.__e || null != n.__c) {
-    var l = h(n.type, n.props, n.key, null);
+    var l = a(n.type, n.props, n.key, null);
     return l.__e = n.__e, l;
   }
 
   return n;
 }
 
-function d(n, l) {
+function y(n, l) {
   this.props = n, this.context = l;
 }
 
-function m(n, l) {
-  if (null == l) return n.__p ? m(n.__p, n.__p.__k.indexOf(n) + 1) : null;
+function d(n, l) {
+  if (null == l) return n.__p ? d(n.__p, n.__p.__k.indexOf(n) + 1) : null;
 
-  for (var u; l < n.__k.length; l++) if (null != (u = n.__k[l])) return "function" != typeof u.type ? u.__e : m(u, 0);
+  for (var u; l < n.__k.length; l++) if (null != (u = n.__k[l]) && null != u.__e) return u.__e;
 
-  return "function" == typeof n.type ? m(n) : null;
+  return "function" == typeof n.type ? d(n) : null;
 }
 
-function w(n) {
+function m(n) {
   var l, u;
 
   if (null != (n = n.__p) && null != n.__c) {
@@ -225,15 +224,15 @@ function w(n) {
       break;
     }
 
-    return w(n);
+    return m(n);
   }
 }
 
-function b(t) {
-  !t.__d && (t.__d = !0) && 1 === l.push(t) && (n.debounceRendering || u)(k);
+function w(t) {
+  !t.__d && (t.__d = !0) && 1 === l.push(t) && (n.debounceRendering || u)(g);
 }
 
-function k() {
+function g() {
   var n;
 
   for (l.sort(function (n, l) {
@@ -241,46 +240,44 @@ function k() {
   }); n = l.pop();) n.__d && n.forceUpdate(!1);
 }
 
-function g(n, l, u, t, i, r, o, c) {
-  var a,
-      h,
+function k(n, l, u, t, i, o, e, s, a) {
+  var h,
       v,
-      p,
-      d,
+      y,
       m,
       w,
+      g,
+      k,
       b,
-      k = l.__k || _(l.props.children, l.__k = [], y, !0),
-      g = u && u.__k || e,
-      x = g.length;
+      x = l.__k || _(l.props.children, l.__k = [], p, !0),
+      C = u && u.__k || f,
+      P = C.length;
 
-  if (c == f) if (c = null, null != r) c = r[0];else for (h = 0; !c && h < x; h++) c = g[h] && g[h].__e;
-
-  for (h = 0; h < k.length; h++) if (null != (a = k[h] = y(k[h]))) {
-    if (a.__p = l, a.__b = l.__b + 1, null === (p = g[h]) || p && a.key == p.key && a.type === p.type) g[h] = void 0;else for (v = 0; v < x; v++) {
-      if ((p = g[v]) && a.key == p.key && a.type === p.type) {
-        g[v] = void 0;
+  for (s == r && (s = null != o ? o[0] : P ? d(u, 0) : null), v = 0; v < x.length; v++) if (null != (h = x[v] = p(x[v]))) {
+    if (h.__p = l, h.__b = l.__b + 1, null === (m = C[v]) || m && h.key == m.key && h.type === m.type) C[v] = void 0;else for (y = 0; y < P; y++) {
+      if ((m = C[y]) && h.key == m.key && h.type === m.type) {
+        C[y] = void 0;
         break;
       }
 
-      p = null;
+      m = null;
     }
 
-    if (d = N(n, a, p = p || f, t, i, r, o, null, c), (v = a.ref) && p.ref != v && (b || (b = [])).push(v, a.__c || d), null != d) {
-      if (null == w && (w = d), null != a.l) d = a.l, a.l = null;else if (r == p || d != c || null == d.parentNode) n: if (null == c || c.parentNode !== n) n.appendChild(d);else {
-        for (m = c, v = 0; (m = m.nextSibling) && v < x; v += 2) if (m == d) break n;
+    if (w = N(n, h, m = m || r, t, i, o, e, null, s, a), (y = h.ref) && m.ref != y && (b || (b = [])).push(y, h.__c || w, h), null != w) {
+      if (null == k && (k = w), null != h.l) w = h.l, h.l = null;else if (o == m || w != s || null == w.parentNode) n: if (null == s || s.parentNode !== n) n.appendChild(w);else {
+        for (g = s, y = 0; (g = g.nextSibling) && y < P; y += 2) if (g == w) break n;
 
-        n.insertBefore(d, c);
+        n.insertBefore(w, s);
       }
-      c = d.nextSibling, "function" == typeof l.type && (l.l = d);
+      s = w.nextSibling, "function" == typeof l.type && (l.l = w);
     }
   }
 
-  if (l.__e = w, null != r && "function" != typeof l.type) for (h = r.length; h--;) null != r[h] && s(r[h]);
+  if (l.__e = k, null != o && "function" != typeof l.type) for (v = o.length; v--;) null != o[v] && c(o[v]);
 
-  for (h = x; h--;) null != g[h] && O(g[h], l);
+  for (v = P; v--;) null != C[v] && z(C[v], C[v]);
 
-  if (b) for (h = 0; h < b.length; h++) A(b[h], b[++h], l);
+  if (b) for (v = 0; v < b.length; v++) j(b[v], b[++v], b[++v]);
 }
 
 function _(n, l, u, t) {
@@ -288,165 +285,148 @@ function _(n, l, u, t) {
   return l;
 }
 
-function x(n, l, u, t) {
-  var i,
-      r,
-      f = Object.keys(l).sort();
+function b(n, l, u, t, i) {
+  var r;
 
-  for (i = 0; i < f.length; i++) "children" === (r = f[i]) || "key" === r || u && ("value" === r || "checked" === r ? n : u)[r] === l[r] || C(n, r, l[r], u[r], t);
+  for (r in u) r in l || C(n, r, null, u[r], t);
 
-  for (i in u) "children" === i || "key" === i || i in l || C(n, i, null, u[i], t);
+  for (r in l) i && "function" != typeof l[r] || "value" === r || "checked" === r || u[r] === l[r] || C(n, r, l[r], u[r], t);
 }
 
-function C(n, l, u, r, e) {
-  var s, a, h, v;
-  if ("style" === (l = e ? "className" === l ? "class" : l : "class" === l ? "className" : l)) for (a in s = c(c({}, r), u)) (u || f)[a] !== (r || f)[a] && n.style.setProperty("-" === a[0] && "-" === a[1] ? a : a.replace(t, "-$&"), u && a in u ? "number" == typeof s[a] && !1 === o.test(a) ? s[a] + "px" : s[a] : "");else if ("o" === l[0] && "n" === l[1]) h = l !== (l = l.replace(/Capture$/, "")), v = l.toLowerCase(), l = (v in n ? v : l).slice(2), u ? (r || n.addEventListener(l, P, h), (n.u || (n.u = {}))[l] = u) : n.removeEventListener(l, P, h);else if ("list" !== l && "tagName" !== l && !e && l in n) {
+function x(n, l, u) {
+  "-" === l[0] ? n.setProperty(l, u) : n[l] = "number" == typeof u && !1 === o.test(l) ? u + "px" : u;
+}
+
+function C(n, l, u, t, i) {
+  var r, f, o, e, c;
+  if ("key" === (l = i ? "className" === l ? "class" : l : "class" === l ? "className" : l) || "children" === l) ;else if ("style" === l) {
+    if (r = n.style, "string" == typeof u) r.cssText = u;else {
+      if ("string" == typeof t && (r.cssText = "", t = null), t) for (f in t) u && f in u || x(r, f, "");
+      if (u) for (o in u) t && u[o] === t[o] || x(r, o, u[o]);
+    }
+  } else if ("o" === l[0] && "n" === l[1]) e = l !== (l = l.replace(/Capture$/, "")), c = l.toLowerCase(), l = (c in n ? c : l).slice(2), u ? (t || n.addEventListener(l, P, e), (n.u || (n.u = {}))[l] = u) : n.removeEventListener(l, P, e);else if ("list" !== l && "tagName" !== l && !i && l in n) {
     if (n.length && "value" == l) for (l = n.length; l--;) n.options[l].selected = n.options[l].value == u;else n[l] = null == u ? "" : u;
-  } else "function" != typeof u && "dangerouslySetInnerHTML" !== l && (l !== (l = l.replace(/^xlink:?/, "")) ? null == u || !1 === u ? n.removeAttributeNS(i, l.toLowerCase()) : n.setAttributeNS(i, l.toLowerCase(), u) : null == u || !1 === u ? n.removeAttribute(l) : n.setAttribute(l, u));
+  } else "function" != typeof u && "dangerouslySetInnerHTML" !== l && (l !== (l = l.replace(/^xlink:?/, "")) ? null == u || !1 === u ? n.removeAttributeNS("http://www.w3.org/1999/xlink", l.toLowerCase()) : n.setAttributeNS("http://www.w3.org/1999/xlink", l.toLowerCase(), u) : null == u || !1 === u ? n.removeAttribute(l) : n.setAttribute(l, u));
 }
 
 function P(l) {
   return this.u[l.type](n.event ? n.event(l) : l);
 }
 
-function N(l, u, t, i, r, f, e, o, s) {
-  var a,
-      h,
-      v,
+function N(l, u, t, i, r, f, o, c, s, a) {
+  var h,
+      d,
       m,
       w,
+      g,
       b,
-      k,
       x,
       C,
       P,
-      N = u.type;
+      N,
+      T = u.type;
   if (void 0 !== u.constructor) return null;
-  (a = n.__b) && a(u);
+  (h = n.__b) && h(u);
 
   try {
-    n: if ("function" == typeof N) {
-      if (x = u.props, C = (a = N.contextType) && i[a.__c], P = a ? C ? C.props.value : a.__p : i, t.__c ? k = (h = u.__c = t.__c).__p = h.__E : (N.prototype && N.prototype.render ? u.__c = h = new N(x, P) : (u.__c = h = new d(x, P), h.constructor = N, h.render = T), C && C.sub(h), h.props = x, h.state || (h.state = {}), h.context = P, h.__n = i, v = h.__d = !0, h.__h = []), null == h.__s && (h.__s = h.state), null != N.getDerivedStateFromProps && c(h.__s == h.state ? h.__s = c({}, h.__s) : h.__s, N.getDerivedStateFromProps(x, h.__s)), v) null == N.getDerivedStateFromProps && null != h.componentWillMount && h.componentWillMount(), null != h.componentDidMount && e.push(h);else {
-        if (null == N.getDerivedStateFromProps && null == o && null != h.componentWillReceiveProps && h.componentWillReceiveProps(x, P), !o && null != h.shouldComponentUpdate && !1 === h.shouldComponentUpdate(x, h.__s, P)) {
-          h.props = x, h.state = h.__s, h.__d = !1, h.__v = u, u.__e = t.__e, u.__k = t.__k;
+    n: if ("function" == typeof T) {
+      if (C = u.props, P = (h = T.contextType) && i[h.__c], N = h ? P ? P.props.value : h.__p : i, t.__c ? x = (d = u.__c = t.__c).__p = d.__E : (T.prototype && T.prototype.render ? u.__c = d = new T(C, N) : (u.__c = d = new y(C, N), d.constructor = T, d.render = A), P && P.sub(d), d.props = C, d.state || (d.state = {}), d.context = N, d.__n = i, m = d.__d = !0, d.__h = []), null == d.__s && (d.__s = d.state), null != T.getDerivedStateFromProps && e(d.__s == d.state ? d.__s = e({}, d.__s) : d.__s, T.getDerivedStateFromProps(C, d.__s)), m) null == T.getDerivedStateFromProps && null != d.componentWillMount && d.componentWillMount(), null != d.componentDidMount && o.push(d);else {
+        if (null == T.getDerivedStateFromProps && null == c && null != d.componentWillReceiveProps && d.componentWillReceiveProps(C, N), !c && null != d.shouldComponentUpdate && !1 === d.shouldComponentUpdate(C, d.__s, N)) {
+          d.props = C, d.state = d.__s, d.__d = !1, d.__v = u, u.__e = t.__e, u.__k = t.__k;
           break n;
         }
 
-        null != h.componentWillUpdate && h.componentWillUpdate(x, h.__s, P);
-      }
-      m = h.props, w = h.state, h.context = P, h.props = x, h.state = h.__s, (a = n.__r) && a(u), h.__d = !1, h.__v = u, h.__P = l;
-
-      try {
-        _(null != (a = h.render(h.props, h.state, h.context)) && a.type == p && null == a.key ? a.props.children : a, u.__k = [], y, !0);
-      } catch (l) {
-        if ((a = n.__E) && a(l, u, t)) break n;
-        throw l;
+        null != d.componentWillUpdate && d.componentWillUpdate(C, d.__s, N);
       }
 
-      for (null != h.getChildContext && (i = c(c({}, i), h.getChildContext())), v || null == h.getSnapshotBeforeUpdate || (b = h.getSnapshotBeforeUpdate(m, w)), g(l, u, t, i, r, f, e, s), h.base = u.__e; a = h.__h.pop();) a.call(h);
+      for (w = d.props, g = d.state, d.context = N, d.props = C, d.state = d.__s, (h = n.__r) && h(u), d.__d = !1, d.__v = u, d.__P = l, _(null != (h = d.render(d.props, d.state, d.context)) && h.type == v && null == h.key ? h.props.children : h, u.__k = [], p, !0), null != d.getChildContext && (i = e(e({}, i), d.getChildContext())), m || null == d.getSnapshotBeforeUpdate || (b = d.getSnapshotBeforeUpdate(w, g)), k(l, u, t, i, r, f, o, s, a), d.base = u.__e; h = d.__h.pop();) h.call(d);
 
-      v || null == m || null == h.componentDidUpdate || h.componentDidUpdate(m, w, b), k && (h.__E = h.__p = null);
-    } else u.__e = j(t.__e, u, t, i, r, f, e);
+      m || null == w || null == d.componentDidUpdate || d.componentDidUpdate(w, g, b), x && (d.__E = d.__p = null);
+    } else u.__e = $(t.__e, u, t, i, r, f, o, a);
 
-    (a = n.diffed) && a(u);
-  } catch (n) {
-    z(n, u.__p);
+    (h = n.diffed) && h(u);
+  } catch (l) {
+    n.__e(l, u, t);
   }
 
   return u.__e;
 }
 
-function $(l, u) {
+function T(l, u) {
   for (var t; t = l.pop();) try {
     t.componentDidMount();
-  } catch (n) {
-    z(n, t.__v.__p);
+  } catch (l) {
+    n.__e(l, t.__v);
   }
 
   n.__c && n.__c(u);
 }
 
-function j(n, l, u, t, i, r, o) {
-  var c,
-      s,
+function $(n, l, u, t, i, o, e, c) {
+  var s,
       a,
       h,
-      v = u.props,
-      p = l.props;
-  if (i = "svg" === l.type || i, null == n && null != r) for (c = 0; c < r.length; c++) if (null != (s = r[c]) && (null === l.type ? 3 === s.nodeType : s.localName === l.type)) {
-    n = s, r[c] = null;
+      v,
+      p = u.props,
+      y = l.props;
+  if (i = "svg" === l.type || i, null == n && null != o) for (s = 0; s < o.length; s++) if (null != (a = o[s]) && (null === l.type ? 3 === a.nodeType : a.localName === l.type)) {
+    n = a, o[s] = null;
     break;
   }
 
   if (null == n) {
-    if (null === l.type) return document.createTextNode(p);
-    n = i ? document.createElementNS("http://www.w3.org/2000/svg", l.type) : document.createElement(l.type), r = null;
+    if (null === l.type) return document.createTextNode(y);
+    n = i ? document.createElementNS("http://www.w3.org/2000/svg", l.type) : document.createElement(l.type), o = null;
   }
 
-  return null === l.type ? v !== p && (n.data = p) : l !== u && (null != r && (r = e.slice.call(n.childNodes)), a = (v = u.props || f).dangerouslySetInnerHTML, ((h = p.dangerouslySetInnerHTML) || a) && null == r && (h && a && h.__html == a.__html || (n.innerHTML = h && h.__html || "")), p.multiple && (n.multiple = p.multiple), g(n, l, u, t, "foreignObject" !== l.type && i, r, o, f), x(n, p, v, i)), n;
+  return null === l.type ? p !== y && (n.data = y) : l !== u && (null != o && (o = f.slice.call(n.childNodes)), h = (p = u.props || r).dangerouslySetInnerHTML, v = y.dangerouslySetInnerHTML, c || (v || h) && (v && h && v.__html == h.__html || (n.innerHTML = v && v.__html || "")), b(n, y, p, i, c), v || k(n, l, u, t, "foreignObject" !== l.type && i, o, e, r, c), c || ("value" in y && void 0 !== y.value && y.value !== n.value && (n.value = null == y.value ? "" : y.value), "checked" in y && void 0 !== y.checked && y.checked !== n.checked && (n.checked = y.checked))), n;
 }
 
-function A(n, l, u) {
+function j(l, u, t) {
   try {
-    "function" == typeof n ? n(l) : n.current = l;
-  } catch (n) {
-    z(n, u);
+    "function" == typeof l ? l(u) : l.current = u;
+  } catch (l) {
+    n.__e(l, t);
   }
 }
 
-function O(l, u, t) {
+function z(l, u, t) {
   var i, r, f;
 
-  if (n.unmount && n.unmount(l), (i = l.ref) && A(i, null, u), t || "function" == typeof l.type || (t = null != (r = l.__e)), l.__e = l.l = null, null != (i = l.__c)) {
+  if (n.unmount && n.unmount(l), (i = l.ref) && j(i, null, u), t || "function" == typeof l.type || (t = null != (r = l.__e)), l.__e = l.l = null, null != (i = l.__c)) {
     if (i.componentWillUnmount) try {
       i.componentWillUnmount();
-    } catch (n) {
-      z(n, u);
+    } catch (l) {
+      n.__e(l, u);
     }
     i.base = i.__P = null;
   }
 
-  if (i = l.__k) for (f = 0; f < i.length; f++) i[f] && O(i[f], u, t);
-  null != r && s(r);
+  if (i = l.__k) for (f = 0; f < i.length; f++) i[f] && z(i[f], u, t);
+  null != r && c(r);
 }
 
-function T(n, l, u) {
+function A(n, l, u) {
   return this.constructor(n, u);
 }
 
-function z(l, u) {
-  var t;
-
-  for (n.__e && n.__e(l, u); u; u = u.__p) if ((t = u.__c) && !t.__p) try {
-    if (t.constructor && null != t.constructor.getDerivedStateFromError) t.setState(t.constructor.getDerivedStateFromError(l));else {
-      if (null == t.componentDidCatch) continue;
-      t.componentDidCatch(l);
-    }
-    return b(t.__E = t);
-  } catch (n) {
-    l = n;
-  }
-
-  throw l;
-}
-
-function D(l, u, t) {
-  var i, r;
-  n.__p && n.__p(l, u), i = u.__k, l = a(p, null, [l]), r = [], N(u, t ? l : u.__k = l, i || f, f, void 0 !== u.ownerSVGElement, t ? [t] : i ? null : e.slice.call(u.childNodes), r, !1, t || f), $(r, l);
+function D(l, u, i) {
+  var o, e, c;
+  n.__p && n.__p(l, u), e = (o = i === t) ? null : i && i.__k || u.__k, l = s(v, null, [l]), c = [], N(u, o ? u.__k = l : (i || u).__k = l, e || r, r, void 0 !== u.ownerSVGElement, i && !o ? [i] : e ? null : f.slice.call(u.childNodes), c, !1, i || r, o), T(c, l);
 }
 
 function H(n, l) {
-  l.__k = null, D(n, l);
+  D(n, l, t);
 }
 
 function I(n, l) {
-  return l = c(c({}, n.props), l), arguments.length > 2 && (l.children = e.slice.call(arguments, 2)), h(n.type, l, l.key || n.key, l.ref || n.ref);
+  return l = e(e({}, n.props), l), arguments.length > 2 && (l.children = f.slice.call(arguments, 2)), a(n.type, l, l.key || n.key, l.ref || n.ref);
 }
 
 function L(n) {
   var l = {},
       u = {
-    __c: "__cC" + r++,
+    __c: "__cC" + i++,
     __p: n,
     Consumer: function (n, l) {
       return n.children(l);
@@ -458,7 +438,7 @@ function L(n) {
         return l[u.__c] = i, l;
       }, this.shouldComponentUpdate = function (n) {
         t.some(function (l) {
-          l.__P && (l.context = n.value, b(l));
+          l.__P && (l.context = n.value, w(l));
         });
       }, this.sub = function (n) {
         t.push(n);
@@ -473,18 +453,30 @@ function L(n) {
   return u.Consumer.contextType = u, u;
 }
 
-exports.options = n = {}, d.prototype.setState = function (n, l) {
-  var u = this.__s !== this.state && this.__s || (this.__s = c({}, this.state));
-  ("function" != typeof n || (n = n(u, this.props))) && c(u, n), null != n && this.__v && (l && this.__h.push(l), b(this));
-}, d.prototype.forceUpdate = function (n) {
+exports.options = n = {}, y.prototype.setState = function (n, l) {
+  var u = this.__s !== this.state && this.__s || (this.__s = e({}, this.state));
+  ("function" != typeof n || (n = n(u, this.props))) && e(u, n), null != n && this.__v && (l && this.__h.push(l), w(this));
+}, y.prototype.forceUpdate = function (n) {
   var l,
       u,
       t,
       i = this.__v,
       r = this.__v.__e,
       f = this.__P;
-  f && (l = !1 !== n, u = [], t = N(f, i, c({}, i), this.__n, void 0 !== f.ownerSVGElement, null, u, l, null == r ? m(i) : r), $(u, i), t != r && w(i)), n && n();
-}, d.prototype.render = p, l = [], u = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, t = /[A-Z]/g, i = "http://www.w3.org/1999/xlink", r = 0;
+  f && (l = !1 !== n, u = [], t = N(f, i, e({}, i), this.__n, void 0 !== f.ownerSVGElement, null, u, l, null == r ? d(i) : r), T(u, i), t != r && m(i)), n && n();
+}, y.prototype.render = v, l = [], u = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, n.__e = function (n, l, u) {
+  for (var t; l = l.__p;) if ((t = l.__c) && !t.__p) try {
+    if (t.constructor && null != t.constructor.getDerivedStateFromError) t.setState(t.constructor.getDerivedStateFromError(n));else {
+      if (null == t.componentDidCatch) continue;
+      t.componentDidCatch(n);
+    }
+    return w(t.__E = t);
+  } catch (l) {
+    n = l;
+  }
+
+  throw n;
+}, t = r, i = 0;
 },{}],"../node_modules/preact/debug/dist/debug.module.js":[function(require,module,exports) {
 "use strict";
 
@@ -526,8 +518,8 @@ function u(e) {
       a(t.context, n, e), t.setState({});
     }
   });
-  var u = c(e),
-      s = e.endTime - e.startTime;
+  var u = s(e),
+      l = e.endTime - e.startTime;
   return {
     nodeType: o(e),
     type: e.type,
@@ -539,24 +531,24 @@ function u(e) {
     state: null != t && t instanceof _preact.Component ? t.state : null,
     props: e.props,
     children: null !== e.type ? null != u && 1 == u.length && null === u[0].type ? u[0].props : u : null,
-    publicInstance: l(e),
+    publicInstance: c(e),
     memoizedInteractions: [],
-    actualDuration: s,
+    actualDuration: l,
     actualStartTime: e.startTime,
-    treeBaseDuration: s
+    treeBaseDuration: l
   };
 }
 
-function c(n) {
+function s(n) {
   return null == n.__c ? null != n.__k ? n.__k.filter(Boolean) : [] : null != n.__k ? n.__k.filter(Boolean) : null;
 }
 
-function s(n) {
+function l(n) {
   return n.type === _preact.Fragment && null === n.__p;
 }
 
-function l(n) {
-  return s(n) ? n.__k.length > 0 && null != n.__k[0] && null != n.__k[0].__e ? n.__k[0].__e.parentNode : n : null != n.__c ? n.__c : n.type === _preact.Fragment ? n.props : n.__e;
+function c(n) {
+  return l(n) ? n.__k.length > 0 && null != n.__k[0] && null != n.__k[0].__e ? n.__k[0].__e.parentNode : n : null != n.__c ? n.__c : n.type === _preact.Fragment ? n.props : n.__e;
 }
 
 function f(n, e, t) {
@@ -571,10 +563,12 @@ function d(n) {
   var e = n.props,
       t = i(n),
       r = "";
-  if (e) for (var o in e) if (e.hasOwnProperty(o) && "children" !== o) {
+
+  for (var o in e) if (e.hasOwnProperty(o) && "children" !== o) {
     var a = e[o];
     "function" == typeof a && (a = "function " + (a.displayName || a.name) + "() {}"), a = Object(a) !== a || a.toString ? a + "" : Object.prototype.toString.call(a), r += " " + o + "=" + JSON.stringify(a);
   }
+
   var u = e.children;
   return "<" + t + r + (u && u.length ? ">..</" + t + ">" : " />");
 }
@@ -606,7 +600,7 @@ h.prototype.markConnected = function () {
     }
   }
 }, h.prototype.mount = function (n) {
-  this.inst2vnode.set(l(n), n);
+  this.inst2vnode.set(c(n), n);
   var e = u(n),
       t = [{
     internalInstance: n,
@@ -615,8 +609,8 @@ h.prototype.markConnected = function () {
     type: "mount"
   }];
   if (Array.isArray(e.children)) for (var r, o = e.children.slice(); null != (r = o.pop());) {
-    var i = c(r);
-    o.push.apply(o, i), this.inst2vnode.set(l(r), r);
+    var i = s(r);
+    o.push.apply(o, i), this.inst2vnode.set(c(r), r);
     var a = u(r);
     t.push({
       internalInstance: r,
@@ -628,7 +622,7 @@ h.prototype.markConnected = function () {
 
   for (var f = t.length; --f >= 0;) this.pending.push(t[f]);
 
-  s(n) && this.pending.push({
+  l(n) && this.pending.push({
     internalInstance: n,
     data: e,
     renderer: this.rid,
@@ -638,7 +632,7 @@ h.prototype.markConnected = function () {
   var e = u(n);
   if (Array.isArray(e.children)) for (var t = 0; t < e.children.length; t++) {
     var r = e.children[t],
-        o = l(r);
+        o = c(r);
     null == this.inst2vnode.get(o) ? this.mount(r) : this.update(r), e.children[t] = this.inst2vnode.get(o);
   }
   var i = this.inst2vnode.get(e.publicInstance);
@@ -656,10 +650,10 @@ h.prototype.markConnected = function () {
     type: "update"
   });
 }, h.prototype.handleCommitFiberRoot = function (n) {
-  var e = l(n);
+  var e = c(n);
   this.inst2vnode.has(e) ? this.update(n) : this.mount(n);
   var t = null;
-  if (s(n)) n.treeBaseDuration = 0, t = n;else for (t = n; null != t.__p;) t = t.__p;
+  if (l(n)) n.treeBaseDuration = 0, t = n;else for (t = n; null != t.__p;) t = t.__p;
   return this.pending.push({
     internalInstance: t,
     renderer: this.rid,
@@ -667,7 +661,7 @@ h.prototype.markConnected = function () {
     type: "rootCommitted"
   }), this.flushPendingEvents(), n;
 }, h.prototype.handleCommitFiberUnmount = function (n) {
-  var e = l(n);
+  var e = c(n);
   this.inst2vnode.delete(e), this.pending.push({
     internalInstance: n,
     renderer: this.rid,
@@ -690,14 +684,26 @@ try {
   var n = _preact.options.__b,
       e = _preact.options.diffed,
       o = _preact.options.vnode,
-      a = {
+      a = _preact.options.__e,
+      u = {
     useEffect: {},
     useLayoutEffect: {},
     lazyPropTypes: {}
   };
-  _preact.options.__e = function (n, e) {
-    var t = e && e.__c;
-    t && "function" == typeof n.then && (n = new Error("Missing Suspense. The throwing component was: " + (t.displayName || t.name)));
+  _preact.options.__e = function (n, e, t) {
+    if (e && e.__c && "function" == typeof n.then) {
+      var r = n;
+      n = new Error("Missing Suspense. The throwing component was: " + i(e));
+
+      for (var o = e; o; o = o.__p) if (o.__c && o.__c.t) {
+        n = r;
+        break;
+      }
+
+      if (n instanceof Error) throw n;
+    }
+
+    a(n, e, t);
   }, _preact.options.__p = function (n, e) {
     if (!e) throw new Error("Undefined parent passed to render(), this is the second argument.\nCheck if the element is available in the DOM/has the correct id.");
     var t;
@@ -715,58 +721,60 @@ try {
 
     if (!t) throw new Error("\n\t\t\tExpected a valid HTML node as a second argument to render.\n\t\t\tReceived " + e + " instead: render(<" + (n.type.name || n.type) + " />, " + e + ");\n\t\t");
   }, _preact.options.__b = function (e) {
-    if (null != e) {
-      var t,
-          o,
-          u,
-          c,
-          s = e.type;
-      if (void 0 === s) throw new Error("Undefined component passed to createElement()\n\nYou likely forgot to export your component or might have mixed up default and named imports" + d(e));
+    var t,
+        o,
+        a,
+        s,
+        l = e.type,
+        c = function n(e) {
+      return e ? "function" == typeof e.type ? n(e.__p) : e : {};
+    }(e.__p);
 
-      if (null != s && "object" == typeof s) {
-        if (void 0 !== s.t && void 0 !== s.__e) {
-          var l = "Did you accidentally pass a JSX literal as JSX twice?\n\n  let My" + i(s) + " = " + d(s) + ";\n  let vnode = <My" + i(s) + " />;\n\nThis usually happens when you export a JSX literal and not the component.";
-          throw new Error("Invalid type passed to createElement(): " + s + "\n\n" + l + "\n");
-        }
+    if (void 0 === l) throw new Error("Undefined component passed to createElement()\n\nYou likely forgot to export your component or might have mixed up default and named imports" + d(e));
 
-        throw new Error("Invalid type passed to createElement(): " + (Array.isArray(s) ? "array" : s));
+    if (null != l && "object" == typeof l) {
+      if (void 0 !== l.o && void 0 !== l.__e) {
+        var f = "Did you accidentally pass a JSX literal as JSX twice?\n\n  let My" + i(l) + " = " + d(l) + ";\n  let vnode = <My" + i(l) + " />;\n\nThis usually happens when you export a JSX literal and not the component.";
+        throw new Error("Invalid type passed to createElement(): " + l + "\n\n" + f + "\n");
       }
 
-      if (void 0 !== e.ref && "function" != typeof e.ref && "object" != typeof e.ref && !("$$typeof" in e)) throw new Error('Component\'s "ref" property should be a function, or an object created by createRef(), but got [' + typeof e.ref + "] instead\n" + d(e));
-      if ("string" == typeof e.type) for (var f in e.props) if ("o" === f[0] && "n" === f[1] && "function" != typeof e.props[f] && null != e.props[f]) throw new Error("Component's \"" + f + '" property should be a function, but got [' + typeof e.props[f] + "] instead\n" + d(e));
-
-      if ("function" == typeof e.type && e.type.propTypes) {
-        if ("Lazy" === e.type.displayName && !a.lazyPropTypes[e.type]) {
-          var h = "PropTypes are not supported on lazy(). Use propTypes on the wrapped component itself. ";
-
-          try {
-            var p = e.type();
-            a.lazyPropTypes[e.type] = !0, console.warn(h + "Component wrapped in lazy() is " + (p.type.displayName || p.type.name));
-          } catch (n) {
-            console.warn(h + "We will log the wrapped component's name once it is loaded.");
-          }
-        }
-
-        t = e.type.propTypes, o = e.props, u = i(e), c = d(e), Object.keys(t).forEach(function (n) {
-          var e;
-
-          try {
-            e = t[n](o, n, c, u, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED");
-          } catch (n) {
-            e = n;
-          }
-
-          !e || e.message in r || (r[e.message] = !0, console.error("Failed " + u + " type: " + e.message));
-        });
-      }
-
-      n && n(e);
+      throw new Error("Invalid type passed to createElement(): " + (Array.isArray(l) ? "array" : l));
     }
+
+    if ("thead" !== l && "tfoot" !== l && "tbody" !== l || "table" === c.type ? "tr" === l && "thead" !== c.type && "tfoot" !== c.type && "tbody" !== c.type && "table" !== c.type ? console.error("Improper nesting of table.Your <tr> should have a <thead/tbody/tfoot/table> parent." + d(e)) : "td" === l && "tr" !== c.type ? console.error("Improper nesting of table.Your <td> should have a <tr> parent." + d(e)) : "th" === l && "tr" !== c.type && console.error("Improper nesting of table.Your <th> should have a <tr>." + d(e)) : console.error("Improper nesting of table.Your <thead/tbody/tfoot> should have a <table> parent." + d(e)), void 0 !== e.ref && "function" != typeof e.ref && "object" != typeof e.ref && !("$$typeof" in e)) throw new Error('Component\'s "ref" property should be a function, or an object created by createRef(), but got [' + typeof e.ref + "] instead\n" + d(e));
+    if ("string" == typeof e.type) for (var h in e.props) if ("o" === h[0] && "n" === h[1] && "function" != typeof e.props[h] && null != e.props[h]) throw new Error("Component's \"" + h + '" property should be a function, but got [' + typeof e.props[h] + "] instead\n" + d(e));
+
+    if ("function" == typeof e.type && e.type.propTypes) {
+      if ("Lazy" === e.type.displayName && !u.lazyPropTypes[e.type]) {
+        var p = "PropTypes are not supported on lazy(). Use propTypes on the wrapped component itself. ";
+
+        try {
+          var v = e.type();
+          u.lazyPropTypes[e.type] = !0, console.warn(p + "Component wrapped in lazy() is " + (v.type.displayName || v.type.name));
+        } catch (n) {
+          console.warn(p + "We will log the wrapped component's name once it is loaded.");
+        }
+      }
+
+      t = e.type.propTypes, o = e.props, a = i(e), s = d(e), Object.keys(t).forEach(function (n) {
+        var e;
+
+        try {
+          e = t[n](o, n, s, a, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED");
+        } catch (n) {
+          e = n;
+        }
+
+        !e || e.message in r || (r[e.message] = !0, console.error("Failed " + a + " type: " + e.message));
+      });
+    }
+
+    n && n(e);
   }, _preact.options.__h = function (n) {
     if (!n) throw new Error("Hook can only be invoked from render methods.");
   };
 
-  var u = function (n, e) {
+  var s = function (n, e) {
     return {
       get: function () {
         throw new Error("getting vnode." + n + " is deprecated, " + e);
@@ -776,43 +784,40 @@ try {
       }
     };
   },
-      c = {
-    nodeName: u("nodeName", "use vnode.type"),
-    attributes: u("attributes", "use vnode.props"),
-    children: u("children", "use vnode.props.children")
+      l = {
+    nodeName: s("nodeName", "use vnode.type"),
+    attributes: s("attributes", "use vnode.props"),
+    children: s("children", "use vnode.props.children")
   };
 
   _preact.options.vnode = function (n) {
     var e, t;
-    n.props && n.props.o && (e = n.props.o, delete n.props.o), n.props && n.props.i && (t = n.props.i, delete n.props.i), n.i = t, n.o = e, Object.defineProperties(n, c), o && o(n);
+    n.props && n.props.i && (e = n.props.i, delete n.props.i), n.props && n.props.u && (t = n.props.u, delete n.props.u), n.u = t, n.i = e, Object.defineProperties(n, l), o && o(n);
   }, _preact.options.diffed = function (n) {
-    if (null != n) {
-      if (n.__c && n.__c.u) {
-        var t = n.__c.u;
-        t.s.forEach(function (e) {
-          !e.l || e.h && Array.isArray(e.h) || console.warn("In " + (n.type.name || n.type) + " you are calling useMemo/useCallback without passing arguments.\nThis is a noop since it will not be able to memoize, it will execute it every render.");
-        }), t.p.length > 0 && t.p.forEach(function (e) {
-          e.h && Array.isArray(e.h) || a.useEffect[n.type] || (a.useEffect[n.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (n.type.name || n.type) + "."));
-        }), t.v.length > 0 && t.v.forEach(function (e) {
-          e.h && Array.isArray(e.h) || a.useLayoutEffect[n.type] || (a.useLayoutEffect[n.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useLayoutEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (n.type.name || n.type) + "."));
-        });
-      }
+    if (e && e(n), n.__c && n.__c.s) {
+      var t = n.__c.s;
+      (t.l || []).forEach(function (e) {
+        !e.h || e.p && Array.isArray(e.p) || console.warn("In " + (n.type.name || n.type) + " you are calling useMemo/useCallback without passing arguments.\nThis is a noop since it will not be able to memoize, it will execute it every render.");
+      }), t.v && Array.isArray(t.v) && t.v.forEach(function (e) {
+        e.p && Array.isArray(e.p) || u.useEffect[n.type] || (u.useEffect[n.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (n.type.name || n.type) + "."));
+      }), t.m && Array.isArray(t.m) && t.m.forEach(function (e) {
+        e.p && Array.isArray(e.p) || u.useLayoutEffect[n.type] || (u.useLayoutEffect[n.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useLayoutEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (n.type.name || n.type) + "."));
+      });
+    }
 
-      if (null != n.__k) for (var r = [], o = 0; o < n.__k.length; o++) {
-        var i = n.__k[o];
+    if (null != n.__k) for (var r = [], o = 0; o < n.__k.length; o++) {
+      var i = n.__k[o];
 
-        if (i && null != i.key) {
-          var u = i.key;
+      if (i && null != i.key) {
+        var a = i.key;
 
-          if (-1 !== r.indexOf(u)) {
-            console.error('Following component has two or more children with the same key attribute: "' + u + '". This may cause glitches and misbehavior in rendering process. Component: \n\n' + d(n));
-            break;
-          }
-
-          r.push(u);
+        if (-1 !== r.indexOf(a)) {
+          console.error('Following component has two or more children with the same key attribute: "' + a + '". This may cause glitches and misbehavior in rendering process. Component: \n\n' + d(n));
+          break;
         }
+
+        r.push(a);
       }
-      e && e(n);
     }
   };
 }(), function () {
@@ -850,38 +855,38 @@ try {
           return u;
         },
         set: function () {
-          u.connected || c.markConnected();
+          u.connected || s.markConnected();
         }
       });
-      var c = r.helpers[a];
+      var s = r.helpers[a];
       r.emit("renderer-attached", {
         id: a,
         renderer: t,
-        helpers: c
+        helpers: s
       }), o = p(function (n) {
         if (n.type !== _preact.Fragment || 0 != n.__k.length) {
           var t = r.getFiberRoots(a);
-          n = c.handleCommitFiberRoot(n), t.has(n) || t.add(n);
+          n = s.handleCommitFiberRoot(n), t.has(n) || t.add(n);
         }
       }), i = p(function (n) {
         r.onCommitFiberUnmount(a, n);
       });
     })();
-    var c = _preact.options.vnode,
-        s = _preact.options.__c,
-        l = _preact.options.unmount,
+    var s = _preact.options.vnode,
+        l = _preact.options.__c,
+        c = _preact.options.unmount,
         f = _preact.options.__b,
         d = _preact.options.diffed;
     _preact.options.vnode = function (n) {
-      n.startTime = NaN, n.endTime = NaN, n.startTime = 0, n.endTime = -1, c && c(n);
+      n.startTime = NaN, n.endTime = NaN, n.startTime = 0, n.endTime = -1, s && s(n);
     }, _preact.options.__b = function (n) {
       n.startTime = y(), null != f && f(n);
     }, _preact.options.diffed = function (n) {
       n.endTime = y(), null != d && d(n);
     }, _preact.options.__c = p(function (n) {
-      null != s && s(n), null != n && o(n);
+      null != l && l(n), null != n && o(n);
     }), _preact.options.unmount = p(function (n) {
-      null != l && l(n), i(n);
+      null != c && c(n), i(n);
     });
     var m = _preact.Component.prototype.setState;
 
@@ -1314,38 +1319,38 @@ Object.defineProperty(exports, "__esModule", {
 exports.useState = e;
 exports.useReducer = a;
 exports.useEffect = v;
-exports.useLayoutEffect = p;
-exports.useRef = d;
+exports.useLayoutEffect = m;
+exports.useRef = p;
 exports.useImperativeHandle = l;
-exports.useMemo = m;
-exports.useCallback = s;
+exports.useMemo = s;
+exports.useCallback = d;
 exports.useContext = y;
-exports.useDebugValue = _;
+exports.useDebugValue = T;
 
 var _preact = require("preact");
 
 var t,
     r,
     u = [],
-    f = _preact.options.__r;
+    i = _preact.options.__r;
 
 _preact.options.__r = function (n) {
-  f && f(n), t = 0, (r = n.__c).__H && (r.__H.t = q(r.__H.t));
+  i && i(n), t = 0, (r = n.__c).__H && (r.__H.t = w(r.__H.t));
 };
 
-var i = _preact.options.diffed;
+var o = _preact.options.diffed;
 
 _preact.options.diffed = function (n) {
-  i && i(n);
+  o && o(n);
   var t = n.__c;
 
   if (t) {
     var r = t.__H;
-    r && (r.u = q(r.u));
+    r && (r.u = w(r.u));
   }
 };
 
-var o = _preact.options.unmount;
+var f = _preact.options.unmount;
 
 function c(t) {
   _preact.options.__h && _preact.options.__h(r);
@@ -1358,29 +1363,29 @@ function c(t) {
 }
 
 function e(n) {
-  return a(L, n);
+  return a(q, n);
 }
 
-function a(n, u, f) {
-  var i = c(t++);
-  return i.__c || (i.__c = r, i.o = [f ? f(u) : L(null, u), function (t) {
-    var r = n(i.o[0], t);
-    i.o[0] !== r && (i.o[0] = r, i.__c.setState({}));
-  }]), i.o;
+function a(n, u, i) {
+  var o = c(t++);
+  return o.__c || (o.__c = r, o.o = [i ? i(u) : q(null, u), function (t) {
+    var r = n(o.o[0], t);
+    o.o[0] !== r && (o.o[0] = r, o.__c.setState({}));
+  }]), o.o;
 }
 
 function v(n, u) {
-  var f = c(t++);
-  F(f.v, u) && (f.o = n, f.v = u, r.__H.t.push(f), g(r));
+  var i = c(t++);
+  F(i.v, u) && (i.o = n, i.v = u, r.__H.t.push(i), _(r));
 }
 
-function p(n, u) {
-  var f = c(t++);
-  F(f.v, u) && (f.o = n, f.v = u, r.__H.u.push(f));
+function m(n, u) {
+  var i = c(t++);
+  F(i.v, u) && (i.o = n, i.v = u, r.__H.u.push(i));
 }
 
-function d(n) {
-  return m(function () {
+function p(n) {
+  return s(function () {
     return {
       current: n
     };
@@ -1388,17 +1393,17 @@ function d(n) {
 }
 
 function l(n, r, u) {
-  var f = c(t++);
-  F(f.v, u) && (f.v = u, n && (n.current = r()));
+  var i = c(t++);
+  F(i.v, u) && (i.v = u, n && (n.current = r()));
 }
 
-function m(n, r) {
+function s(n, r) {
   var u = c(t++);
-  return F(u.v, r) ? (u.v = r, u.p = n, u.o = n()) : u.o;
+  return F(u.v, r) ? (u.v = r, u.m = n, u.o = n()) : u.o;
 }
 
-function s(n, t) {
-  return m(function () {
+function d(n, t) {
+  return s(function () {
     return n;
   }, t);
 }
@@ -1406,49 +1411,45 @@ function s(n, t) {
 function y(n) {
   var u = r.context[n.__c];
   if (!u) return n.__p;
-  var f = c(t++);
-  return null == f.o && (f.o = !0, u.sub(r)), u.props.value;
+  var i = c(t++);
+  return null == i.o && (i.o = !0, u.sub(r)), u.props.value;
 }
 
-function _(t, r) {
+function T(t, r) {
   _preact.options.useDebugValue && _preact.options.useDebugValue(r ? r(t) : t);
 }
 
 _preact.options.unmount = function (n) {
-  o && o(n);
+  f && f(n);
   var t = n.__c;
 
   if (t) {
     var r = t.__H;
     r && r.i.forEach(function (n) {
-      return n.l && n.l();
+      return n.p && n.p();
     });
   }
 };
 
-var g = function () {};
+var _ = function () {};
 
-function w() {
+function g() {
   u.some(function (n) {
-    n.m = !1, n.__P && (n.__H.t = q(n.__H.t));
+    n.l = !1, n.__P && (n.__H.t = w(n.__H.t));
   }), u = [];
 }
 
-function E() {
-  setTimeout(w);
-}
-
-function q(n) {
-  return n.forEach(x), n.forEach(A), [];
-}
-
-function x(n) {
-  n.l && n.l();
+function w(n) {
+  return n.forEach(A), n.forEach(E), [];
 }
 
 function A(n) {
+  n.p && n.p();
+}
+
+function E(n) {
   var t = n.o();
-  "function" == typeof t && (n.l = t);
+  "function" == typeof t && (n.p = t);
 }
 
 function F(n, t) {
@@ -1457,12 +1458,18 @@ function F(n, t) {
   });
 }
 
-function L(n, t) {
+function q(n, t) {
   return "function" == typeof t ? t(n) : t;
 }
 
-"undefined" != typeof window && (g = function (t) {
-  !t.m && (t.m = !0) && 1 === u.push(t) && (_preact.options.requestAnimationFrame ? _preact.options.requestAnimationFrame(w) : requestAnimationFrame(E));
+"undefined" != typeof window && (_ = function (t) {
+  !t.l && (t.l = !0) && 1 === u.push(t) && (_preact.options.requestAnimationFrame || function (n) {
+    var t = function () {
+      clearTimeout(r), cancelAnimationFrame(u), setTimeout(n);
+    },
+        r = setTimeout(t, 100),
+        u = requestAnimationFrame(t);
+  })(g);
 });
 },{"preact":"../node_modules/preact/dist/preact.module.js"}],"../node_modules/preact/compat/dist/compat.module.js":[function(require,module,exports) {
 "use strict";
@@ -1493,17 +1500,18 @@ var _exportNames = {
   Fragment: true,
   Component: true
 };
-exports.hydrate = exports.render = C;
-exports.unmountComponentAtNode = _;
-exports.createPortal = E;
-exports.createElement = N;
-exports.createFactory = x;
-exports.cloneElement = S;
-exports.isValidElement = O;
-exports.findDOMNode = M;
-exports.memo = U;
-exports.forwardRef = Z;
-exports.unstable_batchedUpdates = L;
+exports.hydrate = exports.render = k;
+exports.unmountComponentAtNode = z;
+exports.createPortal = F;
+exports.createElement = S;
+exports.createFactory = w;
+exports.cloneElement = _;
+exports.isValidElement = j;
+exports.findDOMNode = U;
+exports.memo = Z;
+exports.forwardRef = L;
+exports.Suspense = m;
+exports.lazy = y;
 Object.defineProperty(exports, "createContext", {
   enumerable: true,
   get: function () {
@@ -1528,7 +1536,7 @@ Object.defineProperty(exports, "Component", {
     return _preact.Component;
   }
 });
-exports.lazy = exports.Suspense = exports.PureComponent = exports.Children = exports.version = exports.default = void 0;
+exports.unstable_batchedUpdates = exports.PureComponent = exports.Children = exports.version = exports.default = void 0;
 
 var n = _interopRequireWildcard(require("preact/hooks"));
 
@@ -1553,237 +1561,18 @@ function d(n, t) {
   return n;
 }
 
-function h() {
+function p(n) {
+  var t = n.parentNode;
+  t && t.removeChild(n);
+}
+
+var h = _preact.options.__e;
+
+function m() {
   this.t = [];
 }
 
-(h.prototype = new _preact.Component()).o = function (n) {
-  var t = this;
-  t.t.push(n);
-
-  var r = function () {
-    t.t[t.t.indexOf(n)] = t.t[t.t.length - 1], t.t.pop(), 0 == t.t.length && ((0, _preact._unmount)(t.props.fallback), t.__v.__e = null, t.__v.__k = t.state.i, t.setState({
-      i: null
-    }));
-  };
-
-  null == t.state.i && (t.setState({
-    i: t.__v.__k
-  }), function n(t) {
-    for (var r = 0; r < t.length; r++) {
-      var e = t[r];
-      null != e && ("function" != typeof e.type && e.__e ? (i = void 0, (i = (o = e.__e).parentNode) && i.removeChild(o)) : e.__k && n(e.__k));
-    }
-
-    var o, i;
-  }(t.__v.__k), t.__v.__k = []), n.then(r, r);
-}, h.prototype.render = function (n, t) {
-  return t.i ? n.fallback : n.children;
-};
-var p = "16.8.0",
-    m = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.element") || 60103,
-    y = /^(?:accent|alignment|arabic|baseline|cap|clip|color|fill|flood|font|glyph|horiz|marker|overline|paint|stop|strikethrough|stroke|text|underline|unicode|units|v|vector|vert|word|writing|x)[A-Z]/,
-    b = _preact.options.event;
-exports.version = p;
-
-_preact.options.event = function (n) {
-  return b && (n = b(n)), n.persist = function () {}, n.nativeEvent = n;
-};
-
-var g = _preact.options.__E;
-
-function x(n) {
-  return N.bind(null, n);
-}
-
-function C(n, t, r) {
-  return (0, _preact.render)(n, t), "function" == typeof r && r(), n ? n.__c : null;
-}
-
-_preact.options.__E = function (n, t, r) {
-  return g && g(n, t, r) || function (n, t, r) {
-    if (n.then) for (var e, o = t; o; o = o.__p) if ((e = o.__c) && e.o) return r && (t.__e = r.__e, t.__k = r.__k), e.o(n), !0;
-    return !1;
-  }(n, t, r);
-};
-
-var w = function () {};
-
-function k(n) {
-  var t = (0, _preact.h)(w, {
-    context: this.context
-  }, n.vnode),
-      r = n.container;
-  return n.container !== this.container && ((0, _preact.hydrate)("", r), this.container = r), C(t, r), this.componentWillUnmount = function () {
-    C(null, r);
-  }, null;
-}
-
-function E(n, t) {
-  return (0, _preact.h)(k, {
-    vnode: n,
-    container: t
-  });
-}
-
-w.prototype.getChildContext = function () {
-  return this.props.context;
-}, w.prototype.render = function (n) {
-  return n.children;
-};
-
-var A = function (n, t) {
-  return n ? (0, _preact.toChildArray)(n).map(t) : null;
-},
-    F = {
-  map: A,
-  forEach: A,
-  count: function (n) {
-    return n ? (0, _preact.toChildArray)(n).length : 0;
-  },
-  only: function (n) {
-    if (1 !== (n = (0, _preact.toChildArray)(n)).length) throw new Error("Children.only() expects only one child.");
-    return n[0];
-  },
-  toArray: _preact.toChildArray
-};
-
-exports.Children = F;
-
-function N() {
-  for (var n = [], t = arguments.length; t--;) n[t] = arguments[t];
-
-  var r = _preact.h.apply(void 0, n),
-      e = r.type,
-      o = r.props;
-
-  return "function" != typeof e && (o.defaultValue && (o.value || 0 === o.value || (o.value = o.defaultValue), delete o.defaultValue), Array.isArray(o.value) && o.multiple && "select" === e && ((0, _preact.toChildArray)(o.children).forEach(function (n) {
-    -1 != o.value.indexOf(n.props.value) && (n.props.selected = !0);
-  }), delete o.value), function (n, t) {
-    var r, e, o;
-
-    for (o in t) if (r = y.test(o)) break;
-
-    if (r) for (o in e = n.props = {}, t) e[y.test(o) ? o.replace(/([A-Z0-9])/, "-$1").toLowerCase() : o] = t[o];
-  }(r, o)), r.preactCompatNormalized = !1, R(r);
-}
-
-function R(n) {
-  return n.preactCompatNormalized = !0, function (n) {
-    var t = n.props;
-    (t.class || t.className) && (j.enumerable = "className" in t, t.className && (t.class = t.className), Object.defineProperty(t, "className", j));
-  }(n), n;
-}
-
-function S(n) {
-  if (!O(n)) return n;
-  var t = R(_preact.cloneElement.apply(null, arguments));
-  return t.$$typeof = m, t;
-}
-
-function O(n) {
-  return !!n && n.$$typeof === m;
-}
-
-function _(n) {
-  return !!n.__k && ((0, _preact.render)(null, n), !0);
-}
-
-var j = {
-  configurable: !0,
-  get: function () {
-    return this.class;
-  }
-};
-
-function z(n, t) {
-  for (var r in n) if (!(r in t)) return !0;
-
-  for (var e in t) if (n[e] !== t[e]) return !0;
-
-  return !1;
-}
-
-function M(n) {
-  return n && (n.base || 1 === n.nodeType && n) || null;
-}
-
-var P = function (n) {
-  function t(t) {
-    n.call(this, t), this.isPureReactComponent = !0;
-  }
-
-  return n && (t.__proto__ = n), (t.prototype = Object.create(n && n.prototype)).constructor = t, t.prototype.shouldComponentUpdate = function (n, t) {
-    return z(this.props, n) || z(this.state, t);
-  }, t;
-}(_preact.Component);
-
-exports.PureComponent = P;
-
-function U(n, t) {
-  function r(n) {
-    var r = this.props.ref,
-        e = r == n.ref;
-    return e || (r.call ? r(null) : r.current = null), (t ? !t(this.props, n) : z(this.props, n)) || !e;
-  }
-
-  function e(t) {
-    return this.shouldComponentUpdate = r, (0, _preact.h)(n, d({}, t));
-  }
-
-  return e.displayName = "Memo(" + (n.displayName || n.name) + ")", e.u = !0, e;
-}
-
-function W(n, t) {
-  Object.defineProperty(n.prototype, "UNSAFE_" + t, {
-    configurable: !0,
-    get: function () {
-      return this[t];
-    },
-    set: function (n) {
-      this[t] = n;
-    }
-  });
-}
-
-function Z(n) {
-  function t(t) {
-    var r = t.ref;
-    return delete t.ref, n(t, r);
-  }
-
-  return t.u = !0, t.displayName = "ForwardRef(" + (n.displayName || n.name) + ")", t;
-}
-
-_preact.Component.prototype.isReactComponent = {}, W(_preact.Component, "componentWillMount"), W(_preact.Component, "componentWillReceiveProps"), W(_preact.Component, "componentWillUpdate");
-var D = _preact.options.vnode;
-
-function L(n, t) {
-  n(t);
-}
-
-_preact.options.vnode = function (n) {
-  n.$$typeof = m, function (t) {
-    var r = n.type,
-        e = n.props;
-
-    if (e && "string" == typeof r) {
-      var o = {};
-
-      for (var i in e) o[i.toLowerCase()] = i;
-
-      if (o.ondoubleclick && (e.ondblclick = e[o.ondoubleclick], delete e[o.ondoubleclick]), o.onbeforeinput && (e.onbeforeinput = e[o.onbeforeinput], delete e[o.onbeforeinput]), o.onchange && ("textarea" === r || "input" === r.toLowerCase() && !/^fil|che|rad/i.test(e.type))) {
-        var u = o.oninput || "oninput";
-        e[u] || (e[u] = e[o.onchange], delete e[o.onchange]);
-      }
-    }
-  }();
-  var t = n.type;
-  t && t.u && n.ref && (n.props.ref = n.ref, n.ref = null), D && D(n);
-};
-
-var V = h,
-    $ = function (n) {
+function y(n) {
   var t, e, o;
 
   function i(i) {
@@ -1796,32 +1585,251 @@ var V = h,
     return (0, _preact.createElement)(e, i);
   }
 
-  return i.displayName = "Lazy", i;
+  return i.displayName = "Lazy", i.o = !0, i;
+}
+
+_preact.options.__e = function (n, t, r) {
+  if (n.then && r) for (var e, o = t; o = o.__p;) if ((e = o.__c) && e.i) return r && (t.__e = r.__e, t.__k = r.__k), void e.i(n);
+  h(n, t, r);
+}, (m.prototype = new _preact.Component()).i = function (n) {
+  var t = this;
+  t.t.push(n);
+
+  var r = function () {
+    t.t[t.t.indexOf(n)] = t.t[t.t.length - 1], t.t.pop(), 0 == t.t.length && ((0, _preact._unmount)(t.props.fallback), t.__v.__e = null, t.__v.__k = t.state.u, t.setState({
+      u: null
+    }));
+  };
+
+  null == t.state.u && (t.setState({
+    u: t.__v.__k
+  }), function n(t) {
+    for (var r = 0; r < t.length; r++) {
+      var e = t[r];
+      null != e && ("function" != typeof e.type && e.__e ? p(e.__e) : e.__k && n(e.__k));
+    }
+  }(t.__v.__k), t.__v.__k = []), n.then(r, r);
+}, m.prototype.render = function (n, t) {
+  return t.u ? n.fallback : n.children;
+};
+var b = "16.8.0",
+    g = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.element") || 60103,
+    x = /^(?:accent|alignment|arabic|baseline|cap|clip|color|fill|flood|font|glyph|horiz|marker|overline|paint|stop|strikethrough|stroke|text|underline|unicode|units|v|vector|vert|word|writing|x)[A-Z]/,
+    C = _preact.options.event;
+exports.version = b;
+
+function w(n) {
+  return S.bind(null, n);
+}
+
+function k(n, t, r) {
+  for (; t.firstChild;) p(t.firstChild);
+
+  return (0, _preact.render)(n, t), "function" == typeof r && r(), n ? n.__c : null;
+}
+
+_preact.options.event = function (n) {
+  return C && (n = C(n)), n.persist = function () {}, n.nativeEvent = n;
 };
 
-exports.lazy = $;
-exports.Suspense = V;
+var E = function () {};
+
+function A(n) {
+  var t = this,
+      r = n.container,
+      o = (0, _preact.h)(E, {
+    context: t.context
+  }, n.vnode);
+  return t.l && t.l !== r && (t.s.parentNode && t.l.removeChild(t.s), (0, _preact._unmount)(t.v), t.p = !1), n.vnode ? t.p ? (r.__k = t.__k, (0, _preact.render)(o, r), t.__k = r.__k) : (t.s = document.createTextNode(""), (0, _preact.hydrate)("", r), r.insertBefore(t.s, r.firstChild), t.p = !0, t.l = r, (0, _preact.render)(o, r, t.s), t.__k = this.s.__k) : t.p && (t.s.parentNode && t.l.removeChild(t.s), (0, _preact._unmount)(t.v)), t.v = o, t.componentWillUnmount = function () {
+    t.s.parentNode && t.l.removeChild(t.s), (0, _preact._unmount)(t.v);
+  }, null;
+}
+
+function F(n, t) {
+  return (0, _preact.h)(A, {
+    vnode: n,
+    container: t
+  });
+}
+
+E.prototype.getChildContext = function () {
+  return this.props.context;
+}, E.prototype.render = function (n) {
+  return n.children;
+};
+
+var N = function (n, t) {
+  return n ? (0, _preact.toChildArray)(n).map(t) : null;
+},
+    R = {
+  map: N,
+  forEach: N,
+  count: function (n) {
+    return n ? (0, _preact.toChildArray)(n).length : 0;
+  },
+  only: function (n) {
+    if (1 !== (n = (0, _preact.toChildArray)(n)).length) throw new Error("Children.only() expects only one child.");
+    return n[0];
+  },
+  toArray: _preact.toChildArray
+};
+
+exports.Children = R;
+
+function S() {
+  for (var n = [], t = arguments.length; t--;) n[t] = arguments[t];
+
+  var r = _preact.h.apply(void 0, n),
+      e = r.type,
+      o = r.props;
+
+  return "function" != typeof e && (o.defaultValue && (o.value || 0 === o.value || (o.value = o.defaultValue), delete o.defaultValue), Array.isArray(o.value) && o.multiple && "select" === e && ((0, _preact.toChildArray)(o.children).forEach(function (n) {
+    -1 != o.value.indexOf(n.props.value) && (n.props.selected = !0);
+  }), delete o.value), function (n, t) {
+    var r, e, o;
+
+    for (o in t) if (r = x.test(o)) break;
+
+    if (r) for (o in e = n.props = {}, t) e[x.test(o) ? o.replace(/([A-Z0-9])/, "-$1").toLowerCase() : o] = t[o];
+  }(r, o)), r.preactCompatNormalized = !1, O(r);
+}
+
+function O(n) {
+  return n.preactCompatNormalized = !0, function (n) {
+    var t = n.props;
+    (t.class || t.className) && (M.enumerable = "className" in t, t.className && (t.class = t.className), Object.defineProperty(t, "className", M));
+  }(n), n;
+}
+
+function _(n) {
+  return j(n) ? O(_preact.cloneElement.apply(null, arguments)) : n;
+}
+
+function j(n) {
+  return !!n && n.$$typeof === g;
+}
+
+function z(n) {
+  return !!n.__k && ((0, _preact.render)(null, n), !0);
+}
+
+var M = {
+  configurable: !0,
+  get: function () {
+    return this.class;
+  }
+};
+
+function P(n, t) {
+  for (var r in n) if (!(r in t)) return !0;
+
+  for (var e in t) if (n[e] !== t[e]) return !0;
+
+  return !1;
+}
+
+function U(n) {
+  return n && (n.base || 1 === n.nodeType && n) || null;
+}
+
+var W = function (n) {
+  function t(t) {
+    n.call(this, t), this.isPureReactComponent = !0;
+  }
+
+  return n && (t.__proto__ = n), (t.prototype = Object.create(n && n.prototype)).constructor = t, t.prototype.shouldComponentUpdate = function (n, t) {
+    return P(this.props, n) || P(this.state, t);
+  }, t;
+}(_preact.Component);
+
+exports.PureComponent = W;
+
+function Z(n, t) {
+  function r(n) {
+    var r = this.props.ref,
+        e = r == n.ref;
+    return e || (r.call ? r(null) : r.current = null), (t ? !t(this.props, n) : P(this.props, n)) || !e;
+  }
+
+  function e(t) {
+    return this.shouldComponentUpdate = r, (0, _preact.h)(n, d({}, t));
+  }
+
+  return e.displayName = "Memo(" + (n.displayName || n.name) + ")", e.o = !0, e;
+}
+
+function D(n, t) {
+  Object.defineProperty(n.prototype, "UNSAFE_" + t, {
+    configurable: !0,
+    get: function () {
+      return this[t];
+    },
+    set: function (n) {
+      this[t] = n;
+    }
+  });
+}
+
+function L(n) {
+  function t(t) {
+    var r = t.ref;
+    return delete t.ref, n(t, r);
+  }
+
+  return t.o = !0, t.displayName = "ForwardRef(" + (n.displayName || n.name) + ")", t;
+}
+
+_preact.Component.prototype.isReactComponent = {}, D(_preact.Component, "componentWillMount"), D(_preact.Component, "componentWillReceiveProps"), D(_preact.Component, "componentWillUpdate");
+var T = _preact.options.vnode;
+
+_preact.options.vnode = function (n) {
+  n.$$typeof = g, function (t) {
+    var r = n.type,
+        e = n.props;
+
+    if (e && "string" == typeof r) {
+      var o = {};
+
+      for (var i in e) /^on(Ani|Tra)/.test(i) && (e[i.toLowerCase()] = e[i], delete e[i]), o[i.toLowerCase()] = i;
+
+      if (o.ondoubleclick && (e.ondblclick = e[o.ondoubleclick], delete e[o.ondoubleclick]), o.onbeforeinput && (e.onbeforeinput = e[o.onbeforeinput], delete e[o.onbeforeinput]), o.onchange && ("textarea" === r || "input" === r.toLowerCase() && !/^fil|che|ra/i.test(e.type))) {
+        var u = o.oninput || "oninput";
+        e[u] || (e[u] = e[o.onchange], delete e[o.onchange]);
+      }
+    }
+  }();
+  var t = n.type;
+  t && t.o && n.ref && (n.props.ref = n.ref, n.ref = null), T && T(n);
+};
+
+var V = function (n, t) {
+  return n(t);
+};
+
+exports.unstable_batchedUpdates = V;
 
 var _default = d({
   version: "16.8.0",
-  Children: F,
-  render: C,
-  hydrate: C,
-  unmountComponentAtNode: _,
-  createPortal: E,
-  createElement: N,
+  Children: R,
+  render: k,
+  hydrate: k,
+  unmountComponentAtNode: z,
+  createPortal: F,
+  createElement: S,
   createContext: _preact.createContext,
-  createFactory: x,
-  cloneElement: S,
+  createFactory: w,
+  cloneElement: _,
   createRef: _preact.createRef,
   Fragment: _preact.Fragment,
-  isValidElement: O,
-  findDOMNode: M,
+  isValidElement: j,
+  findDOMNode: U,
   Component: _preact.Component,
-  PureComponent: P,
-  memo: U,
-  forwardRef: Z,
-  unstable_batchedUpdates: L
+  PureComponent: W,
+  memo: Z,
+  forwardRef: L,
+  unstable_batchedUpdates: V,
+  Suspense: m,
+  lazy: y
 }, n);
 
 exports.default = _default;
@@ -1948,6 +1956,8 @@ function reloadCSS() {
 
 module.exports = reloadCSS;
 },{"./bundle-url":"../node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"app/components/footer.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -1971,6 +1981,8 @@ const Footer = ({
 var _default = Footer;
 exports.default = _default;
 },{"preact":"../node_modules/preact/dist/preact.module.js","./footer.less":"app/components/footer.less"}],"app/components/app-title.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -2038,6 +2050,8 @@ const AppTitle = () => {
 var _default = AppTitle;
 exports.default = _default;
 },{"react":"../node_modules/preact/compat/dist/compat.module.js","preact":"../node_modules/preact/dist/preact.module.js","./app-title.less":"app/components/app-title.less"}],"app/components/navbar-button.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -2151,6 +2165,8 @@ const ConnectButton = () => {
 var _default = ConnectButton;
 exports.default = _default;
 },{"react":"../node_modules/preact/compat/dist/compat.module.js","preact":"../node_modules/preact/dist/preact.module.js","./navbar-button":"app/components/navbar-button.js","~/app/services/navigator.service":"app/services/navigator.service.js"}],"app/components/login-button.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -2189,6 +2205,8 @@ const LoginButton = ({
 var _default = LoginButton;
 exports.default = _default;
 },{"preact":"../node_modules/preact/dist/preact.module.js","preact-router":"../node_modules/preact-router/dist/preact-router.es.js","./navbar-button":"app/components/navbar-button.js","./login-button.less":"app/components/login-button.less"}],"app/components/sidebar-button.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -2236,6 +2254,8 @@ const SidebarButton = ({
 var _default = SidebarButton;
 exports.default = _default;
 },{"react":"../node_modules/preact/compat/dist/compat.module.js","preact":"../node_modules/preact/dist/preact.module.js","./sidebar-button.less":"app/components/sidebar-button.less"}],"app/components/search-box.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -2329,6 +2349,8 @@ function groupPages(pages) {
   }, []);
 }
 },{}],"app/pages/home/components/sidebar.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -12135,6 +12157,8 @@ ReactMarkdown.renderers = defaultRenderers;
 ReactMarkdown.uriTransformer = uriTransformer;
 module.exports = ReactMarkdown;
 },{"xtend":"../node_modules/xtend/immutable.js","unified":"../node_modules/unified/index.js","remark-parse":"../node_modules/remark-parse/index.js","prop-types":"../node_modules/prop-types/index.js","mdast-add-list-metadata":"../node_modules/mdast-add-list-metadata/index.js","./plugins/naive-html":"../node_modules/react-markdown/lib/plugins/naive-html.js","./plugins/disallow-node":"../node_modules/react-markdown/lib/plugins/disallow-node.js","./ast-to-react":"../node_modules/react-markdown/lib/ast-to-react.js","./wrap-table-rows":"../node_modules/react-markdown/lib/wrap-table-rows.js","./get-definitions":"../node_modules/react-markdown/lib/get-definitions.js","./uri-transformer":"../node_modules/react-markdown/lib/uri-transformer.js","./renderers":"../node_modules/react-markdown/lib/renderers.js","./symbols":"../node_modules/react-markdown/lib/symbols.js"}],"app/pages/home/components/link.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -12188,6 +12212,8 @@ const Link = ({
 var _default = Link;
 exports.default = _default;
 },{"preact":"../node_modules/preact/dist/preact.module.js","~/app/services/navigator.service":"app/services/navigator.service.js","./link.less":"app/pages/home/components/link.less"}],"app/components/modal-dialog.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -15551,6 +15577,8 @@ class HotKey extends _preact.Component {
 
 exports.default = HotKey;
 },{"preact":"../node_modules/preact/dist/preact.module.js","lodash/isEmpty":"../node_modules/lodash/isEmpty.js","lodash/difference":"../node_modules/lodash/difference.js","lodash/isEqual":"../node_modules/lodash/isEqual.js"}],"app/pages/home/components/page-content-toolbar.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -15654,6 +15682,8 @@ exports.default = _default;
         module.hot.accept(reloadCSS);
       
 },{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/home/components/page-content.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -15895,7 +15925,7 @@ class ConfigurationService {
       oauthClientId = '5e9db2b459c52458a8a2';
     }
 
-    return `https://github-oauth-bridge.now.sh/login?clientId=${oauthClientId}`;
+    return `https://github-oauth-bridge.jan-baer.now.sh/api/login?clientId=${oauthClientId}`;
   }
 
   get user() {
@@ -15974,40 +16004,37 @@ class GithubService {
     return page.name.endsWith('.md');
   }
 
-  async _get(url, oauthToken) {
+  _get(url, oauthToken) {
     const options = this._buildOptions(oauthToken, 'GET');
 
-    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
-
-    if (response.status === 200) {
-      return response.json();
-    }
-
-    return undefined;
+    return this._send(url, options, [200]);
   }
 
-  async _put(url, body, oauthToken) {
-    const EXPECTED_STATUS = [200, 201];
-
+  _put(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'PUT');
 
     options.body = JSON.stringify(body);
-    const response = await fetch(`${GITHUB_API_URL}${url}`, options);
-
-    if (EXPECTED_STATUS.some(s => s === response.status)) {
-      return response.json();
-    }
-
-    return undefined;
+    return this._send(url, options, [200, 201]);
   }
 
-  async _delete(url, body, oauthToken) {
+  _post(url, body, oauthToken) {
+    const options = this._buildOptions(oauthToken, 'POST');
+
+    options.body = JSON.stringify(body);
+    return this._send(url, options, [201]);
+  }
+
+  _delete(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'DELETE');
 
     options.body = JSON.stringify(body);
+    return this._send(url, options, [200]);
+  }
+
+  async _send(url, options, expectedStatus) {
     const response = await fetch(`${GITHUB_API_URL}${url}`, options);
 
-    if (response.status === 200) {
+    if (expectedStatus.some(s => s === response.status)) {
       return response.json();
     }
 
@@ -16083,7 +16110,8 @@ class GithubService {
       message: commitMessage,
       content: this._encodeContent(content),
       sha
-    };
+    }; // GitHub-API uses always PUT for creating and updating of content
+
     const response = await this._put(url, body, oauthToken);
     const page = response.content;
     page.content = body.content;
@@ -16101,6 +16129,20 @@ class GithubService {
       sha
     };
     return this._delete(url, body, oauthToken);
+  }
+
+  createNewRepository(userName, repository, isPrivateRepository, oauthToken) {
+    const url = `/user/repos`;
+    const body = {
+      name: repository,
+      description: `A personal wiki for ${userName} created by MDWiki`,
+      private: isPrivateRepository,
+      has_issues: false,
+      has_projects: false,
+      has_wiki: false,
+      is_template: false
+    };
+    return this._post(url, body, oauthToken);
   }
 
 }
@@ -16220,6 +16262,8 @@ class PageStore {
 var _default = PageStore;
 exports.default = _default;
 },{"./../services/configuration.service.js":"app/services/configuration.service.js","./../services/github.service.js":"app/services/github.service.js"}],"app/pages/home/index.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -16521,7 +16565,14 @@ class HomePage extends _preact.Component {
 }
 
 exports.default = HomePage;
-},{"preact":"../node_modules/preact/dist/preact.module.js","preact/compat":"../node_modules/preact/compat/dist/compat.module.js","classnames":"../node_modules/classnames/index.js","~/app/components/footer":"app/components/footer.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/connect-button":"app/components/connect-button.js","~/app/components/login-button":"app/components/login-button.js","~/app/components/sidebar-button":"app/components/sidebar-button.js","~/app/components/search-box":"app/components/search-box.js","./components/sidebar":"app/pages/home/components/sidebar.js","./components/page-content":"app/pages/home/components/page-content.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","./../../stores/page.store":"app/stores/page.store.js","./index.less":"app/pages/home/index.less","_bundle_loader":"../node_modules/parcel-bundler/src/builtins/bundle-loader.js","./components/page-editor":[["page-editor.371fac1d.js","app/pages/home/components/page-editor.js"],"page-editor.371fac1d.js.map","page-editor.371fac1d.css","app/pages/home/components/page-editor.js"]}],"app/pages/connect/components/repositories-selection.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js","preact/compat":"../node_modules/preact/compat/dist/compat.module.js","classnames":"../node_modules/classnames/index.js","~/app/components/footer":"app/components/footer.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/connect-button":"app/components/connect-button.js","~/app/components/login-button":"app/components/login-button.js","~/app/components/sidebar-button":"app/components/sidebar-button.js","~/app/components/search-box":"app/components/search-box.js","./components/sidebar":"app/pages/home/components/sidebar.js","./components/page-content":"app/pages/home/components/page-content.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","./../../stores/page.store":"app/stores/page.store.js","./index.less":"app/pages/home/index.less","_bundle_loader":"../node_modules/parcel-bundler/src/builtins/bundle-loader.js","./components/page-editor":[["page-editor.371fac1d.js","app/pages/home/components/page-editor.js"],"page-editor.371fac1d.js.map","page-editor.371fac1d.css","app/pages/home/components/page-editor.js"]}],"app/pages/connect/components/select-existing-repository.less":[function(require,module,exports) {
+"use strict";
+
+var reloadCSS = require('_css_loader');
+
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/connect/components/select-existing-repository.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16531,7 +16582,9 @@ exports.default = void 0;
 
 var _preact = require("preact");
 
-const RepositoriesSelection = ({
+require("./select-existing-repository.less");
+
+const SelectExistingRepository = ({
   repositories,
   selectedRepository,
   onSelectedRepositoryChanged,
@@ -16540,7 +16593,7 @@ const RepositoriesSelection = ({
   return (0, _preact.h)(_preact.Fragment, null, (0, _preact.h)("h3", null, "Select an existing repository where the data should be saved"), (0, _preact.h)("form", {
     onSubmit: e => e.preventDefault()
   }, (0, _preact.h)("select", {
-    class: "select",
+    class: "select SelectExistingRepository-select",
     onChange: e => onSelectedRepositoryChanged(e.target.value)
   }, (0, _preact.h)("option", {
     disabled: true,
@@ -16548,16 +16601,67 @@ const RepositoriesSelection = ({
     value: true
   }, " -- select a repository -- "), repositories.map(r => (0, _preact.h)("option", {
     value: r.name
-  }, r.name))), (0, _preact.h)("br", null), (0, _preact.h)("br", null), (0, _preact.h)("button", {
+  }, r.name))), (0, _preact.h)("button", {
     class: "button button-primary",
     onClick: () => onConnectClick(),
     disabled: !selectedRepository
   }, "Connect")));
 };
 
-var _default = RepositoriesSelection;
+var _default = SelectExistingRepository;
 exports.default = _default;
-},{"preact":"../node_modules/preact/dist/preact.module.js"}],"app/pages/connect/components/login-state.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js","./select-existing-repository.less":"app/pages/connect/components/select-existing-repository.less"}],"app/pages/connect/components/create-new-repository.less":[function(require,module,exports) {
+"use strict";
+
+var reloadCSS = require('_css_loader');
+
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"app/pages/connect/components/create-new-repository.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _preact = require("preact");
+
+var _hooks = require("preact/hooks");
+
+require("./create-new-repository.less");
+
+const CreateNewRepository = ({
+  onCreateClick,
+  onValidateRepositoryName
+}) => {
+  const [repositoryName, setRepositoryName] = (0, _hooks.useState)('');
+  const [isValidRepositoryName, setIsValidRepositoryName] = (0, _hooks.useState)(false);
+  (0, _hooks.useEffect)(async () => {
+    const isValid = onValidateRepositoryName(repositoryName);
+    setIsValidRepositoryName(isValid);
+  }, [repositoryName]);
+  return (0, _preact.h)(_preact.Fragment, null, (0, _preact.h)("h3", null, "Or create a new repository"), (0, _preact.h)("form", {
+    onSubmit: e => e.preventDefault()
+  }, (0, _preact.h)("div", {
+    class: "CreateNewRepository-container"
+  }, (0, _preact.h)("input", {
+    class: "input",
+    type: "text",
+    value: repositoryName,
+    onChange: e => setRepositoryName(e.target.value)
+  }), repositoryName && !isValidRepositoryName && (0, _preact.h)("div", {
+    class: "CreateNewRepository-errorMessage"
+  }, "There's an existing repository with the same name. Please choose another name")), (0, _preact.h)("button", {
+    class: "button button-primary",
+    onClick: () => onCreateClick(repositoryName),
+    disabled: !isValidRepositoryName
+  }, "Create")));
+};
+
+var _default = CreateNewRepository;
+exports.default = _default;
+},{"preact":"../node_modules/preact/dist/preact.module.js","preact/hooks":"../node_modules/preact/hooks/dist/hooks.module.js","./create-new-repository.less":"app/pages/connect/components/create-new-repository.less"}],"app/pages/connect/components/login-state.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16607,6 +16711,8 @@ const LoginState = ({
 var _default = LoginState;
 exports.default = _default;
 },{"react":"../node_modules/preact/compat/dist/compat.module.js","preact":"../node_modules/preact/dist/preact.module.js"}],"app/pages/connect/index.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -16631,7 +16737,9 @@ var _github = _interopRequireDefault(require("~/app/services/github.service"));
 
 var _navigator = _interopRequireDefault(require("~/app/services/navigator.service"));
 
-var _repositoriesSelection = _interopRequireDefault(require("./components/repositories-selection"));
+var _selectExistingRepository = _interopRequireDefault(require("./components/select-existing-repository"));
+
+var _createNewRepository = _interopRequireDefault(require("./components/create-new-repository"));
 
 var _loginState = _interopRequireDefault(require("./components/login-state"));
 
@@ -16701,6 +16809,28 @@ class ConnectPage extends _preact.Component {
     _navigator.default.gotoHome();
   }
 
+  canCreateNewRepository(repositoryName) {
+    if (!repositoryName || repositoryName === '') {
+      return false;
+    }
+
+    return !this.state.repositories.some(r => r.name.toLowerCase() === repositoryName.toLowerCase());
+  }
+
+  async createNewRepository(repositoryName, isPrivateRepository = false) {
+    const {
+      user,
+      oauthToken
+    } = this.state;
+    const userName = user.loginName;
+    await _github.default.createNewRepository(userName, repositoryName, isPrivateRepository, oauthToken);
+    await _github.default.createPage(userName, repositoryName, 'index.md', `# ${repositoryName} index page`, 'Create new repository', oauthToken);
+
+    _configuration.default.save(user, repositoryName, oauthToken);
+
+    _navigator.default.gotoHome();
+  }
+
   disconnect() {
     _configuration.default.clear();
   }
@@ -16721,12 +16851,15 @@ class ConnectPage extends _preact.Component {
     }, "To be able to work with MDWiki you have to login with your ", (0, _preact.h)("strong", null, "GitHub"), " account and then select a Git repository where the data should be saved. MDWiki will create for each page a new file in the repository and each change will be saved with a new commit. And since the data will be saved on ", (0, _preact.h)("strong", null, "Github"), " as ", (0, _preact.h)("strong", null, "Markdown"), " files, you can use and change it also outside from MDWiki."), (0, _preact.h)(_loginState.default, {
       user: user,
       onLoginClick: this.navigateToGithub
-    }), user && (0, _preact.h)(_repositoriesSelection.default, {
+    }), user && (0, _preact.h)(_preact.Fragment, null, (0, _preact.h)(_selectExistingRepository.default, {
       repositories: repositories,
       selectedRepository: selectedRepository,
       onSelectedRepositoryChanged: this.changeSelectedRepository,
       onConnectClick: () => this.connect()
-    }))), (0, _preact.h)(_footer.default, {
+    }), (0, _preact.h)("br", null), (0, _preact.h)(_createNewRepository.default, {
+      onCreateClick: repositoryName => this.createNewRepository(repositoryName),
+      onValidateRepositoryName: repositoryName => this.canCreateNewRepository(repositoryName)
+    })))), (0, _preact.h)(_footer.default, {
       appVersion: _configuration.default.appVersion
     }));
   }
@@ -16734,7 +16867,9 @@ class ConnectPage extends _preact.Component {
 }
 
 exports.default = ConnectPage;
-},{"preact":"../node_modules/preact/dist/preact.module.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/footer":"app/components/footer.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/github.service":"app/services/github.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","./components/repositories-selection":"app/pages/connect/components/repositories-selection.js","./components/login-state":"app/pages/connect/components/login-state.js","./index.less":"app/pages/connect/index.less"}],"app/pages/search/components/search-result.less":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/footer":"app/components/footer.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/github.service":"app/services/github.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","./components/select-existing-repository":"app/pages/connect/components/select-existing-repository.js","./components/create-new-repository":"app/pages/connect/components/create-new-repository.js","./components/login-state":"app/pages/connect/components/login-state.js","./index.less":"app/pages/connect/index.less"}],"app/pages/search/components/search-result.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -16771,6 +16906,8 @@ const SearchResult = ({
 var _default = SearchResult;
 exports.default = _default;
 },{"preact":"../node_modules/preact/dist/preact.module.js","./search-result.less":"app/pages/search/components/search-result.less"}],"app/pages/search/components/search-input.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -16820,6 +16957,8 @@ const SearchInput = props => {
 var _default = SearchInput;
 exports.default = _default;
 },{"preact":"../node_modules/preact/dist/preact.module.js","preact/hooks":"../node_modules/preact/hooks/dist/hooks.module.js","./search-input.less":"app/pages/search/components/search-input.less"}],"app/pages/search/index.less":[function(require,module,exports) {
+"use strict";
+
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -17040,7 +17179,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41681" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46291" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
