@@ -1,5 +1,6 @@
 import { h, Component } from 'preact';
 import { Router, route } from 'preact-router';
+import { createHashHistory } from 'history';
 import Home from './pages/home';
 import Connect from './pages/connect';
 import Search from './pages/search';
@@ -32,7 +33,7 @@ class App extends Component {
 
   render() {
     return (
-      <Router onChange={this.handleRoute}>
+      <Router history={createHashHistory()} onChange={this.handleRoute}>
         <Home path="/" />
         <Connect path="/connect" />
         <Search path="/search" />
