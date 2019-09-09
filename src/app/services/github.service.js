@@ -94,8 +94,8 @@ class GithubService {
     return undefined;
   }
 
-  async getUserRepositories(user, oauthToken) {
-    return this._get(`/users/${user}/repos?per_page=100`, oauthToken);
+  async getUserRepositories(oauthToken) {
+    return this._get(`/user/repos?per_page=100`, oauthToken);
   }
 
   async getPages(userName, repository, oauthToken) {

@@ -46,7 +46,7 @@ export default class ConnectPage extends Component {
   async verifyOauthToken(oauthToken) {
     const user = await github.getAuthenticatedUser(oauthToken);
     if (user) {
-      const repositories = await github.getUserRepositories(user.loginName, oauthToken);
+      const repositories = await github.getUserRepositories(oauthToken);
       this.setState({ user, repositories, oauthToken });
     }
   }
