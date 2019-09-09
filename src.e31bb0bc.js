@@ -17205,8 +17205,8 @@ class GithubService {
     return undefined;
   }
 
-  async getUserRepositories(user, oauthToken) {
-    return this._get(`/users/${user}/repos?per_page=100`, oauthToken);
+  async getUserRepositories(oauthToken) {
+    return this._get(`/user/repos?per_page=100`, oauthToken);
   }
 
   async getPages(userName, repository, oauthToken) {
@@ -17912,7 +17912,7 @@ class ConnectPage extends _preact.Component {
     const user = await _github.default.getAuthenticatedUser(oauthToken);
 
     if (user) {
-      const repositories = await _github.default.getUserRepositories(user.loginName, oauthToken);
+      const repositories = await _github.default.getUserRepositories(oauthToken);
       this.setState({
         user,
         repositories,
@@ -18312,7 +18312,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46291" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35641" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
