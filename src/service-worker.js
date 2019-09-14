@@ -24,6 +24,15 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') {
     return;
   }
+
+  // This is a workaround for the problem with requests to Github with using credentials
+  // as long the problem is not solved, we'll no longer let the ServiceWorker handle
+  // requests to GitHub to be able to cache the responses and provide offline support
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.host === GITHUB_API_HOST) {
+    return;
+  }
+
   event.respondWith(handleFetch(event.request));
 });
 
