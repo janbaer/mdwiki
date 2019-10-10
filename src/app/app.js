@@ -17,17 +17,17 @@ class App extends Component {
   }
 
   handleRoute(e) {
-    switch (e.current.props.path) {
-      case '/':
-        const isConnected = this.isConnected();
-        if (!isConnected) {
-          let path = '/connect';
-          if (e.current.props.token) {
-            path += `?token=${e.current.props.token}`;
-          }
-          route(path, true);
-        }
-        break;
+    if (e.current.props.path === '/connect') {
+      return;
+    }
+
+    const isConnected = this.isConnected();
+    if (!isConnected) {
+      let path = '/connect';
+      if (e.current.props.token) {
+        path += `?token=${e.current.props.token}`;
+      }
+      route(path, true);
     }
   }
 

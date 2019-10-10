@@ -3,7 +3,7 @@
 
 const APP_VERSION = '#1';
 
-const APP_CACHE_NAME = `mdwiki-app-cache-v#1`;
+const APP_CACHE_NAME = 'mdwiki-app-cache-v#1';
 const GITHUB_CACHE_NAME = 'mdwiki-github-cache';
 const GITHUB_API_HOST = 'api.github.com';
 const appFiles = [];

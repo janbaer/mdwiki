@@ -95,7 +95,7 @@ class GithubService {
   }
 
   async getUserRepositories(oauthToken) {
-    return this._get(`/user/repos?per_page=100`, oauthToken);
+    return this._get('/user/repos?per_page=100', oauthToken);
   }
 
   async getPages(userName, repository, oauthToken) {
@@ -149,7 +149,7 @@ class GithubService {
   }
 
   createNewRepository(userName, repository, isPrivateRepository, oauthToken) {
-    const url = `/user/repos`;
+    const url = '/user/repos';
     const body = {
       name: repository,
       description: `A personal wiki for ${userName} created by MDWiki`,
