@@ -21,18 +21,20 @@
       }
 
       window.navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'update') {
-          if (window.Notification.permission === 'granted') {
-            const notification = new window.Notification('MDWiki Update', {
-              body: `We updated MDWiki to version 3.${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
-              tag: 'mdwiki_update'
-            });
+        if (window.Notification.permission !== 'granted') {
+          return;
+        }
 
-            notification.onclick = () => {
-              notification.close();
-              window.location.reload();
-            };
-          }
+        if (event.data.type === 'update') {
+          const notification = new window.Notification('MDWiki Update', {
+            body: `We updated MDWiki to version 3.${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
+            tag: 'mdwiki_update'
+          });
+
+          notification.onclick = () => {
+            notification.close();
+            window.location.reload();
+          };
         }
       });
     }
