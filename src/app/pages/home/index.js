@@ -13,7 +13,9 @@ import PageContent from './components/page-content';
 import configuration from '~/app/services/configuration.service';
 import navigator from '~/app/services/navigator.service';
 
-import PageStore from './../../stores/page.store';
+import PageStore from '~/app/stores/page.store';
+
+import EVENTS from '~/app/constants/events.constants';
 
 import './index.less';
 
@@ -31,7 +33,8 @@ export default class HomePage extends Component {
       pages,
       page,
       isInEditMode: false,
-      isNewPageDialogShown: false
+      isNewPageDialogShown: false,
+      appVersion: configuration.appVersion,
     };
 
     this.toggleSidebar = this.toggleSidebar.bind(this);
@@ -42,12 +45,22 @@ export default class HomePage extends Component {
     this.onDeletePage = this.onDeletePage.bind(this);
     this.onSavePage = this.onSavePage.bind(this);
     this.onCancelEditPage = this.onCancelEditPage.bind(this);
+
+    configuration.eventEmitter.on(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
   }
 
   componentWillReceiveProps(nextProps, nextState) {
     if (nextProps.page !== this.props.page) {
       this.loadPage(nextProps.page);
     }
+  }
+
+  componentWillUnmount() {
+    configuration.eventEmitter.removeListener(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged);
+  }
+
+  onAppVersionChanged(appVersion) {
+    this.setState({ appVersion: appVersion });
   }
 
   onStartSearch(searchTerm) {
@@ -139,7 +152,7 @@ export default class HomePage extends Component {
     );
   }
 
-  render(props, { showSidebar, isInEditMode, pages, page }) {
+  render(props, { showSidebar, isInEditMode, pages, page, appVersion }) {
     const leftSidebarContainerClassname = classnames(
       'HomePage-sidebarContainer',
       { 'is-shown': showSidebar }
@@ -173,7 +186,7 @@ export default class HomePage extends Component {
             </div>
           </div>
         </main>
-        <Footer appVersion={configuration.appVersion} />
+        <Footer appVersion={appVersion} />
       </div>
     );
   }

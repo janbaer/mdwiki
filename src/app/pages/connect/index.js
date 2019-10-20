@@ -1,10 +1,13 @@
 import { h, Component, Fragment } from 'preact';
+
 import AppTitle from '~/app/components/app-title';
 import Footer from '~/app/components/footer';
 
 import configuration from '~/app/services/configuration.service';
 import github from '~/app/services/github.service';
 import navigator from '~/app/services/navigator.service';
+
+import EVENTS from '~/app/constants/events.constants';
 
 import SelectExistingRepository from './components/select-existing-repository';
 import CreateNewRepository from './components/create-new-repository';
@@ -15,13 +18,17 @@ import './index.less';
 export default class ConnectPage extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       repositories: [],
-      selectedRepository: undefined
+      selectedRepository: undefined,
+      appVersion: configuration.appVersion
     };
 
     this.changeSelectedRepository = this.changeSelectedRepository.bind(this);
     this.navigateToGithub = this.navigateToGithub.bind(this);
+
+    configuration.eventEmitter.on(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
   }
 
   componentDidMount() {
@@ -37,6 +44,14 @@ export default class ConnectPage extends Component {
     if (configuration.repository) {
       this.changeSelectedRepository(configuration.repository);
     }
+  }
+
+  componentWillUnmount() {
+    configuration.eventEmitter.removeListener(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged);
+  }
+
+  onAppVersionChanged(appVersion) {
+    this.setState({ appVersion: appVersion });
   }
 
   navigateToGithub() {
@@ -86,7 +101,7 @@ export default class ConnectPage extends Component {
     configuration.clear();
   }
 
-  render(props, { user, repositories, selectedRepository }) {
+  render(props, { user, repositories, selectedRepository, appVersion }) {
     return (
       <div class="App-container">
         <header class="ConnectPage-header">
@@ -125,7 +140,7 @@ export default class ConnectPage extends Component {
             }
           </div>
         </main>
-        <Footer appVersion={configuration.appVersion} />
+        <Footer appVersion={appVersion} />
       </div>
     );
   }

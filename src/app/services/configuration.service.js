@@ -1,4 +1,8 @@
+import EventEmitter from 'eventemitter3';
+
 import storage from './storage.service';
+
+import EVENTS from '~/app/constants/events.constants';
 
 const STORE_KEY = 'mdwiki-config';
 const APP_VERSION_STORE_KEY = 'mdwiki-version';
@@ -10,12 +14,16 @@ class ConfigurationService {
 
     this.config = storage.getObject(STORE_KEY);
 
+    this.eventEmitter = new EventEmitter();
+
     navigator.serviceWorker.addEventListener('message', event => {
-      switch (event.data.type) {
+      const { type, version } = event.data;
+      switch (type) {
         case 'update':
         case 'activate':
-          if (event.data.version) {
-            storage.set(APP_VERSION_STORE_KEY, event.data.version);
+          if (version && !Number.isNaN(version)) {
+            storage.set(APP_VERSION_STORE_KEY, version);
+            this.eventEmitter.emit(EVENTS.APP_VERSION_CHANGED, version);
           }
       }
     });
