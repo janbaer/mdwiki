@@ -123,50 +123,53 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.render = D;
-exports.hydrate = H;
-exports.h = exports.createElement = s;
-exports.Fragment = v;
-exports.createRef = h;
-exports.Component = y;
-exports.cloneElement = I;
-exports.createContext = L;
-exports.toChildArray = _;
-exports._unmount = z;
-exports.options = void 0;
+exports.render = I;
+exports.hydrate = L;
+exports.h = exports.createElement = h;
+exports.Fragment = d;
+exports.createRef = p;
+exports.Component = m;
+exports.cloneElement = M;
+exports.createContext = O;
+exports.toChildArray = x;
+exports._unmount = D;
+exports.options = exports.isValidElement = void 0;
 var n,
     l,
     u,
     t,
     i,
-    r = {},
-    f = [],
-    o = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|^--/i;
+    r,
+    o,
+    f = {},
+    e = [],
+    c = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|^--/i;
+exports.isValidElement = l;
 exports.options = n;
 
-function e(n, l) {
+function s(n, l) {
   for (var u in l) n[u] = l[u];
 
   return n;
 }
 
-function c(n) {
+function a(n) {
   var l = n.parentNode;
   l && l.removeChild(n);
 }
 
-function s(n, l, u) {
+function h(n, l, u) {
   var t,
       i,
       r,
-      f,
-      o = arguments;
-  if (l = e({}, l), arguments.length > 3) for (u = [u], t = 3; t < arguments.length; t++) u.push(o[t]);
+      o,
+      f = arguments;
+  if (l = s({}, l), arguments.length > 3) for (u = [u], t = 3; t < arguments.length; t++) u.push(f[t]);
   if (null != u && (l.children = u), null != n && null != n.defaultProps) for (i in n.defaultProps) void 0 === l[i] && (l[i] = n.defaultProps[i]);
-  return f = l.key, null != (r = l.ref) && delete l.ref, null != f && delete l.key, a(n, l, f, r);
+  return o = l.key, null != (r = l.ref) && delete l.ref, null != o && delete l.key, v(n, l, o, r);
 }
 
-function a(l, u, t, i) {
+function v(l, u, t, i) {
   var r = {
     type: l,
     props: u,
@@ -183,39 +186,39 @@ function a(l, u, t, i) {
   return n.vnode && n.vnode(r), r;
 }
 
-function h() {
+function p() {
   return {};
 }
 
-function v(n) {
+function d(n) {
   return n.children;
 }
 
-function p(n) {
+function y(n) {
   if (null == n || "boolean" == typeof n) return null;
-  if ("string" == typeof n || "number" == typeof n) return a(null, n, null, null);
+  if ("string" == typeof n || "number" == typeof n) return v(null, n, null, null);
 
   if (null != n.__e || null != n.__c) {
-    var l = a(n.type, n.props, n.key, null);
+    var l = v(n.type, n.props, n.key, null);
     return l.__e = n.__e, l;
   }
 
   return n;
 }
 
-function y(n, l) {
+function m(n, l) {
   this.props = n, this.context = l;
 }
 
-function d(n, l) {
-  if (null == l) return n.__p ? d(n.__p, n.__p.__k.indexOf(n) + 1) : null;
+function w(n, l) {
+  if (null == l) return n.__p ? w(n.__p, n.__p.__k.indexOf(n) + 1) : null;
 
   for (var u; l < n.__k.length; l++) if (null != (u = n.__k[l]) && null != u.__e) return u.__e;
 
-  return "function" == typeof n.type ? d(n) : null;
+  return "function" == typeof n.type ? w(n) : null;
 }
 
-function m(n) {
+function g(n) {
   var l, u;
 
   if (null != (n = n.__p) && null != n.__c) {
@@ -224,127 +227,129 @@ function m(n) {
       break;
     }
 
-    return m(n);
+    return g(n);
   }
 }
 
-function w(t) {
-  !t.__d && (t.__d = !0) && 1 === l.push(t) && (n.debounceRendering || u)(g);
+function k(l) {
+  (!l.__d && (l.__d = !0) && 1 === u.push(l) || i !== n.debounceRendering) && (i = n.debounceRendering, (n.debounceRendering || t)(_));
 }
 
-function g() {
-  var n;
+function _() {
+  var n, l, t, i, r, o, f;
 
-  for (l.sort(function (n, l) {
+  for (u.sort(function (n, l) {
     return l.__v.__b - n.__v.__b;
-  }); n = l.pop();) n.__d && n.forceUpdate(!1);
+  }); n = u.pop();) n.__d && (t = void 0, i = void 0, o = (r = (l = n).__v).__e, (f = l.__P) && (t = [], i = $(f, r, s({}, r), l.__n, void 0 !== f.ownerSVGElement, null, t, null == o ? w(r) : o), j(t, r), i != o && g(r)));
 }
 
-function k(n, l, u, t, i, o, e, s, a) {
+function b(n, l, u, t, i, r, o, c, s) {
   var h,
       v,
+      p,
+      d,
       y,
       m,
-      w,
       g,
-      k,
-      b,
-      x = l.__k || _(l.props.children, l.__k = [], p, !0),
-      C = u && u.__k || f,
-      P = C.length;
+      k = u && u.__k || e,
+      _ = k.length;
+  if (c == f && (c = null != r ? r[0] : _ ? w(u, 0) : null), h = 0, l.__k = x(l.__k, function (u) {
+    if (null != u) {
+      if (u.__p = l, u.__b = l.__b + 1, null === (p = k[h]) || p && u.key == p.key && u.type === p.type) k[h] = void 0;else for (v = 0; v < _; v++) {
+        if ((p = k[v]) && u.key == p.key && u.type === p.type) {
+          k[v] = void 0;
+          break;
+        }
 
-  for (s == r && (s = null != o ? o[0] : P ? d(u, 0) : null), v = 0; v < x.length; v++) if (null != (h = x[v] = p(x[v]))) {
-    if (h.__p = l, h.__b = l.__b + 1, null === (m = C[v]) || m && h.key == m.key && h.type === m.type) C[v] = void 0;else for (y = 0; y < P; y++) {
-      if ((m = C[y]) && h.key == m.key && h.type === m.type) {
-        C[y] = void 0;
-        break;
+        p = null;
       }
 
-      m = null;
-    }
+      if (d = $(n, u, p = p || f, t, i, r, o, c, s), (v = u.ref) && p.ref != v && (g || (g = [])).push(v, u.__c || d, u), null != d) {
+        if (null == m && (m = d), null != u.l) d = u.l, u.l = null;else if (r == p || d != c || null == d.parentNode) {
+          n: if (null == c || c.parentNode !== n) n.appendChild(d);else {
+            for (y = c, v = 0; (y = y.nextSibling) && v < _; v += 2) if (y == d) break n;
 
-    if (w = N(n, h, m = m || r, t, i, o, e, null, s, a), (y = h.ref) && m.ref != y && (b || (b = [])).push(y, h.__c || w, h), null != w) {
-      if (null == k && (k = w), null != h.l) w = h.l, h.l = null;else if (o == m || w != s || null == w.parentNode) n: if (null == s || s.parentNode !== n) n.appendChild(w);else {
-        for (g = s, y = 0; (g = g.nextSibling) && y < P; y += 2) if (g == w) break n;
+            n.insertBefore(d, c);
+          }
 
-        n.insertBefore(w, s);
+          "option" == l.type && (n.value = "");
+        }
+        c = d.nextSibling, "function" == typeof l.type && (l.l = d);
       }
-      s = w.nextSibling, "function" == typeof l.type && (l.l = w);
     }
-  }
 
-  if (l.__e = k, null != o && "function" != typeof l.type) for (v = o.length; v--;) null != o[v] && c(o[v]);
+    return h++, u;
+  }), l.__e = m, null != r && "function" != typeof l.type) for (h = r.length; h--;) null != r[h] && a(r[h]);
 
-  for (v = P; v--;) null != C[v] && z(C[v], C[v]);
+  for (h = _; h--;) null != k[h] && D(k[h], k[h]);
 
-  if (b) for (v = 0; v < b.length; v++) j(b[v], b[++v], b[++v]);
-}
-
-function _(n, l, u, t) {
-  if (null == l && (l = []), null == n || "boolean" == typeof n) t && l.push(null);else if (Array.isArray(n)) for (var i = 0; i < n.length; i++) _(n[i], l, u, t);else l.push(u ? u(n) : n);
-  return l;
-}
-
-function b(n, l, u, t, i) {
-  var r;
-
-  for (r in u) r in l || C(n, r, null, u[r], t);
-
-  for (r in l) i && "function" != typeof l[r] || "value" === r || "checked" === r || u[r] === l[r] || C(n, r, l[r], u[r], t);
+  if (g) for (h = 0; h < g.length; h++) A(g[h], g[++h], g[++h]);
 }
 
 function x(n, l, u) {
-  "-" === l[0] ? n.setProperty(l, u) : n[l] = "number" == typeof u && !1 === o.test(l) ? u + "px" : u;
+  if (null == u && (u = []), null == n || "boolean" == typeof n) l && u.push(l(null));else if (Array.isArray(n)) for (var t = 0; t < n.length; t++) x(n[t], l, u);else u.push(l ? l(y(n)) : n);
+  return u;
 }
 
 function C(n, l, u, t, i) {
-  var r, f, o, e, c;
-  if ("key" === (l = i ? "className" === l ? "class" : l : "class" === l ? "className" : l) || "children" === l) ;else if ("style" === l) {
-    if (r = n.style, "string" == typeof u) r.cssText = u;else {
-      if ("string" == typeof t && (r.cssText = "", t = null), t) for (f in t) u && f in u || x(r, f, "");
-      if (u) for (o in u) t && u[o] === t[o] || x(r, o, u[o]);
-    }
-  } else if ("o" === l[0] && "n" === l[1]) e = l !== (l = l.replace(/Capture$/, "")), c = l.toLowerCase(), l = (c in n ? c : l).slice(2), u ? (t || n.addEventListener(l, P, e), (n.u || (n.u = {}))[l] = u) : n.removeEventListener(l, P, e);else if ("list" !== l && "tagName" !== l && !i && l in n) {
-    if (n.length && "value" == l) for (l = n.length; l--;) n.options[l].selected = n.options[l].value == u;else n[l] = null == u ? "" : u;
-  } else "function" != typeof u && "dangerouslySetInnerHTML" !== l && (l !== (l = l.replace(/^xlink:?/, "")) ? null == u || !1 === u ? n.removeAttributeNS("http://www.w3.org/1999/xlink", l.toLowerCase()) : n.setAttributeNS("http://www.w3.org/1999/xlink", l.toLowerCase(), u) : null == u || !1 === u ? n.removeAttribute(l) : n.setAttribute(l, u));
+  var r;
+
+  for (r in u) r in l || N(n, r, null, u[r], t);
+
+  for (r in l) i && "function" != typeof l[r] || "value" === r || "checked" === r || u[r] === l[r] || N(n, r, l[r], u[r], t);
 }
 
-function P(l) {
+function P(n, l, u) {
+  "-" === l[0] ? n.setProperty(l, u) : n[l] = "number" == typeof u && !1 === c.test(l) ? u + "px" : null == u ? "" : u;
+}
+
+function N(n, l, u, t, i) {
+  var r, o, f, e, c;
+  if ("key" === (l = i ? "className" === l ? "class" : l : "class" === l ? "className" : l) || "children" === l) ;else if ("style" === l) {
+    if (r = n.style, "string" == typeof u) r.cssText = u;else {
+      if ("string" == typeof t && (r.cssText = "", t = null), t) for (o in t) u && o in u || P(r, o, "");
+      if (u) for (f in u) t && u[f] === t[f] || P(r, f, u[f]);
+    }
+  } else "o" === l[0] && "n" === l[1] ? (e = l !== (l = l.replace(/Capture$/, "")), c = l.toLowerCase(), l = (c in n ? c : l).slice(2), u ? (t || n.addEventListener(l, T, e), (n.u || (n.u = {}))[l] = u) : n.removeEventListener(l, T, e)) : "list" !== l && "tagName" !== l && "form" !== l && !i && l in n ? n[l] = null == u ? "" : u : "function" != typeof u && "dangerouslySetInnerHTML" !== l && (l !== (l = l.replace(/^xlink:?/, "")) ? null == u || !1 === u ? n.removeAttributeNS("http://www.w3.org/1999/xlink", l.toLowerCase()) : n.setAttributeNS("http://www.w3.org/1999/xlink", l.toLowerCase(), u) : null == u || !1 === u ? n.removeAttribute(l) : n.setAttribute(l, u));
+}
+
+function T(l) {
   return this.u[l.type](n.event ? n.event(l) : l);
 }
 
-function N(l, u, t, i, r, f, o, c, s, a) {
-  var h,
-      d,
-      m,
+function $(l, u, t, i, r, o, f, e, c) {
+  var a,
+      h,
+      v,
+      p,
+      y,
       w,
       g,
-      b,
-      x,
+      k,
+      _,
       C,
-      P,
-      N,
-      T = u.type;
+      P = u.type;
+
   if (void 0 !== u.constructor) return null;
-  (h = n.__b) && h(u);
+  (a = n.__b) && a(u);
 
   try {
-    n: if ("function" == typeof T) {
-      if (C = u.props, P = (h = T.contextType) && i[h.__c], N = h ? P ? P.props.value : h.__p : i, t.__c ? x = (d = u.__c = t.__c).__p = d.__E : (T.prototype && T.prototype.render ? u.__c = d = new T(C, N) : (u.__c = d = new y(C, N), d.constructor = T, d.render = A), P && P.sub(d), d.props = C, d.state || (d.state = {}), d.context = N, d.__n = i, m = d.__d = !0, d.__h = []), null == d.__s && (d.__s = d.state), null != T.getDerivedStateFromProps && e(d.__s == d.state ? d.__s = e({}, d.__s) : d.__s, T.getDerivedStateFromProps(C, d.__s)), m) null == T.getDerivedStateFromProps && null != d.componentWillMount && d.componentWillMount(), null != d.componentDidMount && o.push(d);else {
-        if (null == T.getDerivedStateFromProps && null == c && null != d.componentWillReceiveProps && d.componentWillReceiveProps(C, N), !c && null != d.shouldComponentUpdate && !1 === d.shouldComponentUpdate(C, d.__s, N)) {
-          d.props = C, d.state = d.__s, d.__d = !1, d.__v = u, u.__e = t.__e, u.__k = t.__k;
+    n: if ("function" == typeof P) {
+      if (k = u.props, _ = (a = P.contextType) && i[a.__c], C = a ? _ ? _.props.value : a.__p : i, t.__c ? g = (h = u.__c = t.__c).__p = h.__E : ("prototype" in P && P.prototype.render ? u.__c = h = new P(k, C) : (u.__c = h = new m(k, C), h.constructor = P, h.render = H), _ && _.sub(h), h.props = k, h.state || (h.state = {}), h.context = C, h.__n = i, v = h.__d = !0, h.__h = []), null == h.__s && (h.__s = h.state), null != P.getDerivedStateFromProps && s(h.__s == h.state ? h.__s = s({}, h.__s) : h.__s, P.getDerivedStateFromProps(k, h.__s)), v) null == P.getDerivedStateFromProps && null != h.componentWillMount && h.componentWillMount(), null != h.componentDidMount && f.push(h);else {
+        if (null == P.getDerivedStateFromProps && null == h.t && null != h.componentWillReceiveProps && h.componentWillReceiveProps(k, C), !h.t && null != h.shouldComponentUpdate && !1 === h.shouldComponentUpdate(k, h.__s, C)) {
+          for (h.props = k, h.state = h.__s, h.__d = !1, h.__v = u, u.__e = t.__e, u.__k = t.__k, a = 0; a < u.__k.length; a++) u.__k[a] && (u.__k[a].__p = u);
+
           break n;
         }
 
-        null != d.componentWillUpdate && d.componentWillUpdate(C, d.__s, N);
+        null != h.componentWillUpdate && h.componentWillUpdate(k, h.__s, C);
       }
+      p = h.props, y = h.state, h.context = C, h.props = k, h.state = h.__s, (a = n.__r) && a(u), h.__d = !1, h.__v = u, h.__P = l, a = h.render(h.props, h.state, h.context), u.__k = x(null != a && a.type == d && null == a.key ? a.props.children : a), null != h.getChildContext && (i = s(s({}, i), h.getChildContext())), v || null == h.getSnapshotBeforeUpdate || (w = h.getSnapshotBeforeUpdate(p, y)), b(l, u, t, i, r, o, f, e, c), h.base = u.__e, a = h.__h, h.__h = [], a.some(function (n) {
+        n.call(h);
+      }), v || null == p || null == h.componentDidUpdate || h.componentDidUpdate(p, y, w), g && (h.__E = h.__p = null), h.t = null;
+    } else u.__e = z(t.__e, u, t, i, r, o, f, c);
 
-      for (w = d.props, g = d.state, d.context = N, d.props = C, d.state = d.__s, (h = n.__r) && h(u), d.__d = !1, d.__v = u, d.__P = l, _(null != (h = d.render(d.props, d.state, d.context)) && h.type == v && null == h.key ? h.props.children : h, u.__k = [], p, !0), null != d.getChildContext && (i = e(e({}, i), d.getChildContext())), m || null == d.getSnapshotBeforeUpdate || (b = d.getSnapshotBeforeUpdate(w, g)), k(l, u, t, i, r, f, o, s, a), d.base = u.__e; h = d.__h.pop();) h.call(d);
-
-      m || null == w || null == d.componentDidUpdate || d.componentDidUpdate(w, g, b), x && (d.__E = d.__p = null);
-    } else u.__e = $(t.__e, u, t, i, r, f, o, a);
-
-    (h = n.diffed) && h(u);
+    (a = n.diffed) && a(u);
   } catch (l) {
     n.__e(l, u, t);
   }
@@ -352,7 +357,7 @@ function N(l, u, t, i, r, f, o, c, s, a) {
   return u.__e;
 }
 
-function T(l, u) {
+function j(l, u) {
   for (var t; t = l.pop();) try {
     t.componentDidMount();
   } catch (l) {
@@ -362,27 +367,36 @@ function T(l, u) {
   n.__c && n.__c(u);
 }
 
-function $(n, l, u, t, i, o, e, c) {
+function z(n, l, u, t, i, r, o, c) {
   var s,
       a,
       h,
       v,
-      p = u.props,
+      p,
+      d = u.props,
       y = l.props;
-  if (i = "svg" === l.type || i, null == n && null != o) for (s = 0; s < o.length; s++) if (null != (a = o[s]) && (null === l.type ? 3 === a.nodeType : a.localName === l.type)) {
-    n = a, o[s] = null;
+  if (i = "svg" === l.type || i, null == n && null != r) for (s = 0; s < r.length; s++) if (null != (a = r[s]) && (null === l.type ? 3 === a.nodeType : a.localName === l.type)) {
+    n = a, r[s] = null;
     break;
   }
 
   if (null == n) {
     if (null === l.type) return document.createTextNode(y);
-    n = i ? document.createElementNS("http://www.w3.org/2000/svg", l.type) : document.createElement(l.type), o = null;
+    n = i ? document.createElementNS("http://www.w3.org/2000/svg", l.type) : document.createElement(l.type), r = null;
   }
 
-  return null === l.type ? p !== y && (n.data = y) : l !== u && (null != o && (o = f.slice.call(n.childNodes)), h = (p = u.props || r).dangerouslySetInnerHTML, v = y.dangerouslySetInnerHTML, c || (v || h) && (v && h && v.__html == h.__html || (n.innerHTML = v && v.__html || "")), b(n, y, p, i, c), v || k(n, l, u, t, "foreignObject" !== l.type && i, o, e, r, c), c || ("value" in y && void 0 !== y.value && y.value !== n.value && (n.value = null == y.value ? "" : y.value), "checked" in y && void 0 !== y.checked && y.checked !== n.checked && (n.checked = y.checked))), n;
+  if (null === l.type) null != r && (r[r.indexOf(n)] = null), d !== y && (n.data = y);else if (l !== u) {
+    if (null != r && (r = e.slice.call(n.childNodes)), h = (d = u.props || f).dangerouslySetInnerHTML, v = y.dangerouslySetInnerHTML, !c) {
+      if (d === f) for (d = {}, p = 0; p < n.attributes.length; p++) d[n.attributes[p].name] = n.attributes[p].value;
+      (v || h) && (v && h && v.__html == h.__html || (n.innerHTML = v && v.__html || ""));
+    }
+
+    C(n, y, d, i, c), l.__k = l.props.children, v || b(n, l, u, t, "foreignObject" !== l.type && i, r, o, f, c), c || ("value" in y && void 0 !== y.value && y.value !== n.value && (n.value = null == y.value ? "" : y.value), "checked" in y && void 0 !== y.checked && y.checked !== n.checked && (n.checked = y.checked));
+  }
+  return n;
 }
 
-function j(l, u, t) {
+function A(l, u, t) {
   try {
     "function" == typeof l ? l(u) : l.current = u;
   } catch (l) {
@@ -390,10 +404,10 @@ function j(l, u, t) {
   }
 }
 
-function z(l, u, t) {
-  var i, r, f;
+function D(l, u, t) {
+  var i, r, o;
 
-  if (n.unmount && n.unmount(l), (i = l.ref) && j(i, null, u), t || "function" == typeof l.type || (t = null != (r = l.__e)), l.__e = l.l = null, null != (i = l.__c)) {
+  if (n.unmount && n.unmount(l), (i = l.ref) && A(i, null, u), t || "function" == typeof l.type || (t = null != (r = l.__e)), l.__e = l.l = null, null != (i = l.__c)) {
     if (i.componentWillUnmount) try {
       i.componentWillUnmount();
     } catch (l) {
@@ -402,31 +416,31 @@ function z(l, u, t) {
     i.base = i.__P = null;
   }
 
-  if (i = l.__k) for (f = 0; f < i.length; f++) i[f] && z(i[f], u, t);
-  null != r && c(r);
+  if (i = l.__k) for (o = 0; o < i.length; o++) i[o] && D(i[o], u, t);
+  null != r && a(r);
 }
 
-function A(n, l, u) {
+function H(n, l, u) {
   return this.constructor(n, u);
 }
 
-function D(l, u, i) {
-  var o, e, c;
-  n.__p && n.__p(l, u), e = (o = i === t) ? null : i && i.__k || u.__k, l = s(v, null, [l]), c = [], N(u, o ? u.__k = l : (i || u).__k = l, e || r, r, void 0 !== u.ownerSVGElement, i && !o ? [i] : e ? null : f.slice.call(u.childNodes), c, !1, i || r, o), T(c, l);
+function I(l, u, t) {
+  var i, o, c;
+  n.__p && n.__p(l, u), o = (i = t === r) ? null : t && t.__k || u.__k, l = h(d, null, [l]), c = [], $(u, i ? u.__k = l : (t || u).__k = l, o || f, f, void 0 !== u.ownerSVGElement, t && !i ? [t] : o ? null : e.slice.call(u.childNodes), c, t || f, i), j(c, l);
 }
 
-function H(n, l) {
-  D(n, l, t);
+function L(n, l) {
+  I(n, l, r);
 }
 
-function I(n, l) {
-  return l = e(e({}, n.props), l), arguments.length > 2 && (l.children = f.slice.call(arguments, 2)), a(n.type, l, l.key || n.key, l.ref || n.ref);
+function M(n, l) {
+  return l = s(s({}, n.props), l), arguments.length > 2 && (l.children = e.slice.call(arguments, 2)), v(n.type, l, l.key || n.key, l.ref || n.ref);
 }
 
-function L(n) {
+function O(n) {
   var l = {},
       u = {
-    __c: "__cC" + i++,
+    __c: "__cC" + o++,
     __p: n,
     Consumer: function (n, l) {
       return n.children(l);
@@ -436,9 +450,9 @@ function L(n) {
           i = this;
       return this.getChildContext || (t = [], this.getChildContext = function () {
         return l[u.__c] = i, l;
-      }, this.shouldComponentUpdate = function (n) {
-        t.some(function (l) {
-          l.__P && (l.context = n.value, w(l));
+      }, this.shouldComponentUpdate = function (l) {
+        n.value !== l.value && t.some(function (n) {
+          n.__P && (n.context = l.value, k(n));
         });
       }, this.sub = function (n) {
         t.push(n);
@@ -453,30 +467,26 @@ function L(n) {
   return u.Consumer.contextType = u, u;
 }
 
-exports.options = n = {}, y.prototype.setState = function (n, l) {
-  var u = this.__s !== this.state && this.__s || (this.__s = e({}, this.state));
-  ("function" != typeof n || (n = n(u, this.props))) && e(u, n), null != n && this.__v && (l && this.__h.push(l), w(this));
-}, y.prototype.forceUpdate = function (n) {
-  var l,
-      u,
-      t,
-      i = this.__v,
-      r = this.__v.__e,
-      f = this.__P;
-  f && (l = !1 !== n, u = [], t = N(f, i, e({}, i), this.__n, void 0 !== f.ownerSVGElement, null, u, l, null == r ? d(i) : r), T(u, i), t != r && m(i)), n && n();
-}, y.prototype.render = v, l = [], u = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, n.__e = function (n, l, u) {
+exports.options = n = {}, exports.isValidElement = l = function (n) {
+  return null != n && void 0 === n.constructor;
+}, m.prototype.setState = function (n, l) {
+  var u = this.__s !== this.state && this.__s || (this.__s = s({}, this.state));
+  ("function" != typeof n || (n = n(u, this.props))) && s(u, n), null != n && this.__v && (this.t = !1, l && this.__h.push(l), k(this));
+}, m.prototype.forceUpdate = function (n) {
+  this.__v && (this.t = !0, n && this.__h.push(n), k(this));
+}, m.prototype.render = d, u = [], t = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, i = n.debounceRendering, n.__e = function (n, l, u) {
   for (var t; l = l.__p;) if ((t = l.__c) && !t.__p) try {
     if (t.constructor && null != t.constructor.getDerivedStateFromError) t.setState(t.constructor.getDerivedStateFromError(n));else {
       if (null == t.componentDidCatch) continue;
       t.componentDidCatch(n);
     }
-    return w(t.__E = t);
+    return k(t.__E = t);
   } catch (l) {
     n = l;
   }
 
   throw n;
-}, t = r, i = 0;
+}, r = f, o = 0;
 },{}],"../node_modules/preact/debug/dist/debug.module.js":[function(require,module,exports) {
 "use strict";
 
@@ -484,134 +494,140 @@ var _preact = require("preact");
 
 var r = {};
 
-function o(n) {
-  return n.type === _preact.Fragment ? "Wrapper" : "function" == typeof n.type ? "Composite" : "string" == typeof n.type ? "Native" : "Text";
+function o(e) {
+  return e.type === _preact.Fragment ? "Wrapper" : "function" == typeof e.type ? "Composite" : "string" == typeof e.type ? "Native" : "Text";
 }
 
-function i(n) {
-  return n.type === _preact.Fragment ? "Fragment" : "function" == typeof n.type ? n.type.displayName || n.type.name : "string" == typeof n.type ? n.type : "#text";
+function i(e) {
+  return e.type === _preact.Fragment ? "Fragment" : "function" == typeof e.type ? e.type.displayName || e.type.name : "string" == typeof e.type ? e.type : "#text";
 }
 
-function a(n, e, t) {
-  var r = e.pop(),
-      o = e.reduce(function (n, e) {
-    return n ? n[e] : null;
-  }, n);
+function a(e, n, t) {
+  var r = n.pop(),
+      o = n.reduce(function (e, n) {
+    return e ? e[n] : null;
+  }, e);
   o && (o[r] = t);
 }
 
-function u(e) {
-  var t = e.__c,
+function s(n) {
+  var t = n.__c,
       r = null;
   null != t && t instanceof _preact.Component && (r = {
     setState: t.setState.bind(t),
     forceUpdate: t.forceUpdate.bind(t),
-    setInState: function (n, e) {
+    setInState: function (e, n) {
       t.setState(function (t) {
-        return a(t, n, e), t;
+        return a(t, e, n), t;
       });
     },
-    setInProps: function (n, r) {
-      a(e.props, n, r), t.setState({});
+    setInProps: function (e, r) {
+      a(n.props, e, r), t.setState({});
     },
-    setInContext: function (n, e) {
-      a(t.context, n, e), t.setState({});
+    setInContext: function (e, n) {
+      a(t.context, e, n), t.setState({});
     }
   });
-  var u = s(e),
-      l = e.endTime - e.startTime;
+  var s = u(n),
+      l = n.endTime - n.startTime;
   return {
-    nodeType: o(e),
-    type: e.type,
-    name: i(e),
-    ref: e.ref || null,
-    key: e.key || null,
+    nodeType: o(n),
+    type: n.type,
+    name: i(n),
+    ref: n.ref || null,
+    key: n.key || null,
     updater: r,
-    text: null === e.type ? e.props : null,
+    text: null === n.type ? n.props : null,
     state: null != t && t instanceof _preact.Component ? t.state : null,
-    props: e.props,
-    children: null !== e.type ? null != u && 1 == u.length && null === u[0].type ? u[0].props : u : null,
-    publicInstance: c(e),
+    props: n.props,
+    children: null !== n.type ? null != s && 1 == s.length && null === s[0].type ? s[0].props : s : null,
+    publicInstance: c(n),
     memoizedInteractions: [],
     actualDuration: l,
-    actualStartTime: e.startTime,
+    actualStartTime: n.startTime,
     treeBaseDuration: l
   };
 }
 
-function s(n) {
-  return null == n.__c ? null != n.__k ? n.__k.filter(Boolean) : [] : null != n.__k ? n.__k.filter(Boolean) : null;
+function u(e) {
+  return null == e.__c ? null != e.__k ? e.__k.filter(Boolean) : [] : null != e.__k ? e.__k.filter(Boolean) : null;
 }
 
-function l(n) {
-  return n.type === _preact.Fragment && null === n.__p;
+function l(e) {
+  return e.type === _preact.Fragment && null === e.__p;
 }
 
-function c(n) {
-  return l(n) ? n.__k.length > 0 && null != n.__k[0] && null != n.__k[0].__e ? n.__k[0].__e.parentNode : n : null != n.__c ? n.__c : n.type === _preact.Fragment ? n.props : n.__e;
+function c(e) {
+  return l(e) ? e.__k.length > 0 && null != e.__k[0] && null != e.__k[0].__e ? e.__k[0].__e.parentNode : e : null != e.__c ? e.__c : e.type === _preact.Fragment ? e.props : e.__e;
 }
 
-function f(n, e, t) {
-  if (null == n || null == e) return !1;
+function f(e, n, t) {
+  if (null == e || null == n) return !1;
 
-  for (var r in n) if ((!t || "children" != r || null == e[r]) && n[r] !== e[r]) return !1;
+  for (var r in e) if ((!t || "children" != r || null == n[r]) && e[r] !== n[r]) return !1;
 
-  return Object.keys(n).length === Object.keys(e).length;
+  return Object.keys(e).length === Object.keys(n).length;
 }
 
-function d(n) {
-  var e = n.props,
-      t = i(n),
+var d = _preact.Component.prototype.setState;
+
+function h(e) {
+  var n = e.props,
+      t = i(e),
       r = "";
 
-  for (var o in e) if (e.hasOwnProperty(o) && "children" !== o) {
-    var a = e[o];
+  for (var o in n) if (n.hasOwnProperty(o) && "children" !== o) {
+    var a = n[o];
     "function" == typeof a && (a = "function " + (a.displayName || a.name) + "() {}"), a = Object(a) !== a || a.toString ? a + "" : Object.prototype.toString.call(a), r += " " + o + "=" + JSON.stringify(a);
   }
 
-  var u = e.children;
-  return "<" + t + r + (u && u.length ? ">..</" + t + ">" : " />");
+  var s = n.children;
+  return "<" + t + r + (s && s.length ? ">..</" + t + ">" : " />");
 }
 
-var h = function (n, e) {
-  this.rid = e, this.hook = n, this.pending = [], this.inst2vnode = new WeakMap(), this.connected = !1;
+_preact.Component.prototype.setState = function (e, n) {
+  return null == this.__v && console.warn('Calling "this.setState" inside the constructor of a component is a no-op and might be a bug in your application. Instead, set "this.state = {}" directly.'), d.call(this, e, n);
 };
 
-function p(n) {
-  return function (e) {
+var p = function (e, n) {
+  this.rid = n, this.hook = e, this.pending = [], this.inst2vnode = new WeakMap(), this.connected = !1;
+};
+
+function v(e) {
+  return function (n) {
     try {
-      return n(e);
-    } catch (n) {
-      console.error("The react devtools encountered an error"), console.error(n);
+      return e(n);
+    } catch (e) {
+      console.error("The react devtools encountered an error"), console.error(e);
     }
   };
 }
 
-h.prototype.markConnected = function () {
+p.prototype.markConnected = function () {
   this.connected = !0, this.flushPendingEvents();
-}, h.prototype.flushPendingEvents = function () {
+}, p.prototype.flushPendingEvents = function () {
   if (this.connected) {
-    var n = this.pending;
+    var e = this.pending;
     this.pending = [];
 
-    for (var e = 0; e < n.length; e++) {
-      var t = n[e];
+    for (var n = 0; n < e.length; n++) {
+      var t = e[n];
       this.hook.emit(t.type, t);
     }
   }
-}, h.prototype.mount = function (n) {
-  this.inst2vnode.set(c(n), n);
-  var e = u(n),
+}, p.prototype.mount = function (e) {
+  this.inst2vnode.set(c(e), e);
+  var n = s(e),
       t = [{
-    internalInstance: n,
-    data: e,
+    internalInstance: e,
+    data: n,
     renderer: this.rid,
     type: "mount"
   }];
-  if (Array.isArray(e.children)) for (var r, o = e.children.slice(); null != (r = o.pop());) {
-    var i = s(r);
+  if (Array.isArray(n.children)) for (var r, o = n.children.slice(); null != (r = o.pop());) {
+    var i = u(r);
     o.push.apply(o, i), this.inst2vnode.set(c(r), r);
-    var a = u(r);
+    var a = s(r);
     t.push({
       internalInstance: r,
       data: a,
@@ -622,93 +638,93 @@ h.prototype.markConnected = function () {
 
   for (var f = t.length; --f >= 0;) this.pending.push(t[f]);
 
-  l(n) && this.pending.push({
-    internalInstance: n,
-    data: e,
+  l(e) && this.pending.push({
+    internalInstance: e,
+    data: n,
     renderer: this.rid,
     type: "root"
   });
-}, h.prototype.update = function (n) {
-  var e = u(n);
-  if (Array.isArray(e.children)) for (var t = 0; t < e.children.length; t++) {
-    var r = e.children[t],
+}, p.prototype.update = function (e) {
+  var n = s(e);
+  if (Array.isArray(n.children)) for (var t = 0; t < n.children.length; t++) {
+    var r = n.children[t],
         o = c(r);
-    null == this.inst2vnode.get(o) ? this.mount(r) : this.update(r), e.children[t] = this.inst2vnode.get(o);
+    null == this.inst2vnode.get(o) ? this.mount(r) : this.update(r), n.children[t] = this.inst2vnode.get(o);
   }
-  var i = this.inst2vnode.get(e.publicInstance);
-  !function (n, e) {
-    return n.props !== e.props && !f(n.props, e.props, !0) || null != n.__c && !f(e.__c.__u, e.__c.state) || n.__e !== e.__e || n.ref !== e.ref;
-  }(i, n) ? this.pending.push({
+  var i = this.inst2vnode.get(n.publicInstance);
+  !function (e, n) {
+    return e.props !== n.props && !f(e.props, n.props, !0) || null != e.__c && !f(n.__c.__u, n.__c.state) || e.__e !== n.__e || e.ref !== n.ref;
+  }(i, e) ? this.pending.push({
     internalInstance: i,
-    data: e,
+    data: n,
     renderer: this.rid,
     type: "updateProfileTimes"
   }) : this.pending.push({
     internalInstance: i,
-    data: e,
+    data: n,
     renderer: this.rid,
     type: "update"
   });
-}, h.prototype.handleCommitFiberRoot = function (n) {
-  var e = c(n);
-  this.inst2vnode.has(e) ? this.update(n) : this.mount(n);
+}, p.prototype.handleCommitFiberRoot = function (e) {
+  var n = c(e);
+  this.inst2vnode.has(n) ? this.update(e) : this.mount(e);
   var t = null;
-  if (l(n)) n.treeBaseDuration = 0, t = n;else for (t = n; null != t.__p;) t = t.__p;
+  if (l(e)) e.treeBaseDuration = 0, t = e;else for (t = e; null != t.__p;) t = t.__p;
   return this.pending.push({
     internalInstance: t,
     renderer: this.rid,
-    data: u(t),
+    data: s(t),
     type: "rootCommitted"
-  }), this.flushPendingEvents(), n;
-}, h.prototype.handleCommitFiberUnmount = function (n) {
-  var e = c(n);
-  this.inst2vnode.delete(e), this.pending.push({
-    internalInstance: n,
+  }), this.flushPendingEvents(), e;
+}, p.prototype.handleCommitFiberUnmount = function (e) {
+  var n = c(e);
+  this.inst2vnode.delete(n), this.pending.push({
+    internalInstance: e,
     renderer: this.rid,
     type: "unmount"
   });
-}, h.prototype.getNativeFromReactElement = function (n) {
-  return n.__e;
-}, h.prototype.getReactElementFromNative = function (n) {
-  return this.inst2vnode.get(n) || null;
-}, h.prototype.walkTree = function () {}, h.prototype.cleanup = function () {};
+}, p.prototype.getNativeFromReactElement = function (e) {
+  return e.__e;
+}, p.prototype.getReactElementFromNative = function (e) {
+  return this.inst2vnode.get(e) || null;
+}, p.prototype.walkTree = function () {}, p.prototype.cleanup = function () {};
 
-var v = function () {},
-    y = Date.now;
+var y = function () {},
+    m = Date.now;
 
 try {
-  y = performance.now.bind(performance);
-} catch (n) {}
+  m = performance.now.bind(performance);
+} catch (e) {}
 
 "development" === "development" && (function () {
-  var n = _preact.options.__b,
-      e = _preact.options.diffed,
+  var e = _preact.options.__b,
+      n = _preact.options.diffed,
       o = _preact.options.vnode,
       a = _preact.options.__e,
-      u = {
+      s = {
     useEffect: {},
     useLayoutEffect: {},
     lazyPropTypes: {}
   };
-  _preact.options.__e = function (n, e, t) {
-    if (e && e.__c && "function" == typeof n.then) {
-      var r = n;
-      n = new Error("Missing Suspense. The throwing component was: " + i(e));
+  _preact.options.__e = function (e, n, t) {
+    if (n && n.__c && "function" == typeof e.then) {
+      var r = e;
+      e = new Error("Missing Suspense. The throwing component was: " + i(n));
 
-      for (var o = e; o; o = o.__p) if (o.__c && o.__c.t) {
-        n = r;
+      for (var o = n; o; o = o.__p) if (o.__c && o.__c.t) {
+        e = r;
         break;
       }
 
-      if (n instanceof Error) throw n;
+      if (e instanceof Error) throw e;
     }
 
-    a(n, e, t);
-  }, _preact.options.__p = function (n, e) {
-    if (!e) throw new Error("Undefined parent passed to render(), this is the second argument.\nCheck if the element is available in the DOM/has the correct id.");
+    a(e, n, t);
+  }, _preact.options.__p = function (e, n) {
+    if (!n) throw new Error("Undefined parent passed to render(), this is the second argument.\nCheck if the element is available in the DOM/has the correct id.");
     var t;
 
-    switch (e.nodeType) {
+    switch (n.nodeType) {
       case 1:
       case 11:
       case 9:
@@ -719,100 +735,106 @@ try {
         t = !1;
     }
 
-    if (!t) throw new Error("\n\t\t\tExpected a valid HTML node as a second argument to render.\n\t\t\tReceived " + e + " instead: render(<" + (n.type.name || n.type) + " />, " + e + ");\n\t\t");
-  }, _preact.options.__b = function (e) {
+    if (!t) throw new Error("\n\t\t\tExpected a valid HTML node as a second argument to render.\n\t\t\tReceived " + n + " instead: render(<" + (e.type.name || e.type) + " />, " + n + ");\n\t\t");
+  }, _preact.options.__b = function (n) {
     var t,
         o,
         a,
-        s,
-        l = e.type,
-        c = function n(e) {
-      return e ? "function" == typeof e.type ? n(e.__p) : e : {};
-    }(e.__p);
+        u,
+        l = n.type,
+        c = function e(n) {
+      return n ? "function" == typeof n.type ? e(n.__p) : n : {};
+    }(n.__p);
 
-    if (void 0 === l) throw new Error("Undefined component passed to createElement()\n\nYou likely forgot to export your component or might have mixed up default and named imports" + d(e));
+    if (void 0 === l) throw new Error("Undefined component passed to createElement()\n\nYou likely forgot to export your component or might have mixed up default and named imports" + h(n));
 
     if (null != l && "object" == typeof l) {
       if (void 0 !== l.o && void 0 !== l.__e) {
-        var f = "Did you accidentally pass a JSX literal as JSX twice?\n\n  let My" + i(l) + " = " + d(l) + ";\n  let vnode = <My" + i(l) + " />;\n\nThis usually happens when you export a JSX literal and not the component.";
+        var f = "Did you accidentally pass a JSX literal as JSX twice?\n\n  let My" + i(l) + " = " + h(l) + ";\n  let vnode = <My" + i(l) + " />;\n\nThis usually happens when you export a JSX literal and not the component.";
         throw new Error("Invalid type passed to createElement(): " + l + "\n\n" + f + "\n");
       }
 
       throw new Error("Invalid type passed to createElement(): " + (Array.isArray(l) ? "array" : l));
     }
 
-    if ("thead" !== l && "tfoot" !== l && "tbody" !== l || "table" === c.type ? "tr" === l && "thead" !== c.type && "tfoot" !== c.type && "tbody" !== c.type && "table" !== c.type ? console.error("Improper nesting of table.Your <tr> should have a <thead/tbody/tfoot/table> parent." + d(e)) : "td" === l && "tr" !== c.type ? console.error("Improper nesting of table.Your <td> should have a <tr> parent." + d(e)) : "th" === l && "tr" !== c.type && console.error("Improper nesting of table.Your <th> should have a <tr>." + d(e)) : console.error("Improper nesting of table.Your <thead/tbody/tfoot> should have a <table> parent." + d(e)), void 0 !== e.ref && "function" != typeof e.ref && "object" != typeof e.ref && !("$$typeof" in e)) throw new Error('Component\'s "ref" property should be a function, or an object created by createRef(), but got [' + typeof e.ref + "] instead\n" + d(e));
-    if ("string" == typeof e.type) for (var h in e.props) if ("o" === h[0] && "n" === h[1] && "function" != typeof e.props[h] && null != e.props[h]) throw new Error("Component's \"" + h + '" property should be a function, but got [' + typeof e.props[h] + "] instead\n" + d(e));
+    if ("thead" !== l && "tfoot" !== l && "tbody" !== l || "table" === c.type ? "tr" === l && "thead" !== c.type && "tfoot" !== c.type && "tbody" !== c.type && "table" !== c.type ? console.error("Improper nesting of table.Your <tr> should have a <thead/tbody/tfoot/table> parent." + h(n)) : "td" === l && "tr" !== c.type ? console.error("Improper nesting of table.Your <td> should have a <tr> parent." + h(n)) : "th" === l && "tr" !== c.type && console.error("Improper nesting of table.Your <th> should have a <tr>." + h(n)) : console.error("Improper nesting of table.Your <thead/tbody/tfoot> should have a <table> parent." + h(n)), void 0 !== n.ref && "function" != typeof n.ref && "object" != typeof n.ref && !("$$typeof" in n)) throw new Error('Component\'s "ref" property should be a function, or an object created by createRef(), but got [' + typeof n.ref + "] instead\n" + h(n));
+    if ("string" == typeof n.type) for (var d in n.props) if ("o" === d[0] && "n" === d[1] && "function" != typeof n.props[d] && null != n.props[d]) throw new Error("Component's \"" + d + '" property should be a function, but got [' + typeof n.props[d] + "] instead\n" + h(n));
 
-    if ("function" == typeof e.type && e.type.propTypes) {
-      if ("Lazy" === e.type.displayName && !u.lazyPropTypes[e.type]) {
+    if ("function" == typeof n.type && n.type.propTypes) {
+      if ("Lazy" === n.type.displayName && !s.lazyPropTypes[n.type]) {
         var p = "PropTypes are not supported on lazy(). Use propTypes on the wrapped component itself. ";
 
         try {
-          var v = e.type();
-          u.lazyPropTypes[e.type] = !0, console.warn(p + "Component wrapped in lazy() is " + (v.type.displayName || v.type.name));
-        } catch (n) {
+          var v = n.type();
+          s.lazyPropTypes[n.type] = !0, console.warn(p + "Component wrapped in lazy() is " + (v.type.displayName || v.type.name));
+        } catch (e) {
           console.warn(p + "We will log the wrapped component's name once it is loaded.");
         }
       }
 
-      t = e.type.propTypes, o = e.props, a = i(e), s = d(e), Object.keys(t).forEach(function (n) {
-        var e;
+      t = n.type.propTypes, o = n.props, a = i(n), u = h(n), Object.keys(t).forEach(function (e) {
+        var n;
 
         try {
-          e = t[n](o, n, s, a, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED");
-        } catch (n) {
-          e = n;
+          n = t[e](o, e, u, a, null, "SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED");
+        } catch (e) {
+          n = e;
         }
 
-        !e || e.message in r || (r[e.message] = !0, console.error("Failed " + a + " type: " + e.message));
+        !n || n.message in r || (r[n.message] = !0, console.error("Failed " + a + " type: " + n.message));
       });
     }
 
-    n && n(e);
-  }, _preact.options.__h = function (n) {
-    if (!n) throw new Error("Hook can only be invoked from render methods.");
+    e && e(n);
+  }, _preact.options.__h = function (e) {
+    if (!e) throw new Error("Hook can only be invoked from render methods.");
   };
 
-  var s = function (n, e) {
+  var u = function (e, n) {
     return {
       get: function () {
-        throw new Error("getting vnode." + n + " is deprecated, " + e);
+        throw new Error("getting vnode." + e + " is deprecated, " + n);
       },
       set: function () {
-        throw new Error("setting vnode." + n + " is not allowed, " + e);
+        throw new Error("setting vnode." + e + " is not allowed, " + n);
       }
     };
   },
       l = {
-    nodeName: s("nodeName", "use vnode.type"),
-    attributes: s("attributes", "use vnode.props"),
-    children: s("children", "use vnode.props.children")
+    nodeName: u("nodeName", "use vnode.type"),
+    attributes: u("attributes", "use vnode.props"),
+    children: u("children", "use vnode.props.children")
   };
 
-  _preact.options.vnode = function (n) {
-    var e, t;
-    n.props && n.props.i && (e = n.props.i, delete n.props.i), n.props && n.props.u && (t = n.props.u, delete n.props.u), n.u = t, n.i = e, Object.defineProperties(n, l), o && o(n);
-  }, _preact.options.diffed = function (n) {
-    if (e && e(n), n.__c && n.__c.s) {
-      var t = n.__c.s;
-      (t.l || []).forEach(function (e) {
-        !e.h || e.p && Array.isArray(e.p) || console.warn("In " + (n.type.name || n.type) + " you are calling useMemo/useCallback without passing arguments.\nThis is a noop since it will not be able to memoize, it will execute it every render.");
-      }), t.v && Array.isArray(t.v) && t.v.forEach(function (e) {
-        e.p && Array.isArray(e.p) || u.useEffect[n.type] || (u.useEffect[n.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (n.type.name || n.type) + "."));
-      }), t.m && Array.isArray(t.m) && t.m.forEach(function (e) {
-        e.p && Array.isArray(e.p) || u.useLayoutEffect[n.type] || (u.useLayoutEffect[n.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useLayoutEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (n.type.name || n.type) + "."));
+  _preact.options.vnode = function (e) {
+    var n, t;
+    e.props && e.props.__source && (n = e.props.__source, delete e.props.__source), e.props && e.props.__self && (t = e.props.__self, delete e.props.__self), e.__self = t, e.__source = n, Object.defineProperties(e, l), o && o(e);
+  }, _preact.options.diffed = function (e) {
+    if (e.__k && e.__k.forEach(function (e) {
+      if (e && void 0 === e.type) {
+        delete e.__p, delete e.__b;
+        var n = Object.keys(e).join(",");
+        throw new Error("Objects are not valid as a child. Encountered an object with the keys {" + n + "}.");
+      }
+    }), n && n(e), e.__c && e.__c.i) {
+      var t = e.__c.i;
+      (t.s || []).forEach(function (n) {
+        !n.u || n.l && Array.isArray(n.l) || console.warn("In " + (e.type.name || e.type) + " you are calling useMemo/useCallback without passing arguments.\nThis is a noop since it will not be able to memoize, it will execute it every render.");
+      }), t.h && Array.isArray(t.h) && t.h.forEach(function (n) {
+        n.l && Array.isArray(n.l) || s.useEffect[e.type] || (s.useEffect[e.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (e.type.name || e.type) + "."));
+      }), t.p && Array.isArray(t.p) && t.p.forEach(function (n) {
+        n.l && Array.isArray(n.l) || s.useLayoutEffect[e.type] || (s.useLayoutEffect[e.type] = !0, console.warn('You should provide an array of arguments as the second argument to the "useLayoutEffect" hook.\n\nNot doing so will invoke this effect on every render.\n\nThis effect can be found in the render of ' + (e.type.name || e.type) + "."));
       });
     }
 
-    if (null != n.__k) for (var r = [], o = 0; o < n.__k.length; o++) {
-      var i = n.__k[o];
+    if (null != e.__k) for (var r = [], o = 0; o < e.__k.length; o++) {
+      var i = e.__k[o];
 
       if (i && null != i.key) {
         var a = i.key;
 
         if (-1 !== r.indexOf(a)) {
-          console.error('Following component has two or more children with the same key attribute: "' + a + '". This may cause glitches and misbehavior in rendering process. Component: \n\n' + d(n));
+          console.error('Following component has two or more children with the same key attribute: "' + a + '". This may cause glitches and misbehavior in rendering process. Component: \n\n' + h(e));
           break;
         }
 
@@ -824,75 +846,78 @@ try {
   var r = window.__REACT_DEVTOOLS_GLOBAL_HOOK__;
 
   if (null != r) {
-    var o = v,
-        i = v,
+    var o = y,
+        i = y,
         a = Math.random().toString(16).slice(2),
-        u = new h(r, a);
-    p(function () {
-      var n = !1;
+        s = new p(r, a);
+    v(function () {
+      var e = !1;
 
       try {
-        n = "production" !== "development";
-      } catch (n) {}
+        e = "production" !== "development";
+      } catch (e) {}
 
       window.parent.postMessage({
         source: "react-devtools-detector",
-        reactBuildType: n ? "development" : "production"
+        reactBuildType: e ? "development" : "production"
       }, "*");
       var t = {
-        bundleType: n ? 1 : 0,
+        bundleType: e ? 1 : 0,
         version: "16.5.2",
         rendererPackageName: "preact",
-        findHostInstanceByFiber: function (n) {
-          return n.__e;
+        findHostInstanceByFiber: function (e) {
+          return e.__e;
         },
-        findFiberByHostInstance: function (n) {
-          return u.inst2vnode.get(n) || null;
+        findFiberByHostInstance: function (e) {
+          return s.inst2vnode.get(e) || null;
         }
       };
-      r._renderers[a] = t, Object.defineProperty(r.helpers, a, {
-        get: function () {
-          return u;
-        },
-        set: function () {
-          u.connected || s.markConnected();
-        }
-      });
-      var s = r.helpers[a];
-      r.emit("renderer-attached", {
-        id: a,
-        renderer: t,
-        helpers: s
-      }), o = p(function (n) {
-        if (n.type !== _preact.Fragment || 0 != n.__k.length) {
-          var t = r.getFiberRoots(a);
-          n = s.handleCommitFiberRoot(n), t.has(n) || t.add(n);
-        }
-      }), i = p(function (n) {
-        r.onCommitFiberUnmount(a, n);
-      });
+
+      if (r._renderers) {
+        r._renderers[a] = t, Object.defineProperty(r.helpers, a, {
+          get: function () {
+            return s;
+          },
+          set: function () {
+            s.connected || u.markConnected();
+          }
+        });
+        var u = r.helpers[a];
+        r.emit("renderer-attached", {
+          id: a,
+          renderer: t,
+          helpers: u
+        }), o = v(function (e) {
+          if (e.type !== _preact.Fragment || 0 != e.__k.length) {
+            var t = r.getFiberRoots(a);
+            e = u.handleCommitFiberRoot(e), t.has(e) || t.add(e);
+          }
+        }), i = v(function (e) {
+          r.onCommitFiberUnmount(a, e);
+        });
+      } else console.info("Preact is not compatible with your version of react-devtools. We will address this in future releases.");
     })();
-    var s = _preact.options.vnode,
+    var u = _preact.options.vnode,
         l = _preact.options.__c,
         c = _preact.options.unmount,
         f = _preact.options.__b,
         d = _preact.options.diffed;
-    _preact.options.vnode = function (n) {
-      n.startTime = NaN, n.endTime = NaN, n.startTime = 0, n.endTime = -1, s && s(n);
-    }, _preact.options.__b = function (n) {
-      n.startTime = y(), null != f && f(n);
-    }, _preact.options.diffed = function (n) {
-      n.endTime = y(), null != d && d(n);
-    }, _preact.options.__c = p(function (n) {
-      null != l && l(n), null != n && o(n);
-    }), _preact.options.unmount = p(function (n) {
-      null != c && c(n), i(n);
+    _preact.options.vnode = function (e) {
+      e.startTime = NaN, e.endTime = NaN, e.startTime = 0, e.endTime = -1, u && u(e);
+    }, _preact.options.__b = function (e) {
+      e.startTime = m(), null != f && f(e);
+    }, _preact.options.diffed = function (e) {
+      e.endTime = m(), null != d && d(e);
+    }, _preact.options.__c = v(function (e) {
+      null != l && l(e), null != e && o(e);
+    }), _preact.options.unmount = v(function (e) {
+      null != c && c(e), i(e);
     });
-    var m = _preact.Component.prototype.setState;
+    var h = _preact.Component.prototype.setState;
 
-    _preact.Component.prototype.setState = function (n, e) {
+    _preact.Component.prototype.setState = function (e, n) {
       var t = this.__s !== this.state && this.__s || (this.__s = Object.assign({}, this.state));
-      return this.__u = Object.assign({}, t), m.call(this, n, e);
+      return this.__u = Object.assign({}, t), h.call(this, e, n);
     };
   }
 }());
@@ -940,7 +965,7 @@ function exec(url, route, opts) {
 
   for (var i$1 = 0; i$1 < max; i$1++) {
     if (route[i$1] && route[i$1].charAt(0) === ':') {
-      var param = route[i$1].replace(/(^\:|[+*?]+$)/g, ''),
+      var param = route[i$1].replace(/(^:|[+*?]+$)/g, ''),
           flags = (route[i$1].match(/[+*?]+$/) || EMPTY$1)[0] || '',
           plus = ~flags.indexOf('+'),
           star = ~flags.indexOf('*'),
@@ -1310,7 +1335,7 @@ Router.Route = Route;
 Router.Link = Link;
 var _default = Router;
 exports.default = _default;
-},{"preact":"../node_modules/preact/dist/preact.module.js"}],"../node_modules/history/node_modules/@babel/runtime/helpers/esm/extends.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js"}],"../node_modules/@babel/runtime/helpers/esm/extends.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1335,7 +1360,7 @@ function _extends() {
 
   return _extends.apply(this, arguments);
 }
-},{}],"../node_modules/resolve-pathname/index.js":[function(require,module,exports) {
+},{}],"../node_modules/resolve-pathname/esm/resolve-pathname.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1357,8 +1382,8 @@ function spliceOne(list, index) {
 } // This implementation is based heavily on node's url.parse
 
 
-function resolvePathname(to) {
-  var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+function resolvePathname(to, from) {
+  if (from === undefined) from = '';
   var toParts = to && to.split('/') || [];
   var fromParts = from && from.split('/') || [];
   var isToAbs = to && isAbsolute(to);
@@ -1375,7 +1400,7 @@ function resolvePathname(to) {
   }
 
   if (!fromParts.length) return '/';
-  var hasTrailingSlash = void 0;
+  var hasTrailingSlash;
 
   if (fromParts.length) {
     var last = fromParts[fromParts.length - 1];
@@ -1400,9 +1425,7 @@ function resolvePathname(to) {
     }
   }
 
-  if (!mustEndAbs) for (; up--; up) {
-    fromParts.unshift('..');
-  }
+  if (!mustEndAbs) for (; up--; up) fromParts.unshift('..');
   if (mustEndAbs && fromParts[0] !== '' && (!fromParts[0] || !isAbsolute(fromParts[0]))) fromParts.unshift('');
   var result = fromParts.join('/');
   if (hasTrailingSlash && result.substr(-1) !== '/') result += '/';
@@ -1411,7 +1434,7 @@ function resolvePathname(to) {
 
 var _default = resolvePathname;
 exports.default = _default;
-},{}],"../node_modules/value-equal/index.js":[function(require,module,exports) {
+},{}],"../node_modules/value-equal/esm/value-equal.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1419,14 +1442,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
+function valueOf(obj) {
+  return obj.valueOf ? obj.valueOf() : Object.prototype.valueOf.call(obj);
+}
 
 function valueEqual(a, b) {
-  if (a === b) return true;
+  // Test for strict equality first.
+  if (a === b) return true; // Otherwise, if either of them == null they are not equal.
+
   if (a == null || b == null) return false;
 
   if (Array.isArray(a)) {
@@ -1435,18 +1458,11 @@ function valueEqual(a, b) {
     });
   }
 
-  var aType = typeof a === 'undefined' ? 'undefined' : _typeof(a);
-  var bType = typeof b === 'undefined' ? 'undefined' : _typeof(b);
-  if (aType !== bType) return false;
-
-  if (aType === 'object') {
-    var aValue = a.valueOf();
-    var bValue = b.valueOf();
+  if (typeof a === 'object' || typeof b === 'object') {
+    var aValue = valueOf(a);
+    var bValue = valueOf(b);
     if (aValue !== a || bValue !== b) return valueEqual(aValue, bValue);
-    var aKeys = Object.keys(a);
-    var bKeys = Object.keys(b);
-    if (aKeys.length !== bKeys.length) return false;
-    return aKeys.every(function (key) {
+    return Object.keys(Object.assign({}, a, b)).every(function (key) {
       return valueEqual(a[key], b[key]);
     });
   }
@@ -1544,7 +1560,7 @@ function stripLeadingSlash(path) {
 }
 
 function hasBasename(path, prefix) {
-  return new RegExp('^' + prefix + '(\\/|\\?|#|$)', 'i').test(path);
+  return path.toLowerCase().indexOf(prefix.toLowerCase()) === 0 && '/?#'.indexOf(path.charAt(prefix.length)) !== -1;
 }
 
 function stripBasename(path, prefix) {
@@ -1764,7 +1780,7 @@ function supportsGoWithoutReloadUsingHash() {
 
 
 function isExtraneousPopstateEvent(event) {
-  event.state === undefined && navigator.userAgent.indexOf('CriOS') === -1;
+  return event.state === undefined && navigator.userAgent.indexOf('CriOS') === -1;
 }
 
 var PopStateEvent = 'popstate';
@@ -1905,7 +1921,7 @@ function createBrowserHistory(props) {
           window.location.href = href;
         } else {
           var prevIndex = allKeys.indexOf(history.location.key);
-          var nextKeys = allKeys.slice(0, prevIndex === -1 ? 0 : prevIndex + 1);
+          var nextKeys = allKeys.slice(0, prevIndex + 1);
           nextKeys.push(location.key);
           allKeys = nextKeys;
           setState({
@@ -2048,6 +2064,11 @@ var HashPathCoders = {
   }
 };
 
+function stripHash(url) {
+  var hashIndex = url.indexOf('#');
+  return hashIndex === -1 ? url : url.slice(0, hashIndex);
+}
+
 function getHashPath() {
   // We can't use window.location.hash here because it's not
   // consistent across browsers - Firefox will pre-decode it!
@@ -2061,8 +2082,7 @@ function pushHashPath(path) {
 }
 
 function replaceHashPath(path) {
-  var hashIndex = window.location.href.indexOf('#');
-  window.location.replace(window.location.href.slice(0, hashIndex >= 0 ? hashIndex : 0) + '#' + path);
+  window.location.replace(stripHash(window.location.href) + '#' + path);
 }
 
 function createHashHistory(props) {
@@ -2101,6 +2121,10 @@ function createHashHistory(props) {
   var forceNextPop = false;
   var ignorePath = null;
 
+  function locationsAreEqual$$1(a, b) {
+    return a.pathname === b.pathname && a.search === b.search && a.hash === b.hash;
+  }
+
   function handleHashChange() {
     var path = getHashPath();
     var encodedPath = encodePath(path);
@@ -2111,7 +2135,7 @@ function createHashHistory(props) {
     } else {
       var location = getDOMLocation();
       var prevLocation = history.location;
-      if (!forceNextPop && locationsAreEqual(prevLocation, location)) return; // A hashchange doesn't always == location change.
+      if (!forceNextPop && locationsAreEqual$$1(prevLocation, location)) return; // A hashchange doesn't always == location change.
 
       if (ignorePath === createPath(location)) return; // Ignore this change; we already setState in push/replace.
 
@@ -2164,7 +2188,14 @@ function createHashHistory(props) {
   var allPaths = [createPath(initialLocation)]; // Public interface
 
   function createHref(location) {
-    return '#' + encodePath(basename + createPath(location));
+    var baseTag = document.querySelector('base');
+    var href = '';
+
+    if (baseTag && baseTag.getAttribute('href')) {
+      href = stripHash(window.location.href);
+    }
+
+    return href + '#' + encodePath(basename + createPath(location));
   }
 
   function push(path, state) {
@@ -2184,7 +2215,7 @@ function createHashHistory(props) {
         ignorePath = path;
         pushHashPath(encodedPath);
         var prevIndex = allPaths.lastIndexOf(createPath(history.location));
-        var nextPaths = allPaths.slice(0, prevIndex === -1 ? 0 : prevIndex + 1);
+        var nextPaths = allPaths.slice(0, prevIndex + 1);
         nextPaths.push(path);
         allPaths = nextPaths;
         setState({
@@ -2440,22 +2471,22 @@ function createMemoryHistory(props) {
   };
   return history;
 }
-},{"@babel/runtime/helpers/esm/extends":"../node_modules/history/node_modules/@babel/runtime/helpers/esm/extends.js","resolve-pathname":"../node_modules/resolve-pathname/index.js","value-equal":"../node_modules/value-equal/index.js","tiny-warning":"../node_modules/tiny-warning/dist/tiny-warning.esm.js","tiny-invariant":"../node_modules/tiny-invariant/dist/tiny-invariant.esm.js"}],"../node_modules/preact/hooks/dist/hooks.module.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","resolve-pathname":"../node_modules/resolve-pathname/esm/resolve-pathname.js","value-equal":"../node_modules/value-equal/esm/value-equal.js","tiny-warning":"../node_modules/tiny-warning/dist/tiny-warning.esm.js","tiny-invariant":"../node_modules/tiny-invariant/dist/tiny-invariant.esm.js"}],"../node_modules/preact/hooks/dist/hooks.module.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.useState = e;
+exports.useState = c;
 exports.useReducer = a;
 exports.useEffect = v;
 exports.useLayoutEffect = m;
-exports.useRef = p;
-exports.useImperativeHandle = l;
-exports.useMemo = s;
-exports.useCallback = d;
+exports.useRef = d;
+exports.useImperativeHandle = p;
+exports.useMemo = l;
+exports.useCallback = s;
 exports.useContext = y;
-exports.useDebugValue = T;
+exports.useDebugValue = _;
 
 var _preact = require("preact");
 
@@ -2465,75 +2496,81 @@ var t,
     i = _preact.options.__r;
 
 _preact.options.__r = function (n) {
-  i && i(n), t = 0, (r = n.__c).__H && (r.__H.t = w(r.__H.t));
+  i && i(n), t = 0, (r = n.__c).__H && (r.__H.t = A(r.__H.t));
 };
 
-var o = _preact.options.diffed;
+var f = _preact.options.diffed;
 
 _preact.options.diffed = function (n) {
-  o && o(n);
+  f && f(n);
   var t = n.__c;
 
   if (t) {
     var r = t.__H;
-    r && (r.u = w(r.u));
+    r && (r.u = (r.u.some(function (n) {
+      n.ref && (n.ref.current = n.createHandle());
+    }), []), r.i = A(r.i));
   }
 };
 
-var f = _preact.options.unmount;
+var o = _preact.options.unmount;
 
-function c(t) {
+function e(t) {
   _preact.options.__h && _preact.options.__h(r);
   var u = r.__H || (r.__H = {
-    i: [],
+    o: [],
     t: [],
+    i: [],
     u: []
   });
-  return t >= u.i.length && u.i.push({}), u.i[t];
+  return t >= u.o.length && u.o.push({}), u.o[t];
 }
 
-function e(n) {
+function c(n) {
   return a(q, n);
 }
 
 function a(n, u, i) {
-  var o = c(t++);
-  return o.__c || (o.__c = r, o.o = [i ? i(u) : q(null, u), function (t) {
-    var r = n(o.o[0], t);
-    o.o[0] !== r && (o.o[0] = r, o.__c.setState({}));
-  }]), o.o;
+  var f = e(t++);
+  return f.__c || (f.__c = r, f.v = [i ? i(u) : q(void 0, u), function (t) {
+    var r = n(f.v[0], t);
+    f.v[0] !== r && (f.v[0] = r, f.__c.setState({}));
+  }]), f.v;
 }
 
 function v(n, u) {
-  var i = c(t++);
-  F(i.v, u) && (i.o = n, i.v = u, r.__H.t.push(i), _(r));
+  var i = e(t++);
+  h(i.m, u) && (i.v = n, i.m = u, r.__H.t.push(i), T(r));
 }
 
 function m(n, u) {
-  var i = c(t++);
-  F(i.v, u) && (i.o = n, i.v = u, r.__H.u.push(i));
+  var i = e(t++);
+  h(i.m, u) && (i.v = n, i.m = u, r.__H.i.push(i));
 }
 
-function p(n) {
-  return s(function () {
+function d(n) {
+  return l(function () {
     return {
       current: n
     };
   }, []);
 }
 
-function l(n, r, u) {
-  var i = c(t++);
-  F(i.v, u) && (i.v = u, n && (n.current = r()));
+function p(n, u, i) {
+  var f = e(t++);
+  h(f.m, i) && (f.m = i, r.__H.u.push({
+    ref: n,
+    createHandle: u
+  }));
 }
 
-function s(n, r) {
-  var u = c(t++);
-  return F(u.v, r) ? (u.v = r, u.m = n, u.o = n()) : u.o;
+function l(n, r) {
+  var u = e(t++);
+  return h(u.m, r) ? (u.m = r, u.p = n, u.v = n()) : u.v;
 }
 
-function d(n, t) {
-  return s(function () {
+function s(n, t) {
+  return l(function () {
     return n;
   }, t);
 }
@@ -2541,48 +2578,62 @@ function d(n, t) {
 function y(n) {
   var u = r.context[n.__c];
   if (!u) return n.__p;
-  var i = c(t++);
-  return null == i.o && (i.o = !0, u.sub(r)), u.props.value;
+  var i = e(t++);
+  return null == i.v && (i.v = !0, u.sub(r)), u.props.value;
 }
 
-function T(t, r) {
+function _(t, r) {
   _preact.options.useDebugValue && _preact.options.useDebugValue(r ? r(t) : t);
 }
 
 _preact.options.unmount = function (n) {
-  f && f(n);
+  o && o(n);
   var t = n.__c;
 
   if (t) {
     var r = t.__H;
-    r && r.i.forEach(function (n) {
-      return n.p && n.p();
+    r && r.o.forEach(function (n) {
+      return n.l && n.l();
     });
   }
 };
 
-var _ = function () {};
+var T = function () {};
 
 function g() {
   u.some(function (n) {
-    n.l = !1, n.__P && (n.__H.t = w(n.__H.t));
+    n.s = !1, n.__P && (n.__H.t = A(n.__H.t));
   }), u = [];
 }
 
-function w(n) {
-  return n.forEach(A), n.forEach(E), [];
+if ("undefined" != typeof window) {
+  var w = _preact.options.requestAnimationFrame;
+
+  T = function (t) {
+    (!t.s && (t.s = !0) && 1 === u.push(t) || w !== _preact.options.requestAnimationFrame) && (w = _preact.options.requestAnimationFrame, (_preact.options.requestAnimationFrame || function (n) {
+      var t = function () {
+        clearTimeout(r), cancelAnimationFrame(u), setTimeout(n);
+      },
+          r = setTimeout(t, 100),
+          u = requestAnimationFrame(t);
+    })(g));
+  };
 }
 
 function A(n) {
-  n.p && n.p();
+  return n.forEach(E), n.forEach(F), [];
 }
 
 function E(n) {
-  var t = n.o();
-  "function" == typeof t && (n.p = t);
+  n.l && n.l();
 }
 
-function F(n, t) {
+function F(n) {
+  var t = n.v();
+  "function" == typeof t && (n.l = t);
+}
+
+function h(n, t) {
   return !n || t.some(function (t, r) {
     return t !== n[r];
   });
@@ -2591,16 +2642,6 @@ function F(n, t) {
 function q(n, t) {
   return "function" == typeof t ? t(n) : t;
 }
-
-"undefined" != typeof window && (_ = function (t) {
-  !t.l && (t.l = !0) && 1 === u.push(t) && (_preact.options.requestAnimationFrame || function (n) {
-    var t = function () {
-      clearTimeout(r), cancelAnimationFrame(u), setTimeout(n);
-    },
-        r = setTimeout(t, 100),
-        u = requestAnimationFrame(t);
-  })(g);
-});
 },{"preact":"../node_modules/preact/dist/preact.module.js"}],"../node_modules/preact/compat/dist/compat.module.js":[function(require,module,exports) {
 "use strict";
 
@@ -2630,18 +2671,18 @@ var _exportNames = {
   Fragment: true,
   Component: true
 };
-exports.hydrate = exports.render = k;
-exports.unmountComponentAtNode = z;
-exports.createPortal = F;
-exports.createElement = S;
-exports.createFactory = w;
-exports.cloneElement = _;
-exports.isValidElement = j;
-exports.findDOMNode = U;
-exports.memo = Z;
-exports.forwardRef = L;
-exports.Suspense = m;
-exports.lazy = y;
+exports.hydrate = exports.render = U;
+exports.unmountComponentAtNode = Z;
+exports.createPortal = j;
+exports.createElement = W;
+exports.createFactory = R;
+exports.cloneElement = L;
+exports.isValidElement = V;
+exports.findDOMNode = T;
+exports.memo = q;
+exports.forwardRef = B;
+exports.Suspense = k;
+exports.lazy = w;
 Object.defineProperty(exports, "createContext", {
   enumerable: true,
   get: function () {
@@ -2668,132 +2709,124 @@ Object.defineProperty(exports, "Component", {
 });
 exports.unstable_batchedUpdates = exports.PureComponent = exports.Children = exports.version = exports.default = void 0;
 
-var n = _interopRequireWildcard(require("preact/hooks"));
+var _hooks = require("preact/hooks");
 
-Object.keys(n).forEach(function (key) {
+Object.keys(_hooks).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function () {
-      return n[key];
+      return _hooks[key];
     }
   });
 });
 
 var _preact = require("preact");
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
-
-function d(n, t) {
-  for (var r in t) n[r] = t[r];
-
-  return n;
+function E(n) {
+  var e = n.parentNode;
+  e && e.removeChild(n);
 }
 
-function p(n) {
-  var t = n.parentNode;
-  t && t.removeChild(n);
-}
+var _ = _preact.options.__e;
 
-var h = _preact.options.__e;
-
-function m() {
+function k() {
   this.t = [];
 }
 
-function y(n) {
-  var t, e, o;
+function w(n) {
+  var e, t, r;
 
-  function i(i) {
-    if (t || (t = n()).then(function (n) {
-      e = n.default;
+  function o(o) {
+    if (e || (e = n()).then(function (n) {
+      t = n.default;
     }, function (n) {
-      o = n;
-    }), o) throw o;
-    if (!e) throw t;
-    return (0, _preact.createElement)(e, i);
+      r = n;
+    }), r) throw r;
+    if (!t) throw e;
+    return (0, _preact.createElement)(t, o);
   }
 
-  return i.displayName = "Lazy", i.o = !0, i;
+  return o.displayName = "Lazy", o.o = !0, o;
 }
 
-_preact.options.__e = function (n, t, r) {
-  if (n.then && r) for (var e, o = t; o = o.__p;) if ((e = o.__c) && e.i) return r && (t.__e = r.__e, t.__k = r.__k), void e.i(n);
-  h(n, t, r);
-}, (m.prototype = new _preact.Component()).i = function (n) {
-  var t = this;
-  t.t.push(n);
+_preact.options.__e = function (n, e, t) {
+  if (n.then && t) for (var r, o = e; o = o.__p;) if ((r = o.__c) && r.u) return t && (e.__e = t.__e, e.__k = t.__k), void r.u(n);
 
-  var r = function () {
-    t.t[t.t.indexOf(n)] = t.t[t.t.length - 1], t.t.pop(), 0 == t.t.length && ((0, _preact._unmount)(t.props.fallback), t.__v.__e = null, t.__v.__k = t.state.u, t.setState({
-      u: null
+  _(n, e, t);
+}, (k.prototype = new _preact.Component()).u = function (n) {
+  var e = this;
+  e.t.push(n);
+
+  var t = function () {
+    e.t[e.t.indexOf(n)] = e.t[e.t.length - 1], e.t.pop(), 0 == e.t.length && ((0, _preact._unmount)(e.props.fallback), e.__v.__e = null, e.__v.__k = e.state.i, e.setState({
+      i: null
     }));
   };
 
-  null == t.state.u && (t.setState({
-    u: t.__v.__k
-  }), function n(t) {
-    for (var r = 0; r < t.length; r++) {
-      var e = t[r];
-      null != e && ("function" != typeof e.type && e.__e ? p(e.__e) : e.__k && n(e.__k));
+  null == e.state.i && (e.setState({
+    i: e.__v.__k
+  }), function n(e) {
+    for (var t = 0; t < e.length; t++) {
+      var r = e[t];
+      null != r && ("function" != typeof r.type && r.__e ? E(r.__e) : r.__k && n(r.__k));
     }
-  }(t.__v.__k), t.__v.__k = []), n.then(r, r);
-}, m.prototype.render = function (n, t) {
-  return t.u ? n.fallback : n.children;
+  }(e.__v.__k), e.__v.__k = []), n.then(t, t);
+}, k.prototype.render = function (n, e) {
+  return e.i ? n.fallback : n.children;
 };
-var b = "16.8.0",
-    g = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.element") || 60103,
-    x = /^(?:accent|alignment|arabic|baseline|cap|clip|color|fill|flood|font|glyph|horiz|marker|overline|paint|stop|strikethrough|stroke|text|underline|unicode|units|v|vector|vert|word|writing|x)[A-Z]/,
-    C = _preact.options.event;
-exports.version = b;
+var A = "16.8.0",
+    S = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.element") || 60103,
+    F = /^(?:accent|alignment|arabic|baseline|cap|clip|color|fill|flood|font|glyph|horiz|marker|overline|paint|stop|strikethrough|stroke|text|underline|unicode|units|v|vector|vert|word|writing|x)[A-Z]/,
+    N = _preact.options.event;
+exports.version = A;
 
-function w(n) {
-  return S.bind(null, n);
+function R(n) {
+  return W.bind(null, n);
 }
 
-function k(n, t, r) {
-  for (; t.firstChild;) p(t.firstChild);
-
-  return (0, _preact.render)(n, t), "function" == typeof r && r(), n ? n.__c : null;
+function U(n, e, t) {
+  if (null == e.__k) for (; e.firstChild;) E(e.firstChild);
+  return (0, _preact.render)(n, e), "function" == typeof t && t(), n ? n.__c : null;
 }
 
 _preact.options.event = function (n) {
-  return C && (n = C(n)), n.persist = function () {}, n.nativeEvent = n;
+  return N && (n = N(n)), n.persist = function () {}, n.nativeEvent = n;
 };
 
-var E = function () {};
+var M = function () {};
 
-function A(n) {
-  var t = this,
-      r = n.container,
-      o = (0, _preact.h)(E, {
-    context: t.context
+function O(n) {
+  var e = this,
+      t = n.container,
+      r = (0, _preact.h)(M, {
+    context: e.context
   }, n.vnode);
-  return t.l && t.l !== r && (t.s.parentNode && t.l.removeChild(t.s), (0, _preact._unmount)(t.v), t.p = !1), n.vnode ? t.p ? (r.__k = t.__k, (0, _preact.render)(o, r), t.__k = r.__k) : (t.s = document.createTextNode(""), (0, _preact.hydrate)("", r), r.insertBefore(t.s, r.firstChild), t.p = !0, t.l = r, (0, _preact.render)(o, r, t.s), t.__k = this.s.__k) : t.p && (t.s.parentNode && t.l.removeChild(t.s), (0, _preact._unmount)(t.v)), t.v = o, t.componentWillUnmount = function () {
-    t.s.parentNode && t.l.removeChild(t.s), (0, _preact._unmount)(t.v);
+  return e.l && e.l !== t && (e.s.parentNode && e.l.removeChild(e.s), (0, _preact._unmount)(e.v), e.p = !1), n.vnode ? e.p ? (t.__k = e.__k, (0, _preact.render)(r, t), e.__k = t.__k) : (e.s = document.createTextNode(""), (0, _preact.hydrate)("", t), t.appendChild(e.s), e.p = !0, e.l = t, (0, _preact.render)(r, t, e.s), e.__k = this.s.__k) : e.p && (e.s.parentNode && e.l.removeChild(e.s), (0, _preact._unmount)(e.v)), e.v = r, e.componentWillUnmount = function () {
+    e.s.parentNode && e.l.removeChild(e.s), (0, _preact._unmount)(e.v);
   }, null;
 }
 
-function F(n, t) {
-  return (0, _preact.h)(A, {
+function j(n, e) {
+  return (0, _preact.h)(O, {
     vnode: n,
-    container: t
+    container: e
   });
 }
 
-E.prototype.getChildContext = function () {
+M.prototype.getChildContext = function () {
   return this.props.context;
-}, E.prototype.render = function (n) {
+}, M.prototype.render = function (n) {
   return n.children;
 };
 
-var N = function (n, t) {
-  return n ? (0, _preact.toChildArray)(n).map(t) : null;
+var z = function (n, e) {
+  return n ? (0, _preact.toChildArray)(n).map(e) : null;
 },
-    R = {
-  map: N,
-  forEach: N,
+    P = {
+  map: z,
+  forEach: z,
   count: function (n) {
     return n ? (0, _preact.toChildArray)(n).length : 0;
   },
@@ -2804,164 +2837,176 @@ var N = function (n, t) {
   toArray: _preact.toChildArray
 };
 
-exports.Children = R;
+exports.Children = P;
 
-function S() {
-  for (var n = [], t = arguments.length; t--;) n[t] = arguments[t];
+function W() {
+  for (var n = [], e = arguments.length; e--;) n[e] = arguments[e];
 
-  var r = _preact.h.apply(void 0, n),
-      e = r.type,
-      o = r.props;
+  var t = _preact.h.apply(void 0, n),
+      r = t.type,
+      o = t.props;
 
-  return "function" != typeof e && (o.defaultValue && (o.value || 0 === o.value || (o.value = o.defaultValue), delete o.defaultValue), Array.isArray(o.value) && o.multiple && "select" === e && ((0, _preact.toChildArray)(o.children).forEach(function (n) {
+  return "function" != typeof r && (o.defaultValue && (o.value || 0 === o.value || (o.value = o.defaultValue), delete o.defaultValue), Array.isArray(o.value) && o.multiple && "select" === r && ((0, _preact.toChildArray)(o.children).forEach(function (n) {
     -1 != o.value.indexOf(n.props.value) && (n.props.selected = !0);
-  }), delete o.value), function (n, t) {
-    var r, e, o;
+  }), delete o.value), function (n, e) {
+    var t, r, o;
 
-    for (o in t) if (r = x.test(o)) break;
+    for (o in e) if (t = F.test(o)) break;
 
-    if (r) for (o in e = n.props = {}, t) e[x.test(o) ? o.replace(/([A-Z0-9])/, "-$1").toLowerCase() : o] = t[o];
-  }(r, o)), r.preactCompatNormalized = !1, O(r);
+    if (t) for (o in r = n.props = {}, e) r[F.test(o) ? o.replace(/([A-Z0-9])/, "-$1").toLowerCase() : o] = e[o];
+  }(t, o)), t.preactCompatNormalized = !1, D(t);
 }
 
-function O(n) {
+function D(n) {
   return n.preactCompatNormalized = !0, function (n) {
-    var t = n.props;
-    (t.class || t.className) && (M.enumerable = "className" in t, t.className && (t.class = t.className), Object.defineProperty(t, "className", M));
+    var e = n.props;
+    (e.class || e.className) && (H.enumerable = "className" in e, e.className && (e.class = e.className), Object.defineProperty(e, "className", H));
   }(n), n;
 }
 
-function _(n) {
-  return j(n) ? O(_preact.cloneElement.apply(null, arguments)) : n;
+function L(n) {
+  return V(n) ? D(_preact.cloneElement.apply(null, arguments)) : n;
 }
 
-function j(n) {
-  return !!n && n.$$typeof === g;
+function V(n) {
+  return !!n && n.$$typeof === S;
 }
 
-function z(n) {
+function Z(n) {
   return !!n.__k && ((0, _preact.render)(null, n), !0);
 }
 
-var M = {
+var H = {
   configurable: !0,
   get: function () {
     return this.class;
   }
 };
 
-function P(n, t) {
-  for (var r in n) if (!(r in t)) return !0;
+function I(n, e) {
+  for (var t in n) if ("__source" !== t && !(t in e)) return !0;
 
-  for (var e in t) if (n[e] !== t[e]) return !0;
+  for (var r in e) if ("__source" !== r && n[r] !== e[r]) return !0;
 
   return !1;
 }
 
-function U(n) {
+function T(n) {
   return n && (n.base || 1 === n.nodeType && n) || null;
 }
 
-var W = function (n) {
-  function t(t) {
-    n.call(this, t), this.isPureReactComponent = !0;
+var $ = function (n) {
+  function e(e) {
+    n.call(this, e), this.isPureReactComponent = !0;
   }
 
-  return n && (t.__proto__ = n), (t.prototype = Object.create(n && n.prototype)).constructor = t, t.prototype.shouldComponentUpdate = function (n, t) {
-    return P(this.props, n) || P(this.state, t);
-  }, t;
+  return n && (e.__proto__ = n), (e.prototype = Object.create(n && n.prototype)).constructor = e, e.prototype.shouldComponentUpdate = function (n, e) {
+    return I(this.props, n) || I(this.state, e);
+  }, e;
 }(_preact.Component);
 
-exports.PureComponent = W;
+exports.PureComponent = $;
 
-function Z(n, t) {
-  function r(n) {
-    var r = this.props.ref,
-        e = r == n.ref;
-    return e || (r.call ? r(null) : r.current = null), (t ? !t(this.props, n) : P(this.props, n)) || !e;
+function q(n, e) {
+  function t(n) {
+    var t = this.props.ref,
+        r = t == n.ref;
+    return !r && t && (t.call ? t(null) : t.current = null), (e ? !e(this.props, n) : I(this.props, n)) || !r;
   }
 
-  function e(t) {
-    return this.shouldComponentUpdate = r, (0, _preact.h)(n, d({}, t));
+  function r(e) {
+    return this.shouldComponentUpdate = t, (0, _preact.h)(n, function (n, e) {
+      for (var t in e) n[t] = e[t];
+
+      return n;
+    }({}, e));
   }
 
-  return e.displayName = "Memo(" + (n.displayName || n.name) + ")", e.o = !0, e;
+  return r.prototype.isReactComponent = !0, r.displayName = "Memo(" + (n.displayName || n.name) + ")", r.o = !0, r;
 }
 
-function D(n, t) {
-  Object.defineProperty(n.prototype, "UNSAFE_" + t, {
-    configurable: !0,
+function B(n) {
+  function e(e) {
+    var t = e.ref;
+    return delete e.ref, n(e, t);
+  }
+
+  return e.prototype.isReactComponent = !0, e.o = !0, e.displayName = "ForwardRef(" + (n.displayName || n.name) + ")", e;
+}
+
+function G(n, e) {
+  n["UNSAFE_" + e] && !n[e] && Object.defineProperty(n, e, {
+    configurable: !1,
     get: function () {
-      return this[t];
+      return this["UNSAFE_" + e];
     },
     set: function (n) {
-      this[t] = n;
+      this["UNSAFE_" + e] = n;
     }
   });
 }
 
-function L(n) {
-  function t(t) {
-    var r = t.ref;
-    return delete t.ref, n(t, r);
-  }
-
-  return t.o = !0, t.displayName = "ForwardRef(" + (n.displayName || n.name) + ")", t;
-}
-
-_preact.Component.prototype.isReactComponent = {}, D(_preact.Component, "componentWillMount"), D(_preact.Component, "componentWillReceiveProps"), D(_preact.Component, "componentWillUpdate");
-var T = _preact.options.vnode;
+_preact.Component.prototype.isReactComponent = {};
+var J = _preact.options.vnode;
 
 _preact.options.vnode = function (n) {
-  n.$$typeof = g, function (t) {
-    var r = n.type,
-        e = n.props;
+  n.$$typeof = S, function (e) {
+    var t = n.type,
+        r = n.props;
 
-    if (e && "string" == typeof r) {
+    if (r && "string" == typeof t) {
       var o = {};
 
-      for (var i in e) /^on(Ani|Tra)/.test(i) && (e[i.toLowerCase()] = e[i], delete e[i]), o[i.toLowerCase()] = i;
+      for (var u in r) /^on(Ani|Tra)/.test(u) && (r[u.toLowerCase()] = r[u], delete r[u]), o[u.toLowerCase()] = u;
 
-      if (o.ondoubleclick && (e.ondblclick = e[o.ondoubleclick], delete e[o.ondoubleclick]), o.onbeforeinput && (e.onbeforeinput = e[o.onbeforeinput], delete e[o.onbeforeinput]), o.onchange && ("textarea" === r || "input" === r.toLowerCase() && !/^fil|che|ra/i.test(e.type))) {
-        var u = o.oninput || "oninput";
-        e[u] || (e[u] = e[o.onchange], delete e[o.onchange]);
+      if (o.ondoubleclick && (r.ondblclick = r[o.ondoubleclick], delete r[o.ondoubleclick]), o.onbeforeinput && (r.onbeforeinput = r[o.onbeforeinput], delete r[o.onbeforeinput]), o.onchange && ("textarea" === t || "input" === t.toLowerCase() && !/^fil|che|ra/i.test(r.type))) {
+        var i = o.oninput || "oninput";
+        r[i] || (r[i] = r[o.onchange], delete r[o.onchange]);
       }
     }
   }();
-  var t = n.type;
-  t && t.o && n.ref && (n.props.ref = n.ref, n.ref = null), T && T(n);
+  var e = n.type;
+  e && e.o && n.ref && (n.props.ref = n.ref, n.ref = null), "function" == typeof e && !e.m && e.prototype && (G(e.prototype, "componentWillMount"), G(e.prototype, "componentWillReceiveProps"), G(e.prototype, "componentWillUpdate"), e.m = !0), J && J(n);
 };
 
-var V = function (n, t) {
-  return n(t);
+var K = function (n, e) {
+  return n(e);
 };
 
-exports.unstable_batchedUpdates = V;
-
-var _default = d({
+exports.unstable_batchedUpdates = K;
+var _default = {
+  useState: _hooks.useState,
+  useReducer: _hooks.useReducer,
+  useEffect: _hooks.useEffect,
+  useLayoutEffect: _hooks.useLayoutEffect,
+  useRef: _hooks.useRef,
+  useImperativeHandle: _hooks.useImperativeHandle,
+  useMemo: _hooks.useMemo,
+  useCallback: _hooks.useCallback,
+  useContext: _hooks.useContext,
+  useDebugValue: _hooks.useDebugValue,
   version: "16.8.0",
-  Children: R,
-  render: k,
-  hydrate: k,
-  unmountComponentAtNode: z,
-  createPortal: F,
-  createElement: S,
+  Children: P,
+  render: U,
+  hydrate: U,
+  unmountComponentAtNode: Z,
+  createPortal: j,
+  createElement: W,
   createContext: _preact.createContext,
-  createFactory: w,
-  cloneElement: _,
+  createFactory: R,
+  cloneElement: L,
   createRef: _preact.createRef,
   Fragment: _preact.Fragment,
-  isValidElement: j,
-  findDOMNode: U,
+  isValidElement: V,
+  findDOMNode: T,
   Component: _preact.Component,
-  PureComponent: W,
-  memo: Z,
-  forwardRef: L,
-  unstable_batchedUpdates: V,
-  Suspense: m,
-  lazy: y
-}, n);
-
+  PureComponent: $,
+  memo: q,
+  forwardRef: B,
+  unstable_batchedUpdates: K,
+  Suspense: k,
+  lazy: w
+};
 exports.default = _default;
 },{"preact/hooks":"../node_modules/preact/hooks/dist/hooks.module.js","preact":"../node_modules/preact/dist/preact.module.js"}],"../node_modules/classnames/index.js":[function(require,module,exports) {
 var define;
@@ -4065,6 +4110,9 @@ process.umask = function () {
 };
 },{}],"../node_modules/path-browserify/index.js":[function(require,module,exports) {
 var process = require("process");
+// .dirname, .basename, and .extname methods are extracted from Node.js v8.11.1,
+// backported and transplited with Babel, with backwards-compat fixes
+
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4115,14 +4163,6 @@ function normalizeArray(parts, allowAboveRoot) {
 
   return parts;
 }
-
-// Split a filename into [root, dir, basename, ext], unix version
-// 'root' is just a slash, or nothing.
-var splitPathRe =
-    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-var splitPath = function(filename) {
-  return splitPathRe.exec(filename).slice(1);
-};
 
 // path.resolve([from ...], to)
 // posix version
@@ -4239,37 +4279,120 @@ exports.relative = function(from, to) {
 exports.sep = '/';
 exports.delimiter = ':';
 
-exports.dirname = function(path) {
-  var result = splitPath(path),
-      root = result[0],
-      dir = result[1];
-
-  if (!root && !dir) {
-    // No dirname whatsoever
-    return '.';
+exports.dirname = function (path) {
+  if (typeof path !== 'string') path = path + '';
+  if (path.length === 0) return '.';
+  var code = path.charCodeAt(0);
+  var hasRoot = code === 47 /*/*/;
+  var end = -1;
+  var matchedSlash = true;
+  for (var i = path.length - 1; i >= 1; --i) {
+    code = path.charCodeAt(i);
+    if (code === 47 /*/*/) {
+        if (!matchedSlash) {
+          end = i;
+          break;
+        }
+      } else {
+      // We saw the first non-path separator
+      matchedSlash = false;
+    }
   }
 
-  if (dir) {
-    // It has a dirname, strip trailing slash
-    dir = dir.substr(0, dir.length - 1);
+  if (end === -1) return hasRoot ? '/' : '.';
+  if (hasRoot && end === 1) {
+    // return '//';
+    // Backwards-compat fix:
+    return '/';
   }
-
-  return root + dir;
+  return path.slice(0, end);
 };
 
+function basename(path) {
+  if (typeof path !== 'string') path = path + '';
 
-exports.basename = function(path, ext) {
-  var f = splitPath(path)[2];
-  // TODO: make this comparison case-insensitive on windows?
+  var start = 0;
+  var end = -1;
+  var matchedSlash = true;
+  var i;
+
+  for (i = path.length - 1; i >= 0; --i) {
+    if (path.charCodeAt(i) === 47 /*/*/) {
+        // If we reached a path separator that was not part of a set of path
+        // separators at the end of the string, stop now
+        if (!matchedSlash) {
+          start = i + 1;
+          break;
+        }
+      } else if (end === -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // path component
+      matchedSlash = false;
+      end = i + 1;
+    }
+  }
+
+  if (end === -1) return '';
+  return path.slice(start, end);
+}
+
+// Uses a mixed approach for backwards-compatibility, as ext behavior changed
+// in new Node.js versions, so only basename() above is backported here
+exports.basename = function (path, ext) {
+  var f = basename(path);
   if (ext && f.substr(-1 * ext.length) === ext) {
     f = f.substr(0, f.length - ext.length);
   }
   return f;
 };
 
+exports.extname = function (path) {
+  if (typeof path !== 'string') path = path + '';
+  var startDot = -1;
+  var startPart = 0;
+  var end = -1;
+  var matchedSlash = true;
+  // Track the state of characters (if any) we see before our first dot and
+  // after any path separator we find
+  var preDotState = 0;
+  for (var i = path.length - 1; i >= 0; --i) {
+    var code = path.charCodeAt(i);
+    if (code === 47 /*/*/) {
+        // If we reached a path separator that was not part of a set of path
+        // separators at the end of the string, stop now
+        if (!matchedSlash) {
+          startPart = i + 1;
+          break;
+        }
+        continue;
+      }
+    if (end === -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // extension
+      matchedSlash = false;
+      end = i + 1;
+    }
+    if (code === 46 /*.*/) {
+        // If this is our first dot, mark it as the start of our extension
+        if (startDot === -1)
+          startDot = i;
+        else if (preDotState !== 1)
+          preDotState = 1;
+    } else if (startDot !== -1) {
+      // We saw a non-dot and non-path separator before our dot, so we should
+      // have a good chance at having a non-empty extension
+      preDotState = -1;
+    }
+  }
 
-exports.extname = function(path) {
-  return splitPath(path)[3];
+  if (startDot === -1 || end === -1 ||
+      // We saw a non-dot character immediately before the dot
+      preDotState === 0 ||
+      // The (right-most) trimmed path component is exactly '..'
+      preDotState === 1 && startDot === end - 1 && startDot === startPart + 1) {
+    return '';
+  }
+  return path.slice(startDot, end);
 };
 
 function filter (xs, f) {
@@ -4566,9 +4689,9 @@ var slice = [].slice
 
 module.exports = wrap
 
-/* Wrap `fn`.  Can be sync or async; return a promise,
- * receive a completion handler, return new values and
- * errors. */
+// Wrap `fn`.
+// Can be sync or async; return a promise, receive a completion handler, return
+// new values and errors.
 function wrap(fn, callback) {
   var invoked
 
@@ -4585,18 +4708,17 @@ function wrap(fn, callback) {
 
     try {
       result = fn.apply(null, params)
-    } catch (err) {
-      /* Well, this is quite the pickle.  `fn` received
-       * a callback and invoked it (thus continuing the
-       * pipeline), but later also threw an error.
-       * We’re not about to restart the pipeline again,
-       * so the only thing left to do is to throw the
-       * thing instea. */
+    } catch (error) {
+      // Well, this is quite the pickle.
+      // `fn` received a callback and invoked it (thus continuing the pipeline),
+      // but later also threw an error.
+      // We’re not about to restart the pipeline again, so the only thing left
+      // to do is to throw the thing instead.
       if (callback && invoked) {
-        throw err
+        throw error
       }
 
-      return done(err)
+      return done(error)
     }
 
     if (!callback) {
@@ -4610,7 +4732,7 @@ function wrap(fn, callback) {
     }
   }
 
-  /* Invoke `next`, only once. */
+  // Invoke `next`, only once.
   function done() {
     if (!invoked) {
       invoked = true
@@ -4619,8 +4741,8 @@ function wrap(fn, callback) {
     }
   }
 
-  /* Invoke `done` with one value.
-   * Tracks if an error is passed, too. */
+  // Invoke `done` with one value.
+  // Tracks if an error is passed, too.
   function then(value) {
     done(null, value)
   }
@@ -4637,7 +4759,7 @@ trough.wrap = wrap
 
 var slice = [].slice
 
-/* Create new middleware. */
+// Create new middleware.
 function trough() {
   var fns = []
   var middleware = {}
@@ -4647,8 +4769,7 @@ function trough() {
 
   return middleware
 
-  /* Run `fns`.  Last argument must be
-   * a completion handler. */
+  // Run `fns`.  Last argument must be a completion handler.
   function run() {
     var index = -1
     var input = slice.call(arguments, 0, -1)
@@ -4660,7 +4781,7 @@ function trough() {
 
     next.apply(null, [null].concat(input))
 
-    /* Run the next `fn`, if any. */
+    // Run the next `fn`, if any.
     function next(err) {
       var fn = fns[++index]
       var params = slice.call(arguments, 0)
@@ -4673,7 +4794,7 @@ function trough() {
         return
       }
 
-      /* Copy non-nully input into values. */
+      // Copy non-nully input into values.
       while (++pos < length) {
         if (values[pos] === null || values[pos] === undefined) {
           values[pos] = input[pos]
@@ -4682,7 +4803,7 @@ function trough() {
 
       input = values
 
-      /* Next or done. */
+      // Next or done.
       if (fn) {
         wrap(fn, next).apply(null, input)
       } else {
@@ -4691,7 +4812,7 @@ function trough() {
     }
   }
 
-  /* Add `fn` to the list. */
+  // Add `fn` to the list.
   function use(fn) {
     if (typeof fn !== 'function') {
       throw new Error('Expected `fn` to be a function, not ' + fn)
@@ -5194,24 +5315,28 @@ function assertDone(name, asyncName, complete) {
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
+    if (superCtor) {
+      ctor.super_ = superCtor
+      ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+          value: ctor,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      })
+    }
   };
 } else {
   // old school shim for old browsers
   module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
+    if (superCtor) {
+      ctor.super_ = superCtor
+      var TempCtor = function () {}
+      TempCtor.prototype = superCtor.prototype
+      ctor.prototype = new TempCtor()
+      ctor.prototype.constructor = ctor
+    }
   }
 }
 
@@ -5223,8 +5348,8 @@ var inherits = require('inherits')
 
 module.exports = unherit
 
-/* Create a custom constructor which can be modified
- * without affecting the original class. */
+// Create a custom constructor which can be modified without affecting the
+// original class.
 function unherit(Super) {
   var result
   var key
@@ -5233,7 +5358,7 @@ function unherit(Super) {
   inherits(Of, Super)
   inherits(From, Of)
 
-  /* Clone values. */
+  // Clone values.
   result = Of.prototype
 
   for (key in result) {
@@ -5246,13 +5371,13 @@ function unherit(Super) {
 
   return Of
 
-  /* Constructor accepting a single argument,
-   * which itself is an `arguments` object. */
+  // Constructor accepting a single argument, which itself is an `arguments`
+  // object.
   function From(parameters) {
     return Super.apply(this, parameters)
   }
 
-  /* Constructor accepting variadic arguments. */
+  // Constructor accepting variadic arguments.
   function Of() {
     if (!(this instanceof Of)) {
       return new From(arguments)
@@ -5267,9 +5392,9 @@ function unherit(Super) {
 
 module.exports = factory
 
-/* Construct a state `toggler`: a function which inverses
- * `property` in context based on its current value.
- * The by `toggler` returned function restores that value. */
+// Construct a state `toggler`: a function which inverses `property` in context
+// based on its current value.
+// The by `toggler` returned function restores that value.
 function factory(key, state, ctx) {
   return enter
 
@@ -5549,8 +5674,8 @@ module.exports = {
 
 module.exports = decimal
 
-/* Check if the given character code, or the character
- * code at the first character, is decimal. */
+// Check if the given character code, or the character code at the first
+// character, is decimal.
 function decimal(character) {
   var code = typeof character === 'string' ? character.charCodeAt(0) : character
 
@@ -5562,8 +5687,8 @@ function decimal(character) {
 
 module.exports = hexadecimal
 
-/* Check if the given character code, or the character
- * code at the first character, is hexadecimal. */
+// Check if the given character code, or the character code at the first
+// character, is hexadecimal.
 function hexadecimal(character) {
   var code = typeof character === 'string' ? character.charCodeAt(0) : character
 
@@ -5579,8 +5704,8 @@ function hexadecimal(character) {
 
 module.exports = alphabetical
 
-/* Check if the given character code, or the character
- * code at the first character, is alphabetical. */
+// Check if the given character code, or the character code at the first
+// character, is alphabetical.
 function alphabetical(character) {
   var code = typeof character === 'string' ? character.charCodeAt(0) : character
 
@@ -5598,8 +5723,8 @@ var decimal = require('is-decimal')
 
 module.exports = alphanumerical
 
-/* Check if the given character code, or the character
- * code at the first character, is alphanumerical. */
+// Check if the given character code, or the character code at the first
+// character, is alphanumerical.
 function alphanumerical(character) {
   return alphabetical(character) || decimal(character)
 }
@@ -5611,6 +5736,8 @@ function alphanumerical(character) {
 
 var el
 
+var semicolon = 59 //  ';'
+
 module.exports = decodeEntity
 
 function decodeEntity(characters) {
@@ -5621,12 +5748,12 @@ function decodeEntity(characters) {
   el.innerHTML = entity
   char = el.textContent
 
-  // Some entities do not require the closing semicolon (&not - for instance),
+  // Some entities do not require the closing semicolon (`&not` - for instance),
   // which leads to situations where parsing the assumed entity of &notit; will
   // result in the string `¬it;`.  When we encounter a trailing semicolon after
-  // parsing and the entity to decode was not a semicolon (&semi;), we can
+  // parsing and the entity to decode was not a semicolon (`&semi;`), we can
   // assume that the matching was incomplete
-  if (char.slice(-1) === ';' && characters !== 'semi') {
+  if (char.charCodeAt(char.length - 1) === semicolon && characters !== 'semi') {
     return false
   }
 
@@ -5650,7 +5777,7 @@ var own = {}.hasOwnProperty
 var fromCharCode = String.fromCharCode
 var noop = Function.prototype
 
-/* Default settings. */
+// Default settings.
 var defaults = {
   warning: null,
   reference: null,
@@ -5664,51 +5791,66 @@ var defaults = {
   nonTerminated: true
 }
 
-/* Reference types. */
-var NAMED = 'named'
-var HEXADECIMAL = 'hexadecimal'
-var DECIMAL = 'decimal'
+// Characters.
+var tab = 9 // '\t'
+var lineFeed = 10 // '\n'
+var formFeed = 12 //  '\f'
+var space = 32 // ' '
+var ampersand = 38 //  '&'
+var semicolon = 59 //  ';'
+var lessThan = 60 //  '<'
+var equalsTo = 61 //  '='
+var numberSign = 35 //  '#'
+var uppercaseX = 88 //  'X'
+var lowercaseX = 120 //  'x'
+var replacementCharacter = 65533 // '�'
 
-/* Map of bases. */
-var BASE = {}
+// Reference types.
+var name = 'named'
+var hexa = 'hexadecimal'
+var deci = 'decimal'
 
-BASE[HEXADECIMAL] = 16
-BASE[DECIMAL] = 10
+// Map of bases.
+var bases = {}
 
-/* Map of types to tests. Each type of character reference
- * accepts different characters. This test is used to
- * detect whether a reference has ended (as the semicolon
- * is not strictly needed). */
-var TESTS = {}
+bases[hexa] = 16
+bases[deci] = 10
 
-TESTS[NAMED] = alphanumerical
-TESTS[DECIMAL] = decimal
-TESTS[HEXADECIMAL] = hexadecimal
+// Map of types to tests.
+// Each type of character reference accepts different characters.
+// This test is used to detect whether a reference has ended (as the semicolon
+// is not strictly needed).
+var tests = {}
 
-/* Warning messages. */
-var NAMED_NOT_TERMINATED = 1
-var NUMERIC_NOT_TERMINATED = 2
-var NAMED_EMPTY = 3
-var NUMERIC_EMPTY = 4
-var NAMED_UNKNOWN = 5
-var NUMERIC_DISALLOWED = 6
-var NUMERIC_PROHIBITED = 7
+tests[name] = alphanumerical
+tests[deci] = decimal
+tests[hexa] = hexadecimal
 
-var MESSAGES = {}
+// Warning types.
+var namedNotTerminated = 1
+var numericNotTerminated = 2
+var namedEmpty = 3
+var numericEmpty = 4
+var namedUnknown = 5
+var numericDisallowed = 6
+var numericProhibited = 7
 
-MESSAGES[NAMED_NOT_TERMINATED] =
+// Warning messages.
+var messages = {}
+
+messages[namedNotTerminated] =
   'Named character references must be terminated by a semicolon'
-MESSAGES[NUMERIC_NOT_TERMINATED] =
+messages[numericNotTerminated] =
   'Numeric character references must be terminated by a semicolon'
-MESSAGES[NAMED_EMPTY] = 'Named character references cannot be empty'
-MESSAGES[NUMERIC_EMPTY] = 'Numeric character references cannot be empty'
-MESSAGES[NAMED_UNKNOWN] = 'Named character references must be known'
-MESSAGES[NUMERIC_DISALLOWED] =
+messages[namedEmpty] = 'Named character references cannot be empty'
+messages[numericEmpty] = 'Numeric character references cannot be empty'
+messages[namedUnknown] = 'Named character references must be known'
+messages[numericDisallowed] =
   'Numeric character references cannot be disallowed'
-MESSAGES[NUMERIC_PROHIBITED] =
+messages[numericProhibited] =
   'Numeric character references cannot be outside the permissible Unicode range'
 
-/* Wrap to ensure clean parameters are given to `parse`. */
+// Wrap to ensure clean parameters are given to `parse`.
 function parseEntities(value, options) {
   var settings = {}
   var option
@@ -5732,7 +5874,8 @@ function parseEntities(value, options) {
   return parse(value, settings)
 }
 
-/* Parse entities. */
+// Parse entities.
+// eslint-disable-next-line complexity
 function parse(value, settings) {
   var additional = settings.additional
   var nonTerminated = settings.nonTerminated
@@ -5771,59 +5914,46 @@ function parse(value, settings) {
   var diff
   var end
 
-  /* Cache the current point. */
+  if (typeof additional === 'string') {
+    additional = additional.charCodeAt(0)
+  }
+
+  // Cache the current point.
   prev = now()
 
-  /* Wrap `handleWarning`. */
+  // Wrap `handleWarning`.
   warning = handleWarning ? parseError : noop
 
-  /* Ensure the algorithm walks over the first character
-   * and the end (inclusive). */
+  // Ensure the algorithm walks over the first character and the end (inclusive).
   index--
   length++
 
   while (++index < length) {
-    /* If the previous character was a newline. */
-    if (character === '\n') {
+    // If the previous character was a newline.
+    if (character === lineFeed) {
       column = indent[lines] || 1
     }
 
-    character = at(index)
+    character = value.charCodeAt(index)
 
-    /* Handle anything other than an ampersand,
-     * including newlines and EOF. */
-    if (character !== '&') {
-      if (character === '\n') {
-        line++
-        lines++
-        column = 0
-      }
+    if (character === ampersand) {
+      following = value.charCodeAt(index + 1)
 
-      if (character) {
-        queue += character
-        column++
-      } else {
-        flush()
-      }
-    } else {
-      following = at(index + 1)
-
-      /* The behaviour depends on the identity of the next
-       * character. */
+      // The behaviour depends on the identity of the next character.
       if (
-        following === '\t' /* Tab */ ||
-        following === '\n' /* Newline */ ||
-        following === '\f' /* Form feed */ ||
-        following === ' ' /* Space */ ||
-        following === '<' /* Less-than */ ||
-        following === '&' /* Ampersand */ ||
-        following === '' ||
+        following === tab ||
+        following === lineFeed ||
+        following === formFeed ||
+        following === space ||
+        following === ampersand ||
+        following === lessThan ||
+        following !== following ||
         (additional && following === additional)
       ) {
-        /* Not a character reference. No characters
-         * are consumed, and nothing is returned.
-         * This is not an error, either. */
-        queue += character
+        // Not a character reference.
+        // No characters are consumed, and nothing is returned.
+        // This is not an error, either.
+        queue += fromCharCode(character)
         column++
 
         continue
@@ -5833,58 +5963,56 @@ function parse(value, settings) {
       begin = start
       end = start
 
-      /* Numerical entity. */
-      if (following !== '#') {
-        type = NAMED
-      } else {
+      if (following === numberSign) {
+        // Numerical entity.
         end = ++begin
 
-        /* The behaviour further depends on the
-         * character after the U+0023 NUMBER SIGN. */
-        following = at(end)
+        // The behaviour further depends on the next character.
+        following = value.charCodeAt(end)
 
-        if (following === 'x' || following === 'X') {
-          /* ASCII hex digits. */
-          type = HEXADECIMAL
+        if (following === uppercaseX || following === lowercaseX) {
+          // ASCII hex digits.
+          type = hexa
           end = ++begin
         } else {
-          /* ASCII digits. */
-          type = DECIMAL
+          // ASCII digits.
+          type = deci
         }
+      } else {
+        // Named entity.
+        type = name
       }
 
       entityCharacters = ''
       entity = ''
       characters = ''
-      test = TESTS[type]
+      test = tests[type]
       end--
 
       while (++end < length) {
-        following = at(end)
+        following = value.charCodeAt(end)
 
         if (!test(following)) {
           break
         }
 
-        characters += following
+        characters += fromCharCode(following)
 
-        /* Check if we can match a legacy named
-         * reference.  If so, we cache that as the
-         * last viable named reference.  This
-         * ensures we do not need to walk backwards
-         * later. */
-        if (type === NAMED && own.call(legacy, characters)) {
+        // Check if we can match a legacy named reference.
+        // If so, we cache that as the last viable named reference.
+        // This ensures we do not need to walk backwards later.
+        if (type === name && own.call(legacy, characters)) {
           entityCharacters = characters
           entity = legacy[characters]
         }
       }
 
-      terminated = at(end) === ';'
+      terminated = value.charCodeAt(end) === semicolon
 
       if (terminated) {
         end++
 
-        namedEntity = type === NAMED ? decodeEntity(characters) : false
+        namedEntity = type === name ? decodeEntity(characters) : false
 
         if (namedEntity) {
           entityCharacters = characters
@@ -5895,40 +6023,35 @@ function parse(value, settings) {
       diff = 1 + end - start
 
       if (!terminated && !nonTerminated) {
-        /* Empty. */
+        // Empty.
       } else if (!characters) {
-        /* An empty (possible) entity is valid, unless
-         * its numeric (thus an ampersand followed by
-         * an octothorp). */
-        if (type !== NAMED) {
-          warning(NUMERIC_EMPTY, diff)
+        // An empty (possible) entity is valid, unless it’s numeric (thus an
+        // ampersand followed by an octothorp).
+        if (type !== name) {
+          warning(numericEmpty, diff)
         }
-      } else if (type === NAMED) {
-        /* An ampersand followed by anything
-         * unknown, and not terminated, is invalid. */
+      } else if (type === name) {
+        // An ampersand followed by anything unknown, and not terminated, is
+        // invalid.
         if (terminated && !entity) {
-          warning(NAMED_UNKNOWN, 1)
+          warning(namedUnknown, 1)
         } else {
-          /* If theres something after an entity
-           * name which is not known, cap the
-           * reference. */
+          // If theres something after an entity name which is not known, cap
+          // the reference.
           if (entityCharacters !== characters) {
             end = begin + entityCharacters.length
             diff = 1 + end - begin
             terminated = false
           }
 
-          /* If the reference is not terminated,
-           * warn. */
+          // If the reference is not terminated, warn.
           if (!terminated) {
-            reason = entityCharacters ? NAMED_NOT_TERMINATED : NAMED_EMPTY
+            reason = entityCharacters ? namedNotTerminated : namedEmpty
 
-            if (!settings.attribute) {
-              warning(reason, diff)
-            } else {
-              following = at(end)
+            if (settings.attribute) {
+              following = value.charCodeAt(end)
 
-              if (following === '=') {
+              if (following === equalsTo) {
                 warning(reason, diff)
                 entity = null
               } else if (alphanumerical(following)) {
@@ -5936,6 +6059,8 @@ function parse(value, settings) {
               } else {
                 warning(reason, diff)
               }
+            } else {
+              warning(reason, diff)
             }
           }
         }
@@ -5943,38 +6068,34 @@ function parse(value, settings) {
         reference = entity
       } else {
         if (!terminated) {
-          /* All non-terminated numeric entities are
-           * not rendered, and trigger a warning. */
-          warning(NUMERIC_NOT_TERMINATED, diff)
+          // All non-terminated numeric entities are not rendered, and trigger a
+          // warning.
+          warning(numericNotTerminated, diff)
         }
 
-        /* When terminated and number, parse as
-         * either hexadecimal or decimal. */
-        reference = parseInt(characters, BASE[type])
+        // When terminated and number, parse as either hexadecimal or decimal.
+        reference = parseInt(characters, bases[type])
 
-        /* Trigger a warning when the parsed number
-         * is prohibited, and replace with
-         * replacement character. */
+        // Trigger a warning when the parsed number is prohibited, and replace
+        // with replacement character.
         if (prohibited(reference)) {
-          warning(NUMERIC_PROHIBITED, diff)
-          reference = '\uFFFD'
+          warning(numericProhibited, diff)
+          reference = fromCharCode(replacementCharacter)
         } else if (reference in invalid) {
-          /* Trigger a warning when the parsed number
-           * is disallowed, and replace by an
-           * alternative. */
-          warning(NUMERIC_DISALLOWED, diff)
+          // Trigger a warning when the parsed number is disallowed, and replace
+          // by an alternative.
+          warning(numericDisallowed, diff)
           reference = invalid[reference]
         } else {
-          /* Parse the number. */
+          // Parse the number.
           output = ''
 
-          /* Trigger a warning when the parsed
-           * number should not be used. */
+          // Trigger a warning when the parsed number should not be used.
           if (disallowed(reference)) {
-            warning(NUMERIC_DISALLOWED, diff)
+            warning(numericDisallowed, diff)
           }
 
-          /* Stringify the number. */
+          // Stringify the number.
           if (reference > 0xffff) {
             reference -= 0x10000
             output += fromCharCode((reference >>> (10 & 0x3ff)) | 0xd800)
@@ -5985,20 +6106,9 @@ function parse(value, settings) {
         }
       }
 
-      /* If we could not find a reference, queue the
-       * checked characters (as normal characters),
-       * and move the pointer to their end. This is
-       * possible because we can be certain neither
-       * newlines nor ampersands are included. */
-      if (!reference) {
-        characters = value.slice(start - 1, end)
-        queue += characters
-        column += characters.length
-        index = end - 1
-      } else {
-        /* Found it! First eat the queued
-         * characters as normal text, then eat
-         * an entity. */
+      // Found it!
+      // First eat the queued characters as normal text, then eat an entity.
+      if (reference) {
         flush()
 
         prev = now()
@@ -6018,14 +6128,39 @@ function parse(value, settings) {
         }
 
         prev = next
+      } else {
+        // If we could not find a reference, queue the checked characters (as
+        // normal characters), and move the pointer to their end.
+        // This is possible because we can be certain neither newlines nor
+        // ampersands are included.
+        characters = value.slice(start - 1, end)
+        queue += characters
+        column += characters.length
+        index = end - 1
+      }
+    } else {
+      // Handle anything other than an ampersand, including newlines and EOF.
+      if (
+        character === 10 // Line feed
+      ) {
+        line++
+        lines++
+        column = 0
+      }
+
+      if (character === character) {
+        queue += fromCharCode(character)
+        column++
+      } else {
+        flush()
       }
     }
   }
 
-  /* Return the reduced nodes, and any possible warnings. */
+  // Return the reduced nodes, and any possible warnings.
   return result.join('')
 
-  /* Get current position. */
+  // Get current position.
   function now() {
     return {
       line: line,
@@ -6034,24 +6169,19 @@ function parse(value, settings) {
     }
   }
 
-  /* “Throw” a parse-error: a warning. */
+  // “Throw” a parse-error: a warning.
   function parseError(code, offset) {
     var position = now()
 
     position.column += offset
     position.offset += offset
 
-    handleWarning.call(warningContext, MESSAGES[code], position, code)
+    handleWarning.call(warningContext, messages[code], position, code)
   }
 
-  /* Get character at position. */
-  function at(position) {
-    return value.charAt(position)
-  }
-
-  /* Flush `queue` (normal text). Macro invoked before
-   * each entity and at the end of `value`.
-   * Does nothing when `queue` is empty. */
+  // Flush `queue` (normal text).
+  // Macro invoked before each entity and at the end of `value`.
+  // Does nothing when `queue` is empty.
   function flush() {
     if (queue) {
       result.push(queue)
@@ -6065,12 +6195,12 @@ function parse(value, settings) {
   }
 }
 
-/* Check if `character` is outside the permissible unicode range. */
+// Check if `character` is outside the permissible unicode range.
 function prohibited(code) {
   return (code >= 0xd800 && code <= 0xdfff) || code > 0x10ffff
 }
 
-/* Check if `character` is disallowed. */
+// Check if `character` is disallowed.
 function disallowed(code) {
   return (
     (code >= 0x0001 && code <= 0x0008) ||
@@ -6530,7 +6660,7 @@ escapes.default = defaults
 escapes.gfm = gfm
 escapes.commonmark = commonmark
 
-/* Get markdown escapes. */
+// Get markdown escapes.
 function escapes(options) {
   var settings = options || {}
 
@@ -6672,42 +6802,10 @@ function setOptions(options) {
   return self;
 }
 
-},{"xtend":"../node_modules/xtend/immutable.js","markdown-escapes":"../node_modules/markdown-escapes/index.js","./defaults":"../node_modules/remark-parse/lib/defaults.js"}],"../node_modules/unist-util-is/index.js":[function(require,module,exports) {
+},{"xtend":"../node_modules/xtend/immutable.js","markdown-escapes":"../node_modules/markdown-escapes/index.js","./defaults":"../node_modules/remark-parse/lib/defaults.js"}],"../node_modules/unist-util-is/convert.js":[function(require,module,exports) {
 'use strict'
 
-/* eslint-disable max-params */
-
-/* Expose. */
-module.exports = is
-
-/* Assert if `test` passes for `node`.
- * When a `parent` node is known the `index` of node */
-function is(test, node, index, parent, context) {
-  var hasParent = parent !== null && parent !== undefined
-  var hasIndex = index !== null && index !== undefined
-  var check = convert(test)
-
-  if (
-    hasIndex &&
-    (typeof index !== 'number' || index < 0 || index === Infinity)
-  ) {
-    throw new Error('Expected positive finite index or child node')
-  }
-
-  if (hasParent && (!is(null, parent) || !parent.children)) {
-    throw new Error('Expected parent node')
-  }
-
-  if (!node || !node.type || typeof node.type !== 'string') {
-    return false
-  }
-
-  if (hasParent !== hasIndex) {
-    throw new Error('Expected both parent and index')
-  }
-
-  return Boolean(check.call(context, node, index, parent))
-}
+module.exports = convert
 
 function convert(test) {
   if (typeof test === 'string') {
@@ -6741,8 +6839,8 @@ function convertAll(tests) {
   return results
 }
 
-/* Utility assert each property in `test` is represented
- * in `node`, and each values are strictly equal. */
+// Utility assert each property in `test` is represented in `node`, and each
+// values are strictly equal.
 function matchesFactory(test) {
   return matches
 
@@ -6778,8 +6876,8 @@ function anyFactory(tests) {
   }
 }
 
-/* Utility to convert a string into a function which checks
- * a given node’s type for said string. */
+// Utility to convert a string into a function which checks a given node’s type
+// for said string.
 function typeFactory(test) {
   return type
 
@@ -6788,7 +6886,7 @@ function typeFactory(test) {
   }
 }
 
-/* Utility to return true. */
+// Utility to return true.
 function ok() {
   return true
 }
@@ -6798,7 +6896,7 @@ function ok() {
 
 module.exports = visitParents
 
-var is = require('unist-util-is')
+var convert = require('unist-util-is/convert')
 
 var CONTINUE = true
 var SKIP = 'skip'
@@ -6809,28 +6907,34 @@ visitParents.SKIP = SKIP
 visitParents.EXIT = EXIT
 
 function visitParents(tree, test, visitor, reverse) {
+  var is
+
   if (typeof test === 'function' && typeof visitor !== 'function') {
     reverse = visitor
     visitor = test
     test = null
   }
 
+  is = convert(test)
+
   one(tree, null, [])
 
   // Visit a single node.
   function one(node, index, parents) {
-    var result
+    var result = []
+    var subresult
 
-    if (!test || is(test, node, index, parents[parents.length - 1] || null)) {
-      result = visitor(node, parents)
+    if (!test || is(node, index, parents[parents.length - 1] || null)) {
+      result = toResult(visitor(node, parents))
 
-      if (result === EXIT) {
+      if (result[0] === EXIT) {
         return result
       }
     }
 
-    if (node.children && result !== SKIP) {
-      return all(node.children, parents.concat(node)) === EXIT ? EXIT : result
+    if (node.children && result[0] !== SKIP) {
+      subresult = toResult(all(node.children, parents.concat(node)))
+      return subresult[0] === EXIT ? subresult : result
     }
 
     return result
@@ -6841,23 +6945,33 @@ function visitParents(tree, test, visitor, reverse) {
     var min = -1
     var step = reverse ? -1 : 1
     var index = (reverse ? children.length : min) + step
-    var child
     var result
 
     while (index > min && index < children.length) {
-      child = children[index]
-      result = child && one(child, index, parents)
+      result = one(children[index], index, parents)
 
-      if (result === EXIT) {
+      if (result[0] === EXIT) {
         return result
       }
 
-      index = typeof result === 'number' ? result : index + step
+      index = typeof result[1] === 'number' ? result[1] : index + step
     }
   }
 }
 
-},{"unist-util-is":"../node_modules/unist-util-is/index.js"}],"../node_modules/unist-util-visit/index.js":[function(require,module,exports) {
+function toResult(value) {
+  if (value !== null && typeof value === 'object' && 'length' in value) {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    return [CONTINUE, value]
+  }
+
+  return [value]
+}
+
+},{"unist-util-is/convert":"../node_modules/unist-util-is/convert.js"}],"../node_modules/unist-util-visit/index.js":[function(require,module,exports) {
 'use strict'
 
 module.exports = visit
@@ -6895,7 +7009,6 @@ var visit = require('unist-util-visit')
 
 module.exports = removePosition
 
-/* Remove `position`s from `tree`. */
 function removePosition(node, force) {
   visit(node, force ? hard : soft)
   return node
@@ -6964,8 +7077,8 @@ module.exports = whitespace
 var fromCode = String.fromCharCode
 var re = /\s/
 
-/* Check if the given character code, or the character
- * code at the first character, is a whitespace character. */
+// Check if the given character code, or the character code at the first
+// character, is a whitespace character.
 function whitespace(character) {
   return re.test(
     typeof character === 'number' ? fromCode(character) : character.charAt(0)
@@ -7095,13 +7208,13 @@ module.exports = trimTrailingLines
 
 var line = '\n'
 
-/* Remove final newline characters from `value`. */
+// Remove final newline characters from `value`.
 function trimTrailingLines(value) {
   var val = String(value)
   var index = val.length
 
   while (val.charAt(--index) === line) {
-    /* Empty */
+    // Empty
   }
 
   return val.slice(0, index + 1)
@@ -8679,7 +8792,7 @@ function blockHTML(eat, value, silent) {
 
 module.exports = collapse
 
-/* collapse(' \t\nbar \nbaz\t'); // ' bar baz ' */
+// `collapse(' \t\nbar \nbaz\t') // ' bar baz '`
 function collapse(value) {
   return String(value).replace(/\s+/g, ' ')
 }
@@ -10721,8 +10834,8 @@ module.exports = wordCharacter
 var fromCode = String.fromCharCode
 var re = /\w/
 
-/* Check if the given character code, or the character
- * code at the first character, is a word character. */
+// Check if the given character code, or the character code at the first
+// character, is a word character.
 function wordCharacter(character) {
   return re.test(
     typeof character === 'number' ? fromCode(character) : character.charAt(0)
@@ -11322,7 +11435,7 @@ function parse(options) {
 }
 
 },{"unherit":"../node_modules/unherit/index.js","xtend":"../node_modules/xtend/immutable.js","./lib/parser.js":"../node_modules/remark-parse/lib/parser.js"}],"../node_modules/react-is/cjs/react-is.development.js":[function(require,module,exports) {
-/** @license React v16.8.6
+/** @license React v16.10.2
  * react-is.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -11348,17 +11461,23 @@ if ("development" !== "production") {
     var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
     var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
     var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-    var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
+    var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
+    // (unstable) APIs that have been removed. Can we remove the symbols?
+
     var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
     var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
     var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
     var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+    var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
     var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
     var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+    var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
+    var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
+    var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
 
     function isValidElementType(type) {
       return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-      type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
+      type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE);
     }
     /**
      * Forked from fbjs/warning:
@@ -11375,11 +11494,11 @@ if ("development" !== "production") {
      */
 
 
-    var lowPriorityWarning = function () {};
+    var lowPriorityWarningWithoutStack = function () {};
 
     {
       var printWarning = function (format) {
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
           args[_key - 1] = arguments[_key];
         }
 
@@ -11400,21 +11519,21 @@ if ("development" !== "production") {
         } catch (x) {}
       };
 
-      lowPriorityWarning = function (condition, format) {
+      lowPriorityWarningWithoutStack = function (condition, format) {
         if (format === undefined) {
-          throw new Error('`lowPriorityWarning(condition, format, ...args)` requires a warning ' + 'message argument');
+          throw new Error('`lowPriorityWarningWithoutStack(condition, format, ...args)` requires a warning ' + 'message argument');
         }
 
         if (!condition) {
-          for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+          for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
             args[_key2 - 2] = arguments[_key2];
           }
 
-          printWarning.apply(undefined, [format].concat(args));
+          printWarning.apply(void 0, [format].concat(args));
         }
       };
     }
-    var lowPriorityWarning$1 = lowPriorityWarning;
+    var lowPriorityWarningWithoutStack$1 = lowPriorityWarningWithoutStack;
 
     function typeOf(object) {
       if (typeof object === 'object' && object !== null) {
@@ -11478,7 +11597,7 @@ if ("development" !== "production") {
       {
         if (!hasWarnedAboutDeprecatedIsAsyncMode) {
           hasWarnedAboutDeprecatedIsAsyncMode = true;
-          lowPriorityWarning$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+          lowPriorityWarningWithoutStack$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
         }
       }
       return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
@@ -12665,14 +12784,36 @@ var React = require('react');
 
 var xtend = require('xtend');
 
+var ReactIs = require('react-is');
+
+var defaultNodePosition = {
+  start: {
+    line: 1,
+    column: 1,
+    offset: 0
+  },
+  end: {
+    line: 1,
+    column: 1,
+    offset: 0
+  }
+};
+
 function astToReact(node, options) {
   var parent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-  var renderer = options.renderers[node.type];
-  var pos = node.position.start;
-  var key = [node.type, pos.line, pos.column].join('-');
+  var renderer = options.renderers[node.type]; // nodes generated by plugins may not have position data
+  // much of the code after this point will attempt to access properties of the node.position
+  // this will set the node position to the parent node's position to prevent errors
 
-  if (typeof renderer !== 'function' && typeof renderer !== 'string' && !isReactFragment(renderer)) {
+  if (node.position === undefined) {
+    node.position = parent.node && parent.node.position || defaultNodePosition;
+  }
+
+  var pos = node.position.start;
+  var key = [node.type, pos.line, pos.column, index].join('-');
+
+  if (!ReactIs.isValidElementType(renderer)) {
     throw new Error("Renderer for type `".concat(node.type, "` not defined or is not renderable"));
   }
 
@@ -12687,10 +12828,6 @@ function astToReact(node, options) {
       }, i);
     });
   }
-}
-
-function isReactFragment(renderer) {
-  return React.Fragment && React.Fragment === renderer;
 } // eslint-disable-next-line max-params, complexity
 
 
@@ -12911,7 +13048,7 @@ function unwrapParagraphs(node) {
 }
 
 module.exports = astToReact;
-},{"react":"../node_modules/preact/compat/dist/compat.module.js","xtend":"../node_modules/xtend/immutable.js"}],"../node_modules/react-markdown/lib/wrap-table-rows.js":[function(require,module,exports) {
+},{"react":"../node_modules/preact/compat/dist/compat.module.js","xtend":"../node_modules/xtend/immutable.js","react-is":"../node_modules/react-is/index.js"}],"../node_modules/react-markdown/lib/wrap-table-rows.js":[function(require,module,exports) {
 'use strict';
 
 var visit = require('unist-util-visit');
@@ -13074,7 +13211,7 @@ function Heading(props) {
 function List(props) {
   var attrs = getCoreProps(props);
 
-  if (props.start !== null && props.start !== 1) {
+  if (props.start !== null && props.start !== 1 && props.start !== undefined) {
     attrs.start = props.start.toString();
   }
 
@@ -13084,7 +13221,7 @@ function List(props) {
 function ListItem(props) {
   var checkbox = null;
 
-  if (props.checked !== null) {
+  if (props.checked !== null && props.checked !== undefined) {
     var checked = props.checked;
     checkbox = createElement('input', {
       type: 'checkbox',
@@ -13207,10 +13344,12 @@ var ReactMarkdown = function ReactMarkdown(props) {
     renderers: renderers,
     definitions: getDefinitions(rawAst)
   });
-  var astPlugins = determineAstPlugins(props);
+  var astPlugins = determineAstPlugins(props); // eslint-disable-next-line no-sync
+
+  var transformedAst = parser.runSync(rawAst);
   var ast = astPlugins.reduce(function (node, plugin) {
     return plugin(node, renderProps);
-  }, rawAst);
+  }, transformedAst);
   return astToReact(ast, renderProps);
 };
 
@@ -16954,7 +17093,345 @@ class PageContent extends _preact.Component {
 }
 
 exports.default = PageContent;
-},{"preact":"../node_modules/preact/dist/preact.module.js","react-markdown":"../node_modules/react-markdown/lib/react-markdown.js","./link":"app/pages/home/components/link.js","~/app/components/modal-dialog":"app/components/modal-dialog.js","~/app/components/modal-input-dialog":"app/components/modal-input-dialog.js","~/app/components/hotkey":"app/components/hotkey.js","./page-content-toolbar":"app/pages/home/components/page-content-toolbar.js","./../../../../../node_modules/easymde/dist/easymde.min.css":"../node_modules/easymde/dist/easymde.min.css","./page-content.less":"app/pages/home/components/page-content.less"}],"app/services/storage.service.js":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js","react-markdown":"../node_modules/react-markdown/lib/react-markdown.js","./link":"app/pages/home/components/link.js","~/app/components/modal-dialog":"app/components/modal-dialog.js","~/app/components/modal-input-dialog":"app/components/modal-input-dialog.js","~/app/components/hotkey":"app/components/hotkey.js","./page-content-toolbar":"app/pages/home/components/page-content-toolbar.js","./../../../../../node_modules/easymde/dist/easymde.min.css":"../node_modules/easymde/dist/easymde.min.css","./page-content.less":"app/pages/home/components/page-content.less"}],"../node_modules/eventemitter3/index.js":[function(require,module,exports) {
+'use strict';
+
+var has = Object.prototype.hasOwnProperty
+  , prefix = '~';
+
+/**
+ * Constructor to create a storage for our `EE` objects.
+ * An `Events` instance is a plain object whose properties are event names.
+ *
+ * @constructor
+ * @private
+ */
+function Events() {}
+
+//
+// We try to not inherit from `Object.prototype`. In some engines creating an
+// instance in this way is faster than calling `Object.create(null)` directly.
+// If `Object.create(null)` is not supported we prefix the event names with a
+// character to make sure that the built-in object properties are not
+// overridden or used as an attack vector.
+//
+if (Object.create) {
+  Events.prototype = Object.create(null);
+
+  //
+  // This hack is needed because the `__proto__` property is still inherited in
+  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
+  //
+  if (!new Events().__proto__) prefix = false;
+}
+
+/**
+ * Representation of a single event listener.
+ *
+ * @param {Function} fn The listener function.
+ * @param {*} context The context to invoke the listener with.
+ * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
+ * @constructor
+ * @private
+ */
+function EE(fn, context, once) {
+  this.fn = fn;
+  this.context = context;
+  this.once = once || false;
+}
+
+/**
+ * Add a listener for a given event.
+ *
+ * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} context The context to invoke the listener with.
+ * @param {Boolean} once Specify if the listener is a one-time listener.
+ * @returns {EventEmitter}
+ * @private
+ */
+function addListener(emitter, event, fn, context, once) {
+  if (typeof fn !== 'function') {
+    throw new TypeError('The listener must be a function');
+  }
+
+  var listener = new EE(fn, context || emitter, once)
+    , evt = prefix ? prefix + event : event;
+
+  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+  else emitter._events[evt] = [emitter._events[evt], listener];
+
+  return emitter;
+}
+
+/**
+ * Clear event by name.
+ *
+ * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+ * @param {(String|Symbol)} evt The Event name.
+ * @private
+ */
+function clearEvent(emitter, evt) {
+  if (--emitter._eventsCount === 0) emitter._events = new Events();
+  else delete emitter._events[evt];
+}
+
+/**
+ * Minimal `EventEmitter` interface that is molded against the Node.js
+ * `EventEmitter` interface.
+ *
+ * @constructor
+ * @public
+ */
+function EventEmitter() {
+  this._events = new Events();
+  this._eventsCount = 0;
+}
+
+/**
+ * Return an array listing the events for which the emitter has registered
+ * listeners.
+ *
+ * @returns {Array}
+ * @public
+ */
+EventEmitter.prototype.eventNames = function eventNames() {
+  var names = []
+    , events
+    , name;
+
+  if (this._eventsCount === 0) return names;
+
+  for (name in (events = this._events)) {
+    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+  }
+
+  if (Object.getOwnPropertySymbols) {
+    return names.concat(Object.getOwnPropertySymbols(events));
+  }
+
+  return names;
+};
+
+/**
+ * Return the listeners registered for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Array} The registered listeners.
+ * @public
+ */
+EventEmitter.prototype.listeners = function listeners(event) {
+  var evt = prefix ? prefix + event : event
+    , handlers = this._events[evt];
+
+  if (!handlers) return [];
+  if (handlers.fn) return [handlers.fn];
+
+  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+    ee[i] = handlers[i].fn;
+  }
+
+  return ee;
+};
+
+/**
+ * Return the number of listeners listening to a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Number} The number of listeners.
+ * @public
+ */
+EventEmitter.prototype.listenerCount = function listenerCount(event) {
+  var evt = prefix ? prefix + event : event
+    , listeners = this._events[evt];
+
+  if (!listeners) return 0;
+  if (listeners.fn) return 1;
+  return listeners.length;
+};
+
+/**
+ * Calls each of the listeners registered for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Boolean} `true` if the event had listeners, else `false`.
+ * @public
+ */
+EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events[evt]) return false;
+
+  var listeners = this._events[evt]
+    , len = arguments.length
+    , args
+    , i;
+
+  if (listeners.fn) {
+    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+    switch (len) {
+      case 1: return listeners.fn.call(listeners.context), true;
+      case 2: return listeners.fn.call(listeners.context, a1), true;
+      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+    }
+
+    for (i = 1, args = new Array(len -1); i < len; i++) {
+      args[i - 1] = arguments[i];
+    }
+
+    listeners.fn.apply(listeners.context, args);
+  } else {
+    var length = listeners.length
+      , j;
+
+    for (i = 0; i < length; i++) {
+      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+      switch (len) {
+        case 1: listeners[i].fn.call(listeners[i].context); break;
+        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
+        default:
+          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+            args[j - 1] = arguments[j];
+          }
+
+          listeners[i].fn.apply(listeners[i].context, args);
+      }
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Add a listener for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} [context=this] The context to invoke the listener with.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.on = function on(event, fn, context) {
+  return addListener(this, event, fn, context, false);
+};
+
+/**
+ * Add a one-time listener for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} [context=this] The context to invoke the listener with.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.once = function once(event, fn, context) {
+  return addListener(this, event, fn, context, true);
+};
+
+/**
+ * Remove the listeners of a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn Only remove the listeners that match this function.
+ * @param {*} context Only remove the listeners that have this context.
+ * @param {Boolean} once Only remove one-time listeners.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events[evt]) return this;
+  if (!fn) {
+    clearEvent(this, evt);
+    return this;
+  }
+
+  var listeners = this._events[evt];
+
+  if (listeners.fn) {
+    if (
+      listeners.fn === fn &&
+      (!once || listeners.once) &&
+      (!context || listeners.context === context)
+    ) {
+      clearEvent(this, evt);
+    }
+  } else {
+    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+      if (
+        listeners[i].fn !== fn ||
+        (once && !listeners[i].once) ||
+        (context && listeners[i].context !== context)
+      ) {
+        events.push(listeners[i]);
+      }
+    }
+
+    //
+    // Reset the array, or remove it completely if we have no more listeners.
+    //
+    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
+    else clearEvent(this, evt);
+  }
+
+  return this;
+};
+
+/**
+ * Remove all listeners, or those of the specified event.
+ *
+ * @param {(String|Symbol)} [event] The event name.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+  var evt;
+
+  if (event) {
+    evt = prefix ? prefix + event : event;
+    if (this._events[evt]) clearEvent(this, evt);
+  } else {
+    this._events = new Events();
+    this._eventsCount = 0;
+  }
+
+  return this;
+};
+
+//
+// Alias methods names because people roll like that.
+//
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+//
+// Expose the prefix.
+//
+EventEmitter.prefixed = prefix;
+
+//
+// Allow `EventEmitter` to be imported as module namespace.
+//
+EventEmitter.EventEmitter = EventEmitter;
+
+//
+// Expose the module.
+//
+if ('undefined' !== typeof module) {
+  module.exports = EventEmitter;
+}
+
+},{}],"app/services/storage.service.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16998,6 +17475,18 @@ class StorageService {
 var _default = new StorageService();
 
 exports.default = _default;
+},{}],"app/constants/events.constants.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+const EVENTS = {
+  APP_VERSION_CHANGED: 'appVersionChanged'
+};
+var _default = EVENTS;
+exports.default = _default;
 },{}],"app/services/configuration.service.js":[function(require,module,exports) {
 "use strict";
 
@@ -17006,7 +17495,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+var _eventemitter = _interopRequireDefault(require("eventemitter3"));
+
 var _storage = _interopRequireDefault(require("./storage.service"));
+
+var _events = _interopRequireDefault(require("~/app/constants/events.constants"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -17018,12 +17511,20 @@ class ConfigurationService {
     this.isLocal = window.location.host.startsWith('localhost');
     this.isLan = window.location.host.startsWith('192.168.178');
     this.config = _storage.default.getObject(STORE_KEY);
+    this.eventEmitter = new _eventemitter.default();
     navigator.serviceWorker.addEventListener('message', event => {
-      switch (event.data.type) {
+      const {
+        type,
+        version
+      } = event.data;
+
+      switch (type) {
         case 'update':
         case 'activate':
-          if (event.data.version) {
-            _storage.default.set(APP_VERSION_STORE_KEY, event.data.version);
+          if (version && !Number.isNaN(version)) {
+            _storage.default.set(APP_VERSION_STORE_KEY, version);
+
+            this.eventEmitter.emit(_events.default.APP_VERSION_CHANGED, version);
           }
 
       }
@@ -17085,7 +17586,7 @@ class ConfigurationService {
 var _default = new ConfigurationService();
 
 exports.default = _default;
-},{"./storage.service":"app/services/storage.service.js"}],"app/services/github.service.js":[function(require,module,exports) {
+},{"eventemitter3":"../node_modules/eventemitter3/index.js","./storage.service":"app/services/storage.service.js","~/app/constants/events.constants":"app/constants/events.constants.js"}],"app/services/github.service.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17206,7 +17707,7 @@ class GithubService {
   }
 
   async getUserRepositories(oauthToken) {
-    return this._get(`/user/repos?per_page=100`, oauthToken);
+    return this._get('/user/repos?per_page=100', oauthToken);
   }
 
   async getPages(userName, repository, oauthToken) {
@@ -17262,7 +17763,7 @@ class GithubService {
   }
 
   createNewRepository(userName, repository, isPrivateRepository, oauthToken) {
-    const url = `/user/repos`;
+    const url = '/user/repos';
     const body = {
       name: repository,
       description: `A personal wiki for ${userName} created by MDWiki`,
@@ -17515,7 +18016,9 @@ var _configuration = _interopRequireDefault(require("~/app/services/configuratio
 
 var _navigator = _interopRequireDefault(require("~/app/services/navigator.service"));
 
-var _page = _interopRequireDefault(require("./../../stores/page.store"));
+var _page = _interopRequireDefault(require("~/app/stores/page.store"));
+
+var _events = _interopRequireDefault(require("~/app/constants/events.constants"));
 
 require("./index.less");
 
@@ -17536,7 +18039,8 @@ class HomePage extends _preact.Component {
       pages,
       page,
       isInEditMode: false,
-      isNewPageDialogShown: false
+      isNewPageDialogShown: false,
+      appVersion: _configuration.default.appVersion
     };
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.onGotoPage = this.onGotoPage.bind(this);
@@ -17546,12 +18050,24 @@ class HomePage extends _preact.Component {
     this.onDeletePage = this.onDeletePage.bind(this);
     this.onSavePage = this.onSavePage.bind(this);
     this.onCancelEditPage = this.onCancelEditPage.bind(this);
+
+    _configuration.default.eventEmitter.on(_events.default.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
   }
 
   componentWillReceiveProps(nextProps, nextState) {
     if (nextProps.page !== this.props.page) {
       this.loadPage(nextProps.page);
     }
+  }
+
+  componentWillUnmount() {
+    _configuration.default.eventEmitter.removeListener(_events.default.APP_VERSION_CHANGED, this.onAppVersionChanged);
+  }
+
+  onAppVersionChanged(appVersion) {
+    this.setState({
+      appVersion: appVersion
+    });
   }
 
   onStartSearch(searchTerm) {
@@ -17657,7 +18173,8 @@ class HomePage extends _preact.Component {
     showSidebar,
     isInEditMode,
     pages,
-    page
+    page,
+    appVersion
   }) {
     const leftSidebarContainerClassname = (0, _classnames.default)('HomePage-sidebarContainer', {
       'is-shown': showSidebar
@@ -17688,14 +18205,14 @@ class HomePage extends _preact.Component {
     })), (0, _preact.h)("div", {
       class: "HomePage-contentContainer"
     }, !isInEditMode && this.renderPageContent(page.name, page.content), isInEditMode && this.renderPageEditor(page.name, page.content)))), (0, _preact.h)(_footer.default, {
-      appVersion: _configuration.default.appVersion
+      appVersion: appVersion
     }));
   }
 
 }
 
 exports.default = HomePage;
-},{"preact":"../node_modules/preact/dist/preact.module.js","preact/compat":"../node_modules/preact/compat/dist/compat.module.js","classnames":"../node_modules/classnames/index.js","~/app/components/footer":"app/components/footer.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/connect-button":"app/components/connect-button.js","~/app/components/login-button":"app/components/login-button.js","~/app/components/sidebar-button":"app/components/sidebar-button.js","~/app/components/search-box":"app/components/search-box.js","./components/sidebar":"app/pages/home/components/sidebar.js","./components/page-content":"app/pages/home/components/page-content.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","./../../stores/page.store":"app/stores/page.store.js","./index.less":"app/pages/home/index.less","_bundle_loader":"../node_modules/parcel-bundler/src/builtins/bundle-loader.js","./components/page-editor":[["page-editor.371fac1d.js","app/pages/home/components/page-editor.js"],"page-editor.371fac1d.js.map","page-editor.371fac1d.css","app/pages/home/components/page-editor.js"]}],"app/pages/connect/components/select-existing-repository.less":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js","preact/compat":"../node_modules/preact/compat/dist/compat.module.js","classnames":"../node_modules/classnames/index.js","~/app/components/footer":"app/components/footer.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/connect-button":"app/components/connect-button.js","~/app/components/login-button":"app/components/login-button.js","~/app/components/sidebar-button":"app/components/sidebar-button.js","~/app/components/search-box":"app/components/search-box.js","./components/sidebar":"app/pages/home/components/sidebar.js","./components/page-content":"app/pages/home/components/page-content.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","~/app/stores/page.store":"app/stores/page.store.js","~/app/constants/events.constants":"app/constants/events.constants.js","./index.less":"app/pages/home/index.less","_bundle_loader":"../node_modules/parcel-bundler/src/builtins/bundle-loader.js","./components/page-editor":[["page-editor.371fac1d.js","app/pages/home/components/page-editor.js"],"page-editor.371fac1d.js.map","page-editor.371fac1d.css","app/pages/home/components/page-editor.js"]}],"app/pages/connect/components/select-existing-repository.less":[function(require,module,exports) {
 "use strict";
 
 var reloadCSS = require('_css_loader');
@@ -17867,6 +18384,8 @@ var _github = _interopRequireDefault(require("~/app/services/github.service"));
 
 var _navigator = _interopRequireDefault(require("~/app/services/navigator.service"));
 
+var _events = _interopRequireDefault(require("~/app/constants/events.constants"));
+
 var _selectExistingRepository = _interopRequireDefault(require("./components/select-existing-repository"));
 
 var _createNewRepository = _interopRequireDefault(require("./components/create-new-repository"));
@@ -17882,10 +18401,13 @@ class ConnectPage extends _preact.Component {
     super(props);
     this.state = {
       repositories: [],
-      selectedRepository: undefined
+      selectedRepository: undefined,
+      appVersion: _configuration.default.appVersion
     };
     this.changeSelectedRepository = this.changeSelectedRepository.bind(this);
     this.navigateToGithub = this.navigateToGithub.bind(this);
+
+    _configuration.default.eventEmitter.on(_events.default.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
   }
 
   componentDidMount() {
@@ -17902,6 +18424,16 @@ class ConnectPage extends _preact.Component {
     if (_configuration.default.repository) {
       this.changeSelectedRepository(_configuration.default.repository);
     }
+  }
+
+  componentWillUnmount() {
+    _configuration.default.eventEmitter.removeListener(_events.default.APP_VERSION_CHANGED, this.onAppVersionChanged);
+  }
+
+  onAppVersionChanged(appVersion) {
+    this.setState({
+      appVersion: appVersion
+    });
   }
 
   navigateToGithub() {
@@ -17968,7 +18500,8 @@ class ConnectPage extends _preact.Component {
   render(props, {
     user,
     repositories,
-    selectedRepository
+    selectedRepository,
+    appVersion
   }) {
     return (0, _preact.h)("div", {
       class: "App-container"
@@ -17990,14 +18523,14 @@ class ConnectPage extends _preact.Component {
       onCreateClick: repositoryName => this.createNewRepository(repositoryName),
       onValidateRepositoryName: repositoryName => this.canCreateNewRepository(repositoryName)
     })))), (0, _preact.h)(_footer.default, {
-      appVersion: _configuration.default.appVersion
+      appVersion: appVersion
     }));
   }
 
 }
 
 exports.default = ConnectPage;
-},{"preact":"../node_modules/preact/dist/preact.module.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/footer":"app/components/footer.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/github.service":"app/services/github.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","./components/select-existing-repository":"app/pages/connect/components/select-existing-repository.js","./components/create-new-repository":"app/pages/connect/components/create-new-repository.js","./components/login-state":"app/pages/connect/components/login-state.js","./index.less":"app/pages/connect/index.less"}],"app/pages/search/components/search-result.less":[function(require,module,exports) {
+},{"preact":"../node_modules/preact/dist/preact.module.js","~/app/components/app-title":"app/components/app-title.js","~/app/components/footer":"app/components/footer.js","~/app/services/configuration.service":"app/services/configuration.service.js","~/app/services/github.service":"app/services/github.service.js","~/app/services/navigator.service":"app/services/navigator.service.js","~/app/constants/events.constants":"app/constants/events.constants.js","./components/select-existing-repository":"app/pages/connect/components/select-existing-repository.js","./components/create-new-repository":"app/pages/connect/components/create-new-repository.js","./components/login-state":"app/pages/connect/components/login-state.js","./index.less":"app/pages/connect/index.less"}],"app/pages/search/components/search-result.less":[function(require,module,exports) {
 "use strict";
 
 var reloadCSS = require('_css_loader');
@@ -18229,21 +18762,20 @@ class App extends _preact.Component {
   }
 
   handleRoute(e) {
-    switch (e.current.props.path) {
-      case '/':
-        const isConnected = this.isConnected();
+    if (e.current.props.path === '/connect') {
+      return;
+    }
 
-        if (!isConnected) {
-          let path = '/connect';
+    const isConnected = this.isConnected();
 
-          if (e.current.props.token) {
-            path += `?token=${e.current.props.token}`;
-          }
+    if (!isConnected) {
+      let path = '/connect';
 
-          (0, _preactRouter.route)(path, true);
-        }
+      if (e.current.props.token) {
+        path += `?token=${e.current.props.token}`;
+      }
 
-        break;
+      (0, _preactRouter.route)(path, true);
     }
   }
 
@@ -18312,7 +18844,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46581" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37291" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -18343,8 +18875,9 @@ if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
         assetsToAccept.forEach(function (v) {
           hmrAcceptRun(v[0], v[1]);
         });
-      } else {
-        window.location.reload();
+      } else if (location.reload) {
+        // `location` global exists in a web worker context but lacks `.reload()` function.
+        location.reload();
       }
     }
 
