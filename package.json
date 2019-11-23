@@ -1,6 +1,6 @@
 {
   "name": "MDWiki",
-  "version": "3.1.47",
+  "version": "3.1.48",
   "description": "My personal wiki",
   "main": "index.html",
   "author": "Jan Baer",
@@ -137,6 +137,7 @@
     "jest": "24.9.0",
     "less": "3.10.3",
     "lint-staged": "9.4.2",
+    "micromatch": "4.0.2",
     "parcel-bundler": "1.12.4"
   }
 }

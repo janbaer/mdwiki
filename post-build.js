@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const path = require('path');
+const micromatch = require('micromatch');
 
 const appVersion = require('./package.json').version;
 const distFolder = './dist';
 
-const FILES_NOT_TO_CACHE = ['.git', 'CNAME', 'service-worker.js', 'service-worker.map'];
-
 console.log(`update serviceworker with version ${appVersion} in folder ${distFolder}`);
-
 const SERVICEWORKER_FILEPATH = `${__dirname}/${distFolder}/service-worker.js`;
 
 fs.unlinkSync(SERVICEWORKER_FILEPATH);
@@ -18,9 +15,9 @@ if (fs.existsSync(`${SERVICEWORKER_FILEPATH}.map`)) {
 }
 fs.copyFileSync('./src/service-worker.js', SERVICEWORKER_FILEPATH);
 
-let serviceWorkerCode = fs.readFileSync(SERVICEWORKER_FILEPATH, { encoding: 'utf8' });
+const filesToCache = readFilesToCache();
 
-const filesToCache = readDir(path.join(__dirname, distFolder));
+let serviceWorkerCode = fs.readFileSync(SERVICEWORKER_FILEPATH, { encoding: 'utf8' });
 
 serviceWorkerCode = serviceWorkerCode
   .replace(/#1/g, appVersion)
@@ -28,12 +25,14 @@ serviceWorkerCode = serviceWorkerCode
 
 fs.writeFileSync(SERVICEWORKER_FILEPATH, serviceWorkerCode, { encoding: 'utf8' });
 
-function readDir(directoryPath) {
-  const files = [];
-  fs.readdirSync(directoryPath).forEach(file => {
-    if (!FILES_NOT_TO_CACHE.includes(file)) {
-      files.push(`'${file}'`);
-    }
+function readFilesToCache() {
+  const globPattern = ['*', '!service-worker.js', '!**.map'];
+  let filesToCache = [];
+
+  fs.readdirSync('./dist').forEach(file => {
+    filesToCache.push(file);
   });
-  return files;
+
+  filesToCache = micromatch(filesToCache, globPattern);
+  return filesToCache.map(file => `'${file}'`);
 }
