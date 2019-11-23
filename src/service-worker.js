@@ -25,14 +25,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // This is a workaround for the problem with requests to Github with using credentials
-  // as long the problem is not solved, we'll no longer let the ServiceWorker handle
-  // requests to GitHub to be able to cache the responses and provide offline support
-  const requestUrl = new URL(event.request.url);
-  if (requestUrl.host === GITHUB_API_HOST) {
-    return;
-  }
-
   event.respondWith(handleFetch(event.request));
 });
 
@@ -52,7 +44,7 @@ async function checkIfIsUpdate() {
 async function notifyClient(eventType) {
   const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
   for (const client of allClients) {
-    client.postMessage({ type: eventType, version: Number(APP_VERSION) });
+    client.postMessage({ type: eventType, version: APP_VERSION });
   }
 }
 
@@ -66,7 +58,7 @@ async function handleFetch(request) {
     if (!navigator.onLine) {
       return cacheFirst(GITHUB_CACHE_NAME, request, requestUrl.pathname);
     }
-    return networkFirst(GITHUB_CACHE_NAME, requestUrl, requestUrl.pathname);
+    return networkFirst(GITHUB_CACHE_NAME, request, requestUrl.pathname);
   }
 
   return cacheFirst(APP_CACHE_NAME, request, requestUrl.pathname);

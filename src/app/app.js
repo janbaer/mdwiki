@@ -17,26 +17,27 @@ class App extends Component {
   }
 
   handleRoute(e) {
-    if (e.current.props.path === '/connect') {
+    const { path, token } = e.current.props;
+    if (path === '/connect') {
       return;
     }
 
     const isConnected = this.isConnected();
     if (!isConnected) {
-      let path = '/connect';
-      if (e.current.props.token) {
-        path += `?token=${e.current.props.token}`;
+      let newPath = '/connect';
+      if (token) {
+        newPath += `?token=${token}`;
       }
-      route(path, true);
+      route(newPath, true);
     }
   }
 
   render() {
     return (
       <Router history={createHashHistory()} onChange={this.handleRoute}>
-        <Home path="/" />
         <Connect path="/connect" />
         <Search path="/search" />
+        <Home default />
       </Router>
     );
   }

@@ -27,7 +27,7 @@
 
         if (event.data.type === 'update') {
           const notification = new window.Notification('MDWiki Update', {
-            body: `We updated MDWiki to version 3.${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
+            body: `We updated MDWiki to version ${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
             tag: 'mdwiki_update'
           });
 

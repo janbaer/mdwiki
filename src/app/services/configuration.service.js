@@ -6,6 +6,7 @@ import EVENTS from '~/app/constants/events.constants';
 
 const STORE_KEY = 'mdwiki-config';
 const APP_VERSION_STORE_KEY = 'mdwiki-version';
+const DEFAULT_VERSION = '3.1.0';
 
 class ConfigurationService {
   constructor() {
@@ -21,7 +22,7 @@ class ConfigurationService {
       switch (type) {
         case 'update':
         case 'activate':
-          if (version && !Number.isNaN(version)) {
+          if (version) {
             storage.set(APP_VERSION_STORE_KEY, version);
             this.eventEmitter.emit(EVENTS.APP_VERSION_CHANGED, version);
           }
@@ -70,7 +71,7 @@ class ConfigurationService {
   }
 
   get appVersion() {
-    return storage.get(APP_VERSION_STORE_KEY) || 1;
+    return storage.get(APP_VERSION_STORE_KEY) || DEFAULT_VERSION;
   }
 }
 

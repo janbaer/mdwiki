@@ -1,6 +1,6 @@
 {
   "name": "MDWiki",
-  "version": "3.0.45",
+  "version": "3.1.46",
   "description": "My personal wiki",
   "main": "index.html",
   "author": "Jan Baer",
@@ -8,8 +8,10 @@
   "private": true,
   "scripts": {
     "start": "parcel --port=4001 ./src/index.html",
-    "build": "mkdir -p ./dist && rm -rf ./dist/*.* && parcel build ./src/index.html --detailed-report",
-    "deploy": "yarn build && ./deploy.sh",
+    "prebuild": "mkdir -p ./dist && rm -rf ./dist/*.*",
+    "build": "parcel build ./src/index.html --detailed-report",
+    "postbuild": "./post-build.js",
+    "deploy": "yarn build && ./deploy.sh $npm_package_version",
     "serve": "live-server --port=4002 --no-browser ./dist",
     "lint": "eslint ./src",
     "test": "jest",

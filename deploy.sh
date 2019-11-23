@@ -21,8 +21,6 @@ rm *.map
 
 cd ..
 
-node post-build.js ${VERSION} deploy
-
 node_modules/babel-minify/bin/minify.js ./deploy/service-worker.js > ./deploy/service-worker.min.js
 
 cd deploy
