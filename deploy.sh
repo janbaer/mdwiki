@@ -14,9 +14,6 @@ git rm -r .
 cp ../dist/*.* .
 cp ../CNAME .
 
-rm service-worker.*
-cp ../src/service-worker.js .
-
 rm *.map
 
 cd ..
