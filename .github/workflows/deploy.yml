@@ -29,9 +29,11 @@ jobs:
        ref:  gh-pages
        token: ${{ secrets.GITHUB_TOKEN }}
        path: deploy
+      working-directory: /home/runner/work/mdwiki/mdwiki
     - name: build and deploy to gh-pages branch
       if: github.ref == 'refs/heads/master'
-      run: cd .. && yarn deploy
+      run: yarn deploy
+      working-directory: /home/runner/work/mdwiki/mdwiki
     - uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
       with:
