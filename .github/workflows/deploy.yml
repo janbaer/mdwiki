@@ -32,7 +32,7 @@ jobs:
     - name: build and deploy to gh-pages branch
       if: github.ref == 'refs/heads/master'
       run: yarn deploy
-    - name: ad-m/github-push-action@v0.5.0
+    - uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
       with:
         directory: ./deploy
