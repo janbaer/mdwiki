@@ -31,7 +31,7 @@ jobs:
        path: deploy
     - name: build and deploy to gh-pages branch
       if: github.ref == 'refs/heads/master'
-      run: yarn deploy
+      run: cd .. && yarn deploy
     - uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
       with:
