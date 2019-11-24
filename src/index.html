@@ -15,28 +15,6 @@
             console.log('Registration of ServiceWorker failed', error);
           });
       });
-
-      if (window.Notification.permission !== 'granted') {
-        window.Notification.requestPermission();
-      }
-
-      window.navigator.serviceWorker.addEventListener('message', event => {
-        if (window.Notification.permission !== 'granted') {
-          return;
-        }
-
-        if (event.data.type === 'update') {
-          const notification = new window.Notification('MDWiki Update', {
-            body: `We updated MDWiki to version ${event.data.version}, you should refresh your browser or click on this message to use the latest version`,
-            tag: 'mdwiki_update'
-          });
-
-          notification.onclick = () => {
-            notification.close();
-            window.location.reload();
-          };
-        }
-      });
     }
   </script>
 </head>
