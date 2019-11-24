@@ -19,23 +19,12 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Yarn install, test
+    - name: Yarn install, test, build and deploy
       run: |
         yarn install
         yarn test
-    - uses: actions/checkout@v1
-      if: github.ref == 'refs/heads/master'
-      with:
-       ref:  gh-pages
-       token: ${{ secrets.GITHUB_TOKEN }}
-       path: mdwiki/deploy
-    - name: build and deploy to gh-pages branch
-      if: github.ref == 'refs/heads/master'
-      run: |
-        pwd
-        ls -la
+        git -c http.extraheader="AUTHORIZATION: basic ${{ secrets.GITHUB_TOKEN }}" clone -b gh-pages --single-branch git@github.com:janbaer/mdwiki.git deploy
         yarn deploy
-      working-directory: /home/runner/work/mdwiki/mdwiki
     - uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
       with:
