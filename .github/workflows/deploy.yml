@@ -23,7 +23,7 @@ jobs:
       run: |
         yarn install
         yarn test
-        git -c http.extraheader="AUTHORIZATION: basic ${{ secrets.GITHUB_TOKEN }}" clone -b gh-pages --single-branch https://github.com/janbaer/mdwiki.git deploy
+        git clone -b gh-pages --single-branch https://${{ secrets.GITHUB_TOKEN }}@github.com/janbaer/mdwiki.git deploy
         yarn deploy
     - uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
