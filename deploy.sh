@@ -1,3 +1,5 @@
+#!/bin/bash
+
 VERSION=$1
 
 if [ -z "$VERSION" ]; then
@@ -33,5 +35,7 @@ git add -u && git add .
 
 git commit -m "Version ${VERSION}"
 
-git push -u origin gh-pages
+if [ ! ${CI} = true ]; then
+  git push -u origin gh-pages
+fi
 
