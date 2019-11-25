@@ -33,3 +33,5 @@ jobs:
         branch: gh-pages
       env:
         CI: true
+        GIT_AUTHOR_NAME: Jan Baer
+        GIT_AUTHOR_EMAIL: info@janbaer.de
