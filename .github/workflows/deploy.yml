@@ -21,17 +21,17 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Yarn install, test, build and deploy
       run: |
-        git config --global user.name "Jan Baer"
-        git config --global user.email "info@janbaer.de"
         yarn install
         yarn test
         git clone -b gh-pages --single-branch https://${{ secrets.GITHUB_TOKEN }}@github.com/janbaer/mdwiki.git deploy
         yarn deploy
+      env:
+        CI: true
+        GIT_AUTHOR_NAME: ${{ secrets.GIT_AUTHOR_NAME }}  
+        GIT_AUTHOR_EMAIL: ${{ secrets.GIT_AUTHOR_EMAIL }}  
     - uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
       with:
         directory: /home/runner/work/mdwiki/mdwiki/deploy
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
-      env:
-        CI: true
