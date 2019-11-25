@@ -31,6 +31,8 @@ if [ -f "./styles/*.*.map" ]; then
   rm ./styles/*.*.map
 fi
 
+touch .nojekyll
+
 git add -u && git add .
 
 git commit -m "Version ${VERSION}"
