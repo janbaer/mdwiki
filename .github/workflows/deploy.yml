@@ -29,10 +29,17 @@ jobs:
         yarn deploy
       env:
         CI: true
-    - uses: ad-m/github-push-action@v0.5.0
+    - name: Push changes to branch gh-pages
+      uses: ad-m/github-push-action@v0.5.0
       if: github.ref == 'refs/heads/master'
       with:
         directory: /home/runner/work/mdwiki/mdwiki/deploy
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
-        force: true
+    - name: Trigger a new build of gh-pages
+      run: |
+        curl -X POST \
+        --header 'Accept: application/vnd.github.mister-fantastic-preview+json' \
+        -u janbaer:${{ secrets.ACCESS_TOKEN }}                                  \
+        'https://api.github.com/repos/janbaer/mdwiki/pages/builds'
+
