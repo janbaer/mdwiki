@@ -1,6 +1,6 @@
 {
   "name": "MDWiki",
-  "version": "3.1.51",
+  "version": "3.1.52",
   "description": "My personal wiki",
   "main": "index.html",
   "author": "Jan Baer",
@@ -123,12 +123,12 @@
     "babel-plugin-module-resolver": "3.2.0",
     "babel-polyfill": "6.26.0",
     "babel-preset-preact": "2.0.0",
-    "eslint": "6.7.0",
+    "eslint": "6.7.1",
     "eslint-config-standard": "14.1.0",
     "eslint-config-standard-jsx": "8.1.0",
     "eslint-config-standard-preact": "1.1.6",
     "eslint-plugin-import": "2.18.2",
-    "eslint-plugin-jest": "23.0.4",
+    "eslint-plugin-jest": "23.0.5",
     "eslint-plugin-node": "10.0.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.16.0",
@@ -136,7 +136,7 @@
     "husky": "3.1.0",
     "jest": "24.9.0",
     "less": "3.10.3",
-    "lint-staged": "9.4.3",
+    "lint-staged": "9.5.0",
     "micromatch": "4.0.2",
     "parcel-bundler": "1.12.4"
   }
