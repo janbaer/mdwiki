@@ -106,15 +106,15 @@
     "history": "4.10.1",
     "lodash": "4.17.15",
     "preact": "10.2.1",
-    "preact-router": "3.2.0",
+    "preact-router": "3.2.1",
     "react-markdown": "4.3.1",
     "react-simplemde-editor": "4.1.0"
   },
   "devDependencies": {
-    "@babel/core": "7.8.3",
+    "@babel/core": "7.8.4",
     "@babel/plugin-proposal-object-rest-spread": "7.8.3",
     "@babel/plugin-transform-modules-commonjs": "7.8.3",
-    "@babel/preset-env": "7.8.3",
+    "@babel/preset-env": "7.8.4",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.3",
     "babel-jest": "25.1.0",
@@ -136,8 +136,9 @@
     "husky": "4.2.1",
     "jest": "25.1.0",
     "less": "3.10.3",
-    "lint-staged": "10.0.2",
+    "lint-staged": "10.0.7",
     "micromatch": "4.0.2",
-    "parcel-bundler": "1.12.4"
+    "parcel-bundler": "1.12.4",
+    "trim-right": "1.0.1"
   }
 }
