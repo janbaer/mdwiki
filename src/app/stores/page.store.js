@@ -33,7 +33,7 @@ class PageStore {
 
     const commitMessage = `Create new page ${pageName}`;
     const content = `# ${pageName}`;
-    pageName = pageName.replace(/\s/g, '_');
+    pageName = pageName.replace(/\s/g, '_').toLowerCase();
 
     const page = await github.createPage(
       user.loginName, repository, pageName, content, commitMessage, oauthToken
