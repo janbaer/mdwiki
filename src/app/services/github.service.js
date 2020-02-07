@@ -1,3 +1,5 @@
+import UnauthorizedError from './../helpers/unauthorized-error';
+
 const GITHUB_API_URL = 'https://api.github.com';
 
 class GithubService {
@@ -40,33 +42,39 @@ class GithubService {
 
   _get(url, oauthToken) {
     const options = this._buildOptions(oauthToken, 'GET');
-    return this._send(url, options, [200]);
+    return this._fetch(url, options);
   }
 
   _put(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'PUT');
     options.body = JSON.stringify(body);
-    return this._send(url, options, [200, 201]);
+    return this._fetch(url, options);
   }
 
   _post(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'POST');
     options.body = JSON.stringify(body);
-    return this._send(url, options, [201]);
+    return this._fetch(url, options);
   }
 
   _delete(url, body, oauthToken) {
     const options = this._buildOptions(oauthToken, 'DELETE');
     options.body = JSON.stringify(body);
-    return this._send(url, options, [200]);
+    return this._fetch(url, options);
   }
 
-  async _send(url, options, expectedStatus) {
+  async _fetch(url, options, expectedStatus) {
     const response = await fetch(`${GITHUB_API_URL}${url}`, options);
-    if (expectedStatus.some(s => s === response.status)) {
-      return response.json();
+
+    switch (response.status) {
+      case 200:
+      case 201:
+        return response.json();
+      case 401:
+        throw new UnauthorizedError();
+      default:
+        throw new Error(`Unexpected error with status code ${response.status}`);
     }
-    return undefined;
   }
 
   _decodeContent(content) {

@@ -74,6 +74,11 @@ export default class HomePage extends Component {
 
   async loadPage(pageName = 'index') {
     const page = await this.store.loadPage(pageName);
+    if (!page) {
+      navigator.gotoConnect();
+      return;
+    }
+
     this.setState({ page });
   }
 

@@ -1,5 +1,6 @@
-import configuration from './../services/configuration.service.js';
-import github from './../services/github.service.js';
+import configuration from './../services/configuration.service';
+import github from './../services/github.service';
+import UnauthorizedError from './../helpers/unauthorized-error';
 
 class PageStore {
   constructor() {
@@ -9,17 +10,32 @@ class PageStore {
 
   async loadPages() {
     const { user, repository, oauthToken } = configuration;
-    const pages = await github.getPages(
-      user.loginName, repository, oauthToken
-    );
 
-    this.pages = this._sortByName(this._excludePages(pages));
+    try {
+      const pages = await github.getPages(
+        user.loginName, repository, oauthToken
+      );
 
-    return this.pages;
+      this.pages = this._sortByName(this._excludePages(pages));
+      return this.pages;
+    } catch (err) {
+      if (err instanceof UnauthorizedError) {
+        console.log(`UnauthorizedError while loading pages for user ${configuration.user.loginName}`);
+        configuration.clear();
+      } else {
+        console.log('Unexpected error while loading pages', err);
+      }
+    }
+
+    return [];
   }
 
   async loadPage(pageName) {
     const { user, repository, oauthToken } = configuration;
+    if (!user) {
+      return undefined;
+    }
+
     const page = await github.getPage(
       user.loginName, repository, pageName, oauthToken
     );
