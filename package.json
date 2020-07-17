@@ -104,7 +104,7 @@
     "eventemitter3": "4.0.4",
     "github-markdown-css": "4.0.0",
     "history": "5.0.0",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "preact": "10.4.5",
     "preact-router": "3.2.1",
     "react-markdown": "4.3.1",
