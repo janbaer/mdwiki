@@ -13,19 +13,10 @@ cd deploy
 
 git rm -r .
 
-cp ../dist/*.* .
-cp ../CNAME .
+cp ../dist/*.* ./
+cp ../CNAME ./
 
 rm *.map
-
-cd ..
-
-node_modules/babel-minify/bin/minify.js ./deploy/service-worker.js > ./deploy/service-worker.min.js
-
-cd deploy
-
-rm service-worker.js
-mv service-worker.min.js service-worker.js
 
 if [ -f "./styles/*.*.map" ]; then
   rm ./styles/*.*.map
