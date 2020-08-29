@@ -1,0 +1,113 @@
+/* eslint-env worker, serviceworker */
+/* eslint no-restricted-globals: ["off", "self"] */
+
+const APP_VERSION = '3.1.58';
+
+const APP_CACHE_NAME = 'mdwiki-app-cache-v3.1.58';
+const GITHUB_CACHE_NAME = 'mdwiki-github-cache';
+const GITHUB_API_HOST = 'api.github.com';
+const appFiles = ['github-markdown.3a578216.css', 'index.html', 'manifest.webmanifest', 'page-editor.4b14e6bc.js', 'page-editor.a3ded688.css', 'src.6dfc06f7.js', 'src.f32b40c3.css', 'styles.b2b4fb83.css', 'styles.b2b4fb83.js', 'wiki-192px.b778628f.png', 'wiki-512px.b05caf2d.png'];
+
+const pathToIgnore = ['/user'];
+
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  event.waitUntil(installServiceWorker());
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(cleanOldCaches());
+  notifyClient('activate');
+});
+
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  event.respondWith(handleFetch(event.request));
+});
+
+async function installServiceWorker() {
+  const isUpdate = await checkIfIsUpdate();
+  await addToCache(APP_CACHE_NAME, appFiles);
+  if (isUpdate) {
+    await notifyClient('update');
+  }
+}
+
+async function checkIfIsUpdate() {
+  const existingCacheKeys = await caches.keys();
+  return existingCacheKeys.some(key => key === GITHUB_CACHE_NAME);
+}
+
+async function notifyClient(eventType) {
+  const allClients = await clients.matchAll({ includeUncontrolled: true, type: 'window' });
+  for (const client of allClients) {
+    client.postMessage({ type: eventType, version: APP_VERSION });
+  }
+}
+
+async function handleFetch(request) {
+  const requestUrl = new URL(request.url);
+  if (pathToIgnore.indexOf(requestUrl.pathname) >= 0) {
+    return fetch(request);
+  }
+
+  if (requestUrl.host === GITHUB_API_HOST) {
+    if (!navigator.onLine) {
+      return cacheFirst(GITHUB_CACHE_NAME, request, requestUrl.pathname);
+    }
+    return networkFirst(GITHUB_CACHE_NAME, request, requestUrl.pathname);
+  }
+
+  return cacheFirst(APP_CACHE_NAME, request, requestUrl.pathname);
+}
+
+async function cacheFirst(cacheName, request, cacheKey = request) {
+  const cache = await caches.open(cacheName);
+
+  const responseFromCache = await cache.match(cacheKey);
+  if (responseFromCache) {
+    return responseFromCache;
+  }
+
+  return fetch(request)
+    .then(response => {
+      if (response.status === 200) {
+        cache.put(cacheKey, response.clone());
+      }
+      cache.put(cacheKey, response.clone());
+      return response;
+    });
+}
+
+async function networkFirst(cacheName, request, cacheKey) {
+  const cache = await caches.open(cacheName);
+
+  return fetch(request)
+    .then(response => {
+      if (response.status === 200) {
+        cache.put(cacheKey, response.clone());
+      }
+      return response;
+    })
+    .catch(error => cache.match(cacheKey)); // eslint-disable-line
+}
+
+async function addToCache(cacheName, filesToCache) {
+  const cache = await caches.open(cacheName);
+  return cache.addAll(filesToCache);
+}
+
+async function cleanOldCaches() {
+  const activeCacheKeys = [APP_CACHE_NAME];
+
+  const existingCacheKeys = await caches.keys();
+
+  const cachesToDelete = existingCacheKeys.filter(key => !activeCacheKeys.includes(key));
+  if (cachesToDelete.length > 0) {
+    return Promise.all(cachesToDelete.map(key => caches.delete(key)));
+  }
+  return undefined;
+}
