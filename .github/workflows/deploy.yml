@@ -1,6 +1,9 @@
 name: AutoDeploy to gh-pages
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
