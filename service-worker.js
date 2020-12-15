@@ -6,7 +6,7 @@ const APP_VERSION = '3.1.59';
 const APP_CACHE_NAME = 'mdwiki-app-cache-v3.1.59';
 const GITHUB_CACHE_NAME = 'mdwiki-github-cache';
 const GITHUB_API_HOST = 'api.github.com';
-const appFiles = ['github-markdown.3a578216.css', 'index.html', 'manifest.webmanifest', 'page-editor.4b14e6bc.js', 'page-editor.a3ded688.css', 'src.6dfc06f7.js', 'src.f32b40c3.css', 'styles.b2b4fb83.css', 'styles.b2b4fb83.js', 'wiki-192px.b778628f.png', 'wiki-512px.b05caf2d.png'];
+const appFiles = ['github-markdown.3a578216.css', 'index.html', 'manifest.webmanifest', 'page-editor.4b14e6bc.js', 'page-editor.a3ded688.css', 'src.578ae397.js', 'src.f32b40c3.css', 'styles.b2b4fb83.css', 'styles.b2b4fb83.js', 'wiki-192px.b778628f.png', 'wiki-512px.b05caf2d.png'];
 
 const pathToIgnore = ['/user'];
 
