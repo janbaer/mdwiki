@@ -21,13 +21,30 @@ serviceWorkerCode = serviceWorkerCode
 fs.writeFileSync(SERVICEWORKER_FILEPATH, serviceWorkerCode, { encoding: 'utf8' });
 
 function readFilesToCache() {
-  const globPattern = ['*', '!service-worker.js', '!**.map'];
-  let filesToCache = [];
+  const filesToCache = readFilesRecursively(distFolder)
+    .map(f => f.replace('build/', ''))
+    .filter(includeFile);
 
-  fs.readdirSync(distFolder).forEach(file => {
-    filesToCache.push(file);
-  });
-
-  filesToCache = micromatch(filesToCache, globPattern);
   return filesToCache.map(file => `'${file}'`);
+}
+
+function readFilesRecursively(folderPath) {
+  const files = [];
+  const dirEntries = fs.readdirSync(folderPath, { withFileTypes: true });
+
+  for (const dirEntry of dirEntries) {
+    const fullPath = path.join(folderPath, dirEntry.name);
+    if (dirEntry.isDirectory()) {
+      const filesFromSubfolders = readFilesRecursively(fullPath);
+      files.push(...filesFromSubfolders);
+    } else {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+function includeFile(file) {
+  const filesToExclude = ['service-worker.js', '.map', 'env.js', 'CNAME'];
+  return !filesToExclude.some(f => file.endsWith(f));
 }
