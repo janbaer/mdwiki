@@ -45,7 +45,4 @@ jobs:
           branch: gh-pages
       - name: Trigger a new build of gh-pages
         run: >
-          curl -X POST \
-          --header 'Accept: application/vnd.github.mister-fantastic-preview+json' \
-          -u janbaer:${{ secrets.ACCESS_TOKEN}}                                   \
-          'https://api.github.com/repos/janbaer/mdwiki/pages/builds'
+          curl -X POST --header "Accept: application/vnd.github.mister-fantastic-preview+json" --user janbaer:${{ secrets.ACCESS_TOKEN }} https://api.github.com/repos/janbaer/mdwiki/pages/builds
