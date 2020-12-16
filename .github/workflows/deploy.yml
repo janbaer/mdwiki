@@ -1,4 +1,5 @@
 ---
+
 name: AutoDeploy to gh-pages
 
 on:
@@ -11,13 +12,13 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - 12.x
+          - 14.x
     steps:
       - uses: actions/checkout@v1
         with:
           branch: master
       - name: 'Use Node.js ${{ matrix.node-version }}'
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2.3.4
         with:
           node-version: '${{ matrix.node-version }}'
       - name: 'Yarn install, test, build and deploy'
@@ -37,8 +38,7 @@ jobs:
         env:
           CI: true
       - name: Push changes to branch gh-pages
-        uses: ad-m/github-push-action@v0.5.0
-        if: github.ref == 'refs/heads/master'
+        uses: ad-m/github-push-action@v0.6.0
         with:
           directory: /home/runner/work/mdwiki/mdwiki/deploy
           github_token: '${{ secrets.GITHUB_TOKEN }}'
@@ -46,12 +46,6 @@ jobs:
       - name: Trigger a new build of gh-pages
         run: >
           curl -X POST \
-
-          --header 'Accept:
-          application/vnd.github.mister-fantastic-preview+json' \
-
-          -u janbaer:${{ secrets.ACCESS_TOKEN
-          }}                                  \
-
+          --header 'Accept: application/vnd.github.mister-fantastic-preview+json' \
+          -u janbaer:${{ secrets.ACCESS_TOKEN}}                                   \
           'https://api.github.com/repos/janbaer/mdwiki/pages/builds'
-
