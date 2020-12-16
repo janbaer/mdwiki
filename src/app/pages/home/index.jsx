@@ -1,21 +1,22 @@
 import { h, Component } from 'preact';
 import { Suspense, lazy } from 'preact/compat';
 import classnames from 'classnames';
-import Footer from '~/app/components/footer';
-import AppTitle from '~/app/components/app-title';
-import ConnectButton from '~/app/components/connect-button';
-import LoginButton from '~/app/components/login-button';
-import SidebarButton from '~/app/components/sidebar-button';
-import Searchbox from '~/app/components/search-box';
+import Footer from '@app/components/footer';
+import AppTitle from '@app/components/app-title';
+import ConnectButton from '@app/components/connect-button';
+import LoginButton from '@app/components/login-button';
+import SidebarButton from '@app/components/sidebar-button';
+import Searchbox from '@app/components/search-box';
+
 import Sidebar from './components/sidebar';
 import PageContent from './components/page-content';
 
-import configuration from '~/app/services/configuration.service';
-import navigator from '~/app/services/navigator.service';
+import configuration from '@app/services/configuration.service';
+import navigator from '@app/services/navigator.service';
 
-import PageStore from '~/app/stores/page.store';
+import PageStore from '@app/stores/page.store';
 
-import EVENTS from '~/app/constants/events.constants';
+import EVENTS from '@app/constants/events.constants';
 
 import './index.less';
 

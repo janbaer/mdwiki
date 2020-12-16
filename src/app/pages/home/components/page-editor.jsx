@@ -1,8 +1,8 @@
 import { h, Component } from 'preact';
 import SimpleMDE from 'react-simplemde-editor';
 
-import HotKey from '~/app/components/hotkey';
-import ModalInputDialog from '~/app/components/modal-input-dialog';
+import HotKey from '@app/components/hotkey';
+import ModalInputDialog from '@app/components/modal-input-dialog';
 
 import './page-editor.less';
 

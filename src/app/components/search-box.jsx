@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { useState } from 'preact/hooks';
 
-import SearchSvg from './../../images/search.svg';
+import searchSvg from '@images/search.svg';
 
 import './search-box.less';
 
@@ -16,7 +16,9 @@ const SearchBox = ({ onSearch }) => {
 
   return (
     <div class="Searchbox-container">
-      <button title="Search" onClick={() => onSearch(searchTerm)}><SearchSvg /></button>
+      <button title="Search" onClick={() => onSearch(searchTerm)}>
+        <img src={searchSvg} />
+      </button>
       <input
         type="text"
         name="search"

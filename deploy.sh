@@ -13,8 +13,7 @@ cd deploy
 
 git rm -r .
 
-cp ../dist/*.* ./
-cp ../CNAME ./
+cp -R ../build/. .
 
 rm *.map
 

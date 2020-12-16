@@ -2,7 +2,7 @@ import EventEmitter from 'eventemitter3';
 
 import storage from './storage.service';
 
-import EVENTS from '~/app/constants/events.constants';
+import EVENTS from './../constants/events.constants';
 
 const STORE_KEY = 'mdwiki-config';
 const APP_VERSION_STORE_KEY = 'mdwiki-version';

@@ -1,6 +1,6 @@
 import { h } from 'preact';
 
-import GithubSvg from './../../../../images/github.svg';
+import githubSvg from '@images/github.svg';
 
 const LoginState = ({ user, onLoginClick }) => {
   if (user) {
@@ -18,7 +18,7 @@ const LoginState = ({ user, onLoginClick }) => {
       class="button button-primary ConnectPage-githubButton"
       onClick={() => onLoginClick()}
     >
-      <GithubSvg />
+      <img src={githubSvg} />
       Login with using Github
     </button>
   );

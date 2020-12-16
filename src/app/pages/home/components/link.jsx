@@ -1,5 +1,6 @@
 import { h } from 'preact';
-import navigator from '~/app/services/navigator.service';
+
+import navigator from '@app/services/navigator.service';
 
 import './link.less';
 
