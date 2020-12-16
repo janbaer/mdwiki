@@ -1,1 +1,13 @@
-{"name":"MDWiki","short_name":"MDWiki","display":"standalone","start_url":"/","theme_color":"#1e87f0","background_color":"#1e87f0","lang":"en-US","icons":[{"src":"wiki-192px.b778628f.png","type":"image/png","sizes":"192x192"},{"src":"wiki-512px.b05caf2d.png","type":"image/png","sizes":"512x512"}]}
+{
+  "name": "MDWiki",
+  "short_name": "MDWiki",
+  "display": "standalone",
+  "start_url": "/",
+  "theme_color": "#1e87f0",
+  "background_color": "#1e87f0",
+  "lang": "en-US",
+  "icons": [
+    { "src": "images/wiki-192px.png", "type": "image/png",  "sizes": "192x192" },
+    { "src": "images/wiki-512px.png", "type": "image/png",  "sizes": "512x512" }
+  ]
+}

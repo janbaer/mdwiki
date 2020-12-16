@@ -1,2 +1,21 @@
-<!DOCTYPE html><html><head><title>MDWiki 3</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/github-markdown.3a578216.css"><link rel="stylesheet" href="/styles.b2b4fb83.css"><link rel="manifest" href="/manifest.webmanifest"><script defer="" src="/src.578ae397.js"></script><script charset="utf-8">"use strict";"serviceWorker"in window.navigator&&window.addEventListener("load",()=>{navigator.serviceWorker.register("/service-worker.js").catch(e=>{console.log("Registration of ServiceWorker failed",e)})});</script><script src="/styles.b2b4fb83.js"></script><link rel="stylesheet" href="/src.f32b40c3.css"></head><body>
-</body></html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MDWiki 3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.webmanifest" />
+  <script type="module" src="/dist/index.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    if ('serviceWorker' in window.navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(error => {
+            console.log('Registration of ServiceWorker failed', error);
+          });
+      });
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

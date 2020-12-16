@@ -1,0 +1,10 @@
+// [snowpack] add styles to the page (skip if no document exists)
+if (typeof document !== 'undefined') {
+  const code = ".Searchbox-container {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n  justify-content: center;\n}\n@media (min-width: 768px) {\n  .Searchbox-container {\n    background-color: #0f6ecd;\n    align-items: unset;\n    flex-direction: row;\n    padding: 0 10px 0 0;\n  }\n}\n.Searchbox-container input {\n  display: none;\n  flex: 1;\n  background-color: transparent;\n  color: white;\n  border: none;\n  opacity: 0.5;\n}\n@media (min-width: 768px) {\n  .Searchbox-container input {\n    display: unset;\n  }\n}\n.Searchbox-container input::placeholder {\n  color: white;\n}\n.Searchbox-container input:focus {\n  outline: none;\n  opacity: 1;\n  transition: opacity 0.5s ease-in-out;\n}\n.Searchbox-container input:-webkit-autofill,\n.Searchbox-container input -webkit-autofill:hover,\n.Searchbox-container input -webkit-autofill:focus {\n  -webkit-text-fill-color: white;\n  -webkit-box-shadow: 0 0 0px 1000px #0f6ecd inset !important;\n  transition: background-color 5000s ease-in-out 0s;\n}\n.Searchbox-container button {\n  background-color: transparent;\n  border: none;\n  cursor: pointer;\n  border-radius: 25px;\n  padding: 7px;\n}\n.Searchbox-container button:active {\n  background-color: #0f6ecd;\n}\n.Searchbox-container button:focus {\n  outline-color: transparent;\n}\n@media (min-width: 768px) {\n  .Searchbox-container button {\n    display: unset;\n    margin-right: 5px;\n    border: 1px solid #0f6ecd;\n  }\n  .Searchbox-container button:active {\n    background-color: #1e87f0;\n  }\n}\n.Searchbox-container button svg {\n  fill: white;\n}\n";
+
+  const styleEl = document.createElement("style");
+  const codeEl = document.createTextNode(code);
+  styleEl.type = 'text/css';
+  styleEl.appendChild(codeEl);
+  document.head.appendChild(styleEl);
+}

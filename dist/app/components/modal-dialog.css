@@ -1,0 +1,56 @@
+@keyframes ShowDialog {
+  from {
+    transform: translateX(20%) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+.Animated-Dialog {
+  animation: ShowDialog 0.3s ease-in-out;
+}
+.ModalDialog-backgroundContainer {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100vw;
+  height: 100vh;
+  background-color: grey;
+  z-index: 2;
+  opacity: 0.98;
+}
+@media (min-width: 768px) {
+  .ModalDialog-backgroundContainer {
+    opacity: 0.9;
+  }
+}
+.ModalDialog-dialog {
+  width: 80%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  color: grey;
+  background-color: white;
+  padding: 1em;
+  margin: auto;
+  animation: ShowDialog 0.3s ease-in-out;
+}
+.ModalDialog-descriptionLabel {
+  margin-bottom: 10px;
+}
+.ModalDialog-dialogContainer {
+  margin-top: 10px;
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+.ModalDialog-dialogContainer .button {
+  width: 120px;
+}
+.ModalDialog-dialogContainer .button:first-of-type {
+  margin-right: 10px;
+}

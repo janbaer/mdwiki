@@ -1,0 +1,19 @@
+{
+  "imports": {
+    "classnames": "./classnames.js",
+    "eventemitter3": "./eventemitter3.js",
+    "history": "./history.js",
+    "lodash/difference": "./lodash/difference.js",
+    "lodash/isEmpty": "./lodash/isEmpty.js",
+    "lodash/isEqual": "./lodash/isEqual.js",
+    "preact": "./preact.js",
+    "preact-router": "./preact-router.js",
+    "preact/compat": "./preact/compat.js",
+    "preact/devtools": "./preact/devtools.js",
+    "preact/hooks": "./preact/hooks.js",
+    "react": "./preact/compat.js",
+    "react-dom": "./preact/compat.js",
+    "react-markdown": "./react-markdown.js",
+    "react-simplemde-editor": "./react-simplemde-editor.js"
+  }
+}

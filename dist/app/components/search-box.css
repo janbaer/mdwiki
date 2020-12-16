@@ -1,0 +1,68 @@
+.Searchbox-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+}
+@media (min-width: 768px) {
+  .Searchbox-container {
+    background-color: #0f6ecd;
+    align-items: unset;
+    flex-direction: row;
+    padding: 0 10px 0 0;
+  }
+}
+.Searchbox-container input {
+  display: none;
+  flex: 1;
+  background-color: transparent;
+  color: white;
+  border: none;
+  opacity: 0.5;
+}
+@media (min-width: 768px) {
+  .Searchbox-container input {
+    display: unset;
+  }
+}
+.Searchbox-container input::placeholder {
+  color: white;
+}
+.Searchbox-container input:focus {
+  outline: none;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+.Searchbox-container input:-webkit-autofill,
+.Searchbox-container input -webkit-autofill:hover,
+.Searchbox-container input -webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #0f6ecd inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+.Searchbox-container button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 25px;
+  padding: 7px;
+}
+.Searchbox-container button:active {
+  background-color: #0f6ecd;
+}
+.Searchbox-container button:focus {
+  outline-color: transparent;
+}
+@media (min-width: 768px) {
+  .Searchbox-container button {
+    display: unset;
+    margin-right: 5px;
+    border: 1px solid #0f6ecd;
+  }
+  .Searchbox-container button:active {
+    background-color: #1e87f0;
+  }
+}
+.Searchbox-container button svg {
+  fill: white;
+}

@@ -1,0 +1,42 @@
+.ConnectPage-header {
+  padding-left: 10px;
+  display: grid;
+  grid-template-columns: 40px;
+  align-items: center;
+}
+.ConnectPage-contentContainer {
+  padding: 20px;
+  overflow-y: auto;
+  height: calc(100vh - 110px);
+}
+@media only screen and (min-width: 1024px) {
+  .ConnectPage-contentContainer {
+    width: 50%;
+  }
+}
+.ConnectPage-contentContainer > div {
+  padding: 10px 0;
+}
+.ConnectPage-contentContainer h3 {
+  font-size: 1.2em;
+  text-decoration: underline;
+}
+.ConnectPage-githubButton > img {
+  fill: white;
+  height: 24px;
+  width: 24px;
+  margin-right: 10px;
+}
+.ConnectPage-userContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.ConnectPage-userName {
+  font-weight: bold;
+  margin: 10px 0;
+}
+.ConnectPage-userImage {
+  heigth: 64px;
+  width: 64px;
+}

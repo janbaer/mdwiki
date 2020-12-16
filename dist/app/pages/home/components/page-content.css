@@ -1,0 +1,8 @@
+.PageContent-container {
+  overflow-y: auto;
+  height: calc(100vh - 85px);
+}
+.PageContent-body {
+  height: calc(100% - 55px);
+  margin: 0 10px;
+}

@@ -1,0 +1,46 @@
+.HomePage-header {
+  display: grid;
+  grid-template-columns: 40px 40px 1fr 100px;
+  grid-column-gap: 10px;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .HomePage-header {
+    padding-left: 10px;
+    grid-template-columns: 40px 1fr 100px;
+  }
+}
+@media (min-width: 1024px) {
+  .HomePage-leftNavbar {
+    display: none;
+  }
+}
+.HomePage-rightNavbar {
+  display: flex;
+}
+.HomePage-container {
+  display: flex;
+  height: 100%;
+}
+.HomePage-sidebarContainer {
+  width: 250px;
+  position: absolute;
+  height: calc(100vh - 85px);
+  background-color: white;
+  border-right: 1px solid #e0e0e0;
+  left: -250px;
+  transition: left 0.5s ease-in-out;
+}
+.HomePage-sidebarContainer.is-shown {
+  transition: left 0.5s ease-in-out;
+  left: 0;
+}
+@media only screen and (min-width: 1024px) {
+  .HomePage-sidebarContainer {
+    position: inherit;
+    height: unset;
+  }
+}
+.HomePage-contentContainer {
+  flex: 1;
+}
