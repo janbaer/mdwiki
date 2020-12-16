@@ -1,13 +1,13 @@
 import { h, Component, Fragment } from 'preact';
 
-import AppTitle from '~/app/components/app-title';
-import Footer from '~/app/components/footer';
+import AppTitle from '@app/components/app-title';
+import Footer from '@app/components/footer';
 
-import configuration from '~/app/services/configuration.service';
-import github from '~/app/services/github.service';
-import navigator from '~/app/services/navigator.service';
+import configuration from '@app/services/configuration.service';
+import github from '@app/services/github.service';
+import navigator from '@app/services/navigator.service';
 
-import EVENTS from '~/app/constants/events.constants';
+import EVENTS from '@app/constants/events.constants';
 
 import SelectExistingRepository from './components/select-existing-repository';
 import CreateNewRepository from './components/create-new-repository';

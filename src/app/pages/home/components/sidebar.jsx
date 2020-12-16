@@ -1,5 +1,6 @@
 import { h, Component } from 'preact';
-import groupPages from '~/app/helpers/page-grouper';
+
+import groupPages from '@app/helpers/page-grouper';
 
 import './sidebar.less';
 

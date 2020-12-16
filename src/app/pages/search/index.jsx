@@ -1,15 +1,15 @@
 import { h, Component } from 'preact';
-import Footer from '~/app/components/footer';
-import AppTitle from '~/app/components/app-title';
-import LoginButton from '~/app/components/login-button';
-import ConnectButton from '~/app/components/connect-button';
+import Footer from '@app/components/footer';
+import AppTitle from '@app/components/app-title';
+import LoginButton from '@app/components/login-button';
+import ConnectButton from '@app/components/connect-button';
 
 import SearchResult from './components/search-result';
 import SearchInput from './components/search-input';
 
-import configuration from '~/app/services/configuration.service';
-import github from '~/app/services/github.service';
-import navigator from '~/app/services/navigator.service';
+import configuration from '@app/services/configuration.service';
+import github from '@app/services/github.service';
+import navigator from '@app/services/navigator.service';
 
 import './index.less';
 

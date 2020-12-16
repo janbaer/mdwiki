@@ -2,13 +2,13 @@ import { h, Component } from 'preact';
 import ReactMarkdown from 'react-markdown';
 import Link from './link';
 
-import ModalDialog from '~/app/components/modal-dialog';
-import ModalInputDialog from '~/app/components/modal-input-dialog';
-import HotKey from '~/app/components/hotkey';
+import ModalDialog from '@app/components/modal-dialog';
+import ModalInputDialog from '@app/components/modal-input-dialog';
+import HotKey from '@app/components/hotkey';
 
 import PageContentToolbar from './page-content-toolbar';
 
-import './../../../../../node_modules/easymde/dist/easymde.min.css';
+import './easymde.min.css';
 import './page-content.less';
 
 export default class PageContent extends Component {

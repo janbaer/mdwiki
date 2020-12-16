@@ -1,7 +1,9 @@
 import { h } from 'preact';
 import NavbarButton from './navbar-button';
-import GithubSvg from './../../images/github.svg';
-import navigator from '~/app/services/navigator.service';
+import githubSvg from '@images/github.svg';
+import navigator from '@app/services/navigator.service';
+
+import './connect-button.less';
 
 const ConnectButton = () => {
   return (
@@ -9,7 +11,7 @@ const ConnectButton = () => {
       title="Connect to a GitHub repository"
       onClick={() => navigator.gotoConnect()}
     >
-      <GithubSvg />
+      <img src={githubSvg} class="ConnectButton-icon" />
     </NavbarButton>
   );
 };
