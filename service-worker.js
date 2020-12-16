@@ -1,9 +1,9 @@
 /* eslint-env worker, serviceworker */
 /* eslint no-restricted-globals: ["off", "self"] */
 
-const APP_VERSION = '3.2.62';
+const APP_VERSION = '3.2.63';
 
-const APP_CACHE_NAME = 'mdwiki-app-cache-v3.2.62';
+const APP_CACHE_NAME = 'mdwiki-app-cache-v3.2.63';
 const GITHUB_CACHE_NAME = 'mdwiki-github-cache';
 const GITHUB_API_HOST = 'api.github.com';
 const appFiles = ['CNAME', '__snowpack__', 'dist', 'images', 'index.html', 'manifest.webmanifest', 'web_modules'];
