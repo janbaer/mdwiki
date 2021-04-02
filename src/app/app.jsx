@@ -4,7 +4,7 @@ import { createHashHistory } from 'history';
 import Home from './pages/home';
 import Connect from './pages/connect';
 import Search from './pages/search';
-import configuration from './services/configuration.service';
+import configuration from './services/configuration.service.js';
 
 class App extends Component {
   constructor() {

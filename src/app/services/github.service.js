@@ -1,4 +1,4 @@
-import UnauthorizedError from './../helpers/unauthorized-error';
+import UnauthorizedError from './../helpers/unauthorized-error.js';
 
 const GITHUB_API_URL = 'https://api.github.com';
 

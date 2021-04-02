@@ -23,11 +23,13 @@ fi
 
 touch .nojekyll
 
+echo -n "www.janbaer.de" > CNAME
+
 git add -u && git add .
 
 git commit -m "Version ${VERSION}"
 
-if [ ! ${CI} = true ]; then
-  git push -u origin gh-pages
-fi
+# if [ ! ${CI} = true ]; then
+  # git push -u origin gh-pages
+# fi
 

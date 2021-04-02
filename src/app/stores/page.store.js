@@ -1,5 +1,5 @@
-import configuration from './../services/configuration.service';
-import github from './../services/github.service';
+import configuration from './../services/configuration.service.js';
+import github from './../services/github.service.js';
 import UnauthorizedError from './../helpers/unauthorized-error';
 
 class PageStore {

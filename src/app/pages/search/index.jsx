@@ -7,9 +7,9 @@ import ConnectButton from '@app/components/connect-button';
 import SearchResult from './components/search-result';
 import SearchInput from './components/search-input';
 
-import configuration from '@app/services/configuration.service';
-import github from '@app/services/github.service';
-import navigator from '@app/services/navigator.service';
+import configuration from '@app/services/configuration.service.js';
+import github from '@app/services/github.service.js';
+import navigator from '@app/services/navigator.service.js';
 
 import './index.less';
 

@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const micromatch = require('micromatch');
 
 const appVersion = require('./package.json').version;
 const distFolder = './build';

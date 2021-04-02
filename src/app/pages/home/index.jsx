@@ -11,12 +11,12 @@ import Searchbox from '@app/components/search-box';
 import Sidebar from './components/sidebar';
 import PageContent from './components/page-content';
 
-import configuration from '@app/services/configuration.service';
-import navigator from '@app/services/navigator.service';
+import configuration from '@app/services/configuration.service.js';
+import navigator from '@app/services/navigator.service.js';
 
-import PageStore from '@app/stores/page.store';
+import PageStore from '@app/stores/page.store.js';
 
-import EVENTS from '@app/constants/events.constants';
+import EVENTS from '@app/constants/events.constants.js';
 
 import './index.less';
 
