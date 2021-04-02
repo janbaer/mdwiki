@@ -23,7 +23,7 @@ fi
 
 touch .nojekyll
 
-echo -n "www.janbaer.de" > CNAME
+echo -n "mdwiki.janbaer.de" > CNAME
 
 git add -u && git add .
 
