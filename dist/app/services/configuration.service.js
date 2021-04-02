@@ -1,4 +1,4 @@
-import EventEmitter from '../../../web_modules/eventemitter3.js';
+import EventEmitter from '../../../_snowpack/pkg/eventemitter3.js';
 
 import storage from './storage.service.js';
 

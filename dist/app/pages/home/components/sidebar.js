@@ -1,4 +1,4 @@
-import {h, Component} from "../../../../../web_modules/preact.js";
+import {h, Component} from "../../../../../_snowpack/pkg/preact.js";
 import groupPages from "../../../helpers/page-grouper.js";
 import "./sidebar.css.proxy.js";
 export default class Sidebar extends Component {

@@ -1,4 +1,4 @@
-import {h} from "../../../../../web_modules/preact.js";
+import {h} from "../../../../../_snowpack/pkg/preact.js";
 import "./search-result.css.proxy.js";
 function renderSearchResultItem(page, onSearchItemClicked) {
   return /* @__PURE__ */ h("li", {

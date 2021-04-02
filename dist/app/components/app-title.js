@@ -1,4 +1,4 @@
-import {h} from "../../../web_modules/preact.js";
+import {h} from "../../../_snowpack/pkg/preact.js";
 import logoSvg from "../../images/wiki.svg.proxy.js";
 import "./app-title.css.proxy.js";
 const AppTitle = () => {

@@ -1,4 +1,4 @@
-import {h, Fragment} from "../../../../../web_modules/preact.js";
+import {h, Fragment} from "../../../../../_snowpack/pkg/preact.js";
 import "./select-existing-repository.css.proxy.js";
 const SelectExistingRepository = ({repositories, selectedRepository, onSelectedRepositoryChanged, onConnectClick}) => {
   return /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("h3", null, "Select an existing repository where the data should be saved"), /* @__PURE__ */ h("form", {

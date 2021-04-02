@@ -1,11 +1,11 @@
-import {h} from "../../../../../web_modules/preact.js";
-import classnames2 from "../../../../../web_modules/classnames.js";
+import {h} from "../../../../../_snowpack/pkg/preact.js";
+import classnames from "../../../../../_snowpack/pkg/classnames.js";
 import addSvg from "../../../../images/add.svg.proxy.js";
 import editSvg from "../../../../images/edit.svg.proxy.js";
 import deleteSvg from "../../../../images/delete.svg.proxy.js";
 import "./page-content-toolbar.css.proxy.js";
 const PageContentToolbar = ({onNewClick, onEditClick, onDeleteClick, canDelete}) => {
-  const classname = classnames2({"is-disabled": !canDelete});
+  const classname = classnames({"is-disabled": !canDelete});
   return /* @__PURE__ */ h("div", {
     class: "PageContent-toolbar editor-toolbar"
   }, /* @__PURE__ */ h("button", {

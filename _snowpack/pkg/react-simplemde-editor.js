@@ -1,7 +1,7 @@
 import { c as createCommonjsModule, a as commonjsGlobal, g as getDefaultExportFromNamespaceIfNotNamed, b as commonjsRequire, d as getDefaultExportFromCjs } from './common/_commonjsHelpers-16be0a9e.js';
-import './common/preact.module-5693ab29.js';
-import './common/hooks.module-b65ed191.js';
-import { c as compat_module } from './common/compat.module-d45a967b.js';
+import './common/preact.module-4990fb49.js';
+import './common/hooks.module-dd3aa32b.js';
+import { c as compat_module } from './common/compat.module-396e714d.js';
 
 var codemirror = createCommonjsModule(function (module, exports) {
 // CodeMirror, copyright (c) by Marijn Haverbeke and others

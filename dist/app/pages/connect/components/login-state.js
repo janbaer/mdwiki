@@ -1,4 +1,4 @@
-import {h} from "../../../../../web_modules/preact.js";
+import {h} from "../../../../../_snowpack/pkg/preact.js";
 import githubSvg from "../../../../images/github.svg.proxy.js";
 const LoginState = ({user, onLoginClick}) => {
   if (user) {

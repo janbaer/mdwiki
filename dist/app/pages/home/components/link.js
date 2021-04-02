@@ -1,5 +1,5 @@
-import {h} from "../../../../../web_modules/preact.js";
-import navigator2 from "../../../services/navigator.service.js";
+import {h} from "../../../../../_snowpack/pkg/preact.js";
+import navigator from "../../../services/navigator.service.js";
 import "./link.css.proxy.js";
 function isExternalLink(href) {
   if (href) {
@@ -20,7 +20,7 @@ const Link = ({href, children}) => {
   return /* @__PURE__ */ h("button", {
     type: "button",
     className: "Link-button",
-    onClick: () => navigator2.gotoPage(pageName)
+    onClick: () => navigator.gotoPage(pageName)
   }, children);
 };
 export default Link;

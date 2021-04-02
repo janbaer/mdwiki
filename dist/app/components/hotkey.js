@@ -1,7 +1,7 @@
-import {Component} from "../../../web_modules/preact.js";
-import isEmpty2 from "../../../web_modules/lodash/isEmpty.js";
-import difference2 from "../../../web_modules/lodash/difference.js";
-import isEqual2 from "../../../web_modules/lodash/isEqual.js";
+import {Component} from "../../../_snowpack/pkg/preact.js";
+import isEmpty from "../../../_snowpack/pkg/lodash/isEmpty.js";
+import difference from "../../../_snowpack/pkg/lodash/difference.js";
+import isEqual from "../../../_snowpack/pkg/lodash/isEqual.js";
 export default class HotKey extends Component {
   constructor(props) {
     super(props);
@@ -34,8 +34,8 @@ export default class HotKey extends Component {
       }
     }
     const isKeySetEmpty = !maxLength || maxLength === 0;
-    const areKeysPressedTogether = simultaneous && isEmpty2(difference2(keys, newBuffer));
-    const areKeysPressedSequently = !simultaneous && isEqual2(keys, newBuffer);
+    const areKeysPressedTogether = simultaneous && isEmpty(difference(keys, newBuffer));
+    const areKeysPressedSequently = !simultaneous && isEqual(keys, newBuffer);
     if (!isKeySetEmpty) {
       if (areKeysPressedTogether || areKeysPressedSequently) {
         onKeysCoincide(newBuffer, newEventsBuffer);

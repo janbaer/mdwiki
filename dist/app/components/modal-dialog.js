@@ -1,4 +1,4 @@
-import {h} from "../../../web_modules/preact.js";
+import {h} from "../../../_snowpack/pkg/preact.js";
 import "./modal-dialog.css.proxy.js";
 const ModalDialog = ({title, description, isValid = true, onHideDialog, children}) => {
   return /* @__PURE__ */ h("div", {

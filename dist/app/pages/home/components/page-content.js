@@ -1,5 +1,5 @@
-import {h, Component} from "../../../../../web_modules/preact.js";
-import ReactMarkdown from "../../../../../web_modules/react-markdown.js";
+import {h, Component} from "../../../../../_snowpack/pkg/preact.js";
+import ReactMarkdown from "../../../../../_snowpack/pkg/react-markdown.js";
 import Link from "./link.js";
 import ModalDialog from "../../../components/modal-dialog.js";
 import ModalInputDialog from "../../../components/modal-input-dialog.js";

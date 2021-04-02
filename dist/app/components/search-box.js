@@ -1,5 +1,5 @@
-import {h} from "../../../web_modules/preact.js";
-import {useState} from "../../../web_modules/preact/hooks.js";
+import {h} from "../../../_snowpack/pkg/preact.js";
+import {useState} from "../../../_snowpack/pkg/preact/hooks.js";
 import searchSvg from "../../images/search.svg.proxy.js";
 import "./search-box.css.proxy.js";
 const SearchBox = ({onSearch}) => {

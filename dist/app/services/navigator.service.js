@@ -1,4 +1,4 @@
-import { route } from '../../../web_modules/preact-router.js';
+import { route } from '../../../_snowpack/pkg/preact-router.js';
 
 class NavigatorService {
   gotoHome() {

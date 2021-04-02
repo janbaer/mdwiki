@@ -1,13 +1,13 @@
-import {h, Component} from "../../../../web_modules/preact.js";
+import {h, Component} from "../../../../_snowpack/pkg/preact.js";
 import Footer from "../../components/footer.js";
 import AppTitle from "../../components/app-title.js";
 import LoginButton from "../../components/login-button.js";
 import ConnectButton from "../../components/connect-button.js";
 import SearchResult from "./components/search-result.js";
 import SearchInput from "./components/search-input.js";
-import configuration2 from "../../services/configuration.service.js";
-import github2 from "../../services/github.service.js";
-import navigator2 from "../../services/navigator.service.js";
+import configuration from "../../services/configuration.service.js";
+import github from "../../services/github.service.js";
+import navigator from "../../services/navigator.service.js";
 import "./index.css.proxy.js";
 export default class SearchPage extends Component {
   constructor(props) {
@@ -26,15 +26,15 @@ export default class SearchPage extends Component {
     }
   }
   async search(searchTerm) {
-    const {user, repository, oauthToken} = configuration2;
-    const searchResult = await github2.searchPages(user.loginName, repository, searchTerm, oauthToken);
+    const {user, repository, oauthToken} = configuration;
+    const searchResult = await github.searchPages(user.loginName, repository, searchTerm, oauthToken);
     this.setState({searchTerm, searchResult});
   }
   onSearchItemClicked(pageName) {
-    navigator2.gotoPage(pageName);
+    navigator.gotoPage(pageName);
   }
   render(props, {searchTerm, searchResult}) {
-    const {user, appVersion} = configuration2;
+    const {user, appVersion} = configuration;
     searchTerm = searchTerm || props.q;
     return /* @__PURE__ */ h("div", {
       class: "App-container"

@@ -1,17 +1,17 @@
-import {h, Component} from "../../web_modules/preact.js";
-import {Router, route} from "../../web_modules/preact-router.js";
-import {createHashHistory} from "../../web_modules/history.js";
+import {h, Component} from "../../_snowpack/pkg/preact.js";
+import {Router, route} from "../../_snowpack/pkg/preact-router.js";
+import {createHashHistory} from "../../_snowpack/pkg/history.js";
 import Home from "./pages/home/index.js";
 import Connect from "./pages/connect/index.js";
 import Search from "./pages/search/index.js";
-import configuration2 from "./services/configuration.service.js";
+import configuration from "./services/configuration.service.js";
 class App extends Component {
   constructor() {
     super();
     this.handleRoute = this.handleRoute.bind(this);
   }
   isConnected() {
-    return !!configuration2.user;
+    return !!configuration.user;
   }
   handleRoute(e) {
     const {path, token} = e.current.props;

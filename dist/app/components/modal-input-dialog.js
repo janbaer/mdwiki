@@ -1,4 +1,4 @@
-import {h, Component} from "../../../web_modules/preact.js";
+import {h, Component} from "../../../_snowpack/pkg/preact.js";
 import ModalDialog from "./modal-dialog.js";
 export default class ModalInputDialog extends Component {
   constructor(props) {

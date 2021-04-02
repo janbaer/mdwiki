@@ -1,5 +1,5 @@
-import {h, Fragment} from "../../../../../web_modules/preact.js";
-import {useState, useEffect} from "../../../../../web_modules/preact/hooks.js";
+import {h, Fragment} from "../../../../../_snowpack/pkg/preact.js";
+import {useState, useEffect} from "../../../../../_snowpack/pkg/preact/hooks.js";
 import "./create-new-repository.css.proxy.js";
 const CreateNewRepository = ({onCreateClick, onValidateRepositoryName}) => {
   const [repositoryName, setRepositoryName] = useState("");

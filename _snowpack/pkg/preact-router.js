@@ -1,4 +1,4 @@
-import { b, q, d, v } from './common/preact.module-5693ab29.js';
+import { w, S, p, a } from './common/preact.module-4990fb49.js';
 
 var EMPTY$1 = {};
 
@@ -250,7 +250,7 @@ var Router = (function (Component$$1) {
 
 	/** Check if the given URL can be matched against any children */
 	Router.prototype.canRoute = function canRoute (url) {
-		var children = b(this.props.children);
+		var children = w(this.props.children);
 		return this.getMatchingChildren(children, url, false).length > 0;
 	};
 
@@ -307,7 +307,7 @@ var Router = (function (Component$$1) {
 						assign(newProps, matches);
 						delete newProps.ref;
 						delete newProps.key;
-						return q(vnode, newProps);
+						return S(vnode, newProps);
 					}
 					return vnode;
 				}
@@ -319,7 +319,7 @@ var Router = (function (Component$$1) {
 		var onChange = ref.onChange;
 		var url = ref$1.url;
 
-		var active = this.getMatchingChildren(b(children), url, true);
+		var active = this.getMatchingChildren(w(children), url, true);
 
 		var current = active[0] || null;
 
@@ -341,13 +341,13 @@ var Router = (function (Component$$1) {
 	};
 
 	return Router;
-}(d));
+}(p));
 
 var Link = function (props) { return (
-	v('a', assign({ onClick: handleLinkClick }, props))
+	a('a', assign({ onClick: handleLinkClick }, props))
 ); };
 
-var Route = function (props) { return v(props.component, props); };
+var Route = function (props) { return a(props.component, props); };
 
 Router.subscribers = subscribers;
 Router.getCurrentUrl = getCurrentUrl;

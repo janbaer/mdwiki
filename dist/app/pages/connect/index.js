@@ -1,9 +1,9 @@
-import {h, Component, Fragment} from "../../../../web_modules/preact.js";
+import {h, Component, Fragment} from "../../../../_snowpack/pkg/preact.js";
 import AppTitle from "../../components/app-title.js";
 import Footer from "../../components/footer.js";
-import configuration2 from "../../services/configuration.service.js";
-import github2 from "../../services/github.service.js";
-import navigator2 from "../../services/navigator.service.js";
+import configuration from "../../services/configuration.service.js";
+import github from "../../services/github.service.js";
+import navigator from "../../services/navigator.service.js";
 import EVENTS from "../../constants/events.constants.js";
 import SelectExistingRepository from "./components/select-existing-repository.js";
 import CreateNewRepository from "./components/create-new-repository.js";
@@ -15,37 +15,37 @@ export default class ConnectPage extends Component {
     this.state = {
       repositories: [],
       selectedRepository: void 0,
-      appVersion: configuration2.appVersion
+      appVersion: configuration.appVersion
     };
     this.changeSelectedRepository = this.changeSelectedRepository.bind(this);
     this.navigateToGithub = this.navigateToGithub.bind(this);
-    configuration2.eventEmitter.on(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
+    configuration.eventEmitter.on(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
   }
   componentDidMount() {
     if (this.props.logout !== void 0) {
       this.disconnect();
     }
-    const token = this.props.token || configuration2.oauthToken;
+    const token = this.props.token || configuration.oauthToken;
     if (token) {
       this.verifyOauthToken(token);
     }
-    if (configuration2.repository) {
-      this.changeSelectedRepository(configuration2.repository);
+    if (configuration.repository) {
+      this.changeSelectedRepository(configuration.repository);
     }
   }
   componentWillUnmount() {
-    configuration2.eventEmitter.removeListener(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged);
+    configuration.eventEmitter.removeListener(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged);
   }
   onAppVersionChanged(appVersion) {
     this.setState({appVersion});
   }
   navigateToGithub() {
-    window.location.href = configuration2.oauthLoginUrl;
+    window.location.href = configuration.oauthLoginUrl;
   }
   async verifyOauthToken(oauthToken) {
-    const user = await github2.getAuthenticatedUser(oauthToken);
+    const user = await github.getAuthenticatedUser(oauthToken);
     if (user) {
-      const repositories = await github2.getUserRepositories(oauthToken);
+      const repositories = await github.getUserRepositories(oauthToken);
       this.setState({user, repositories, oauthToken});
     }
   }
@@ -54,8 +54,8 @@ export default class ConnectPage extends Component {
   }
   connect() {
     const {user, selectedRepository, oauthToken} = this.state;
-    configuration2.save(user, selectedRepository, oauthToken);
-    navigator2.gotoHome();
+    configuration.save(user, selectedRepository, oauthToken);
+    navigator.gotoHome();
   }
   canCreateNewRepository(repositoryName) {
     if (!repositoryName || repositoryName === "") {
@@ -66,13 +66,13 @@ export default class ConnectPage extends Component {
   async createNewRepository(repositoryName, isPrivateRepository = false) {
     const {user, oauthToken} = this.state;
     const userName = user.loginName;
-    await github2.createNewRepository(userName, repositoryName, isPrivateRepository, oauthToken);
-    await github2.createPage(userName, repositoryName, "index.md", `# ${repositoryName} index page`, "Create new repository", oauthToken);
-    configuration2.save(user, repositoryName, oauthToken);
-    navigator2.gotoHome();
+    await github.createNewRepository(userName, repositoryName, isPrivateRepository, oauthToken);
+    await github.createPage(userName, repositoryName, "index.md", `# ${repositoryName} index page`, "Create new repository", oauthToken);
+    configuration.save(user, repositoryName, oauthToken);
+    navigator.gotoHome();
   }
   disconnect() {
-    configuration2.clear();
+    configuration.clear();
   }
   render(props, {user, repositories, selectedRepository, appVersion}) {
     return /* @__PURE__ */ h("div", {

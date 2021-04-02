@@ -1,5 +1,5 @@
-import {h} from "../../../../../web_modules/preact.js";
-import {useState, useEffect, useRef} from "../../../../../web_modules/preact/hooks.js";
+import {h} from "../../../../../_snowpack/pkg/preact.js";
+import {useState, useEffect, useRef} from "../../../../../_snowpack/pkg/preact/hooks.js";
 import "./search-input.css.proxy.js";
 const SearchInput = (props) => {
   const searchInputRef = useRef(null);

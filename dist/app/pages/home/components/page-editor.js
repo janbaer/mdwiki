@@ -1,5 +1,5 @@
-import {h, Component} from "../../../../../web_modules/preact.js";
-import SimpleMDE from "../../../../../web_modules/react-simplemde-editor.js";
+import {h, Component} from "../../../../../_snowpack/pkg/preact.js";
+import SimpleMDE from "../../../../../_snowpack/pkg/react-simplemde-editor.js";
 import HotKey from "../../../components/hotkey.js";
 import ModalInputDialog from "../../../components/modal-input-dialog.js";
 import "./page-editor.css.proxy.js";

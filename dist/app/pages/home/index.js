@@ -1,6 +1,6 @@
-import {h, Component} from "../../../../web_modules/preact.js";
-import {Suspense, lazy} from "../../../../web_modules/preact/compat.js";
-import classnames2 from "../../../../web_modules/classnames.js";
+import {h, Component} from "../../../../_snowpack/pkg/preact.js";
+import {Suspense, lazy} from "../../../../_snowpack/pkg/preact/compat.js";
+import classnames from "../../../../_snowpack/pkg/classnames.js";
 import Footer from "../../components/footer.js";
 import AppTitle from "../../components/app-title.js";
 import ConnectButton from "../../components/connect-button.js";
@@ -9,8 +9,8 @@ import SidebarButton from "../../components/sidebar-button.js";
 import Searchbox from "../../components/search-box.js";
 import Sidebar from "./components/sidebar.js";
 import PageContent from "./components/page-content.js";
-import configuration2 from "../../services/configuration.service.js";
-import navigator2 from "../../services/navigator.service.js";
+import configuration from "../../services/configuration.service.js";
+import navigator from "../../services/navigator.service.js";
 import PageStore from "../../stores/page.store.js";
 import EVENTS from "../../constants/events.constants.js";
 import "./index.css.proxy.js";
@@ -19,14 +19,14 @@ export default class HomePage extends Component {
   constructor(props) {
     super(props);
     this.store = new PageStore();
-    const {pages, page: page2} = this.store;
+    const {pages, page} = this.store;
     this.state = {
       showSidebar: false,
       pages,
-      page: page2,
+      page,
       isInEditMode: false,
       isNewPageDialogShown: false,
-      appVersion: configuration2.appVersion
+      appVersion: configuration.appVersion
     };
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.onGotoPage = this.onGotoPage.bind(this);
@@ -36,7 +36,7 @@ export default class HomePage extends Component {
     this.onDeletePage = this.onDeletePage.bind(this);
     this.onSavePage = this.onSavePage.bind(this);
     this.onCancelEditPage = this.onCancelEditPage.bind(this);
-    configuration2.eventEmitter.on(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
+    configuration.eventEmitter.on(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged.bind(this));
   }
   componentWillReceiveProps(nextProps, nextState) {
     if (nextProps.page !== this.props.page) {
@@ -44,31 +44,31 @@ export default class HomePage extends Component {
     }
   }
   componentWillUnmount() {
-    configuration2.eventEmitter.removeListener(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged);
+    configuration.eventEmitter.removeListener(EVENTS.APP_VERSION_CHANGED, this.onAppVersionChanged);
   }
   onAppVersionChanged(appVersion) {
     this.setState({appVersion});
   }
   onStartSearch(searchTerm) {
-    navigator2.gotoSearch(searchTerm);
+    navigator.gotoSearch(searchTerm);
   }
   async loadPages() {
     const pages = await this.store.loadPages();
     this.setState({pages});
   }
   async loadPage(pageName = "index") {
-    const page2 = await this.store.loadPage(pageName);
-    if (!page2) {
-      navigator2.gotoConnect();
+    const page = await this.store.loadPage(pageName);
+    if (!page) {
+      navigator.gotoConnect();
       return;
     }
-    this.setState({page: page2});
+    this.setState({page});
   }
   async componentDidMount() {
-    if (configuration2.user) {
+    if (configuration.user) {
       await this.loadPages();
-      const {page: page2} = this.props;
-      await this.loadPage(page2);
+      const {page} = this.props;
+      await this.loadPage(page);
     }
   }
   toggleSidebar() {
@@ -76,7 +76,7 @@ export default class HomePage extends Component {
     this.setState({showSidebar});
   }
   onGotoPage(pageName) {
-    navigator2.gotoPage(pageName);
+    navigator.gotoPage(pageName);
     if (this.state.showSidebar) {
       this.toggleSidebar();
     }
@@ -94,15 +94,15 @@ export default class HomePage extends Component {
   async onDeletePage() {
     await this.store.deletePage();
     const nextPageName = this.store.pages.length > 0 ? this.store.pages[0].name : "index";
-    navigator2.gotoPage(nextPageName);
+    navigator.gotoPage(nextPageName);
   }
   async onNewPage(pageName) {
-    const page2 = await this.store.createPage(pageName);
-    navigator2.gotoPage(page2.name);
+    const page = await this.store.createPage(pageName);
+    navigator.gotoPage(page.name);
   }
   async onSavePage(content, commitMessage) {
-    const page2 = await this.store.updatePage(content, commitMessage);
-    this.setState({page: page2}, () => this.toggleEditMode());
+    const page = await this.store.updatePage(content, commitMessage);
+    this.setState({page}, () => this.toggleEditMode());
   }
   renderPageContent(pageName, content) {
     return /* @__PURE__ */ h(PageContent, {
@@ -123,9 +123,9 @@ export default class HomePage extends Component {
       onCancel: this.onCancelEditPage
     }));
   }
-  render(props, {showSidebar, isInEditMode, pages, page: page2, appVersion}) {
-    const leftSidebarContainerClassname = classnames2("HomePage-sidebarContainer", {"is-shown": showSidebar});
-    const user = configuration2.user;
+  render(props, {showSidebar, isInEditMode, pages, page, appVersion}) {
+    const leftSidebarContainerClassname = classnames("HomePage-sidebarContainer", {"is-shown": showSidebar});
+    const user = configuration.user;
     return /* @__PURE__ */ h("div", {
       class: "App-container"
     }, /* @__PURE__ */ h("header", {
@@ -150,7 +150,7 @@ export default class HomePage extends Component {
       onClick: this.onGotoPage
     })), /* @__PURE__ */ h("div", {
       class: "HomePage-contentContainer"
-    }, !isInEditMode && this.renderPageContent(page2.name, page2.content), isInEditMode && this.renderPageEditor(page2.name, page2.content)))), /* @__PURE__ */ h(Footer, {
+    }, !isInEditMode && this.renderPageContent(page.name, page.content), isInEditMode && this.renderPageEditor(page.name, page.content)))), /* @__PURE__ */ h(Footer, {
       appVersion
     }));
   }

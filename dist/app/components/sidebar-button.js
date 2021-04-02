@@ -1,4 +1,4 @@
-import {h} from "../../../web_modules/preact.js";
+import {h} from "../../../_snowpack/pkg/preact.js";
 import hamburgerMenuSvg from "../../images/hamburger-menu.svg.proxy.js";
 import "./sidebar-button.css.proxy.js";
 const SidebarButton = ({showSidebar, onClick}) => {

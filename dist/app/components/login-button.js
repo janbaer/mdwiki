@@ -1,5 +1,5 @@
-import {h} from "../../../web_modules/preact.js";
-import {route} from "../../../web_modules/preact-router.js";
+import {h} from "../../../_snowpack/pkg/preact.js";
+import {route} from "../../../_snowpack/pkg/preact-router.js";
 import NavbarButton from "./navbar-button.js";
 import "./login-button.css.proxy.js";
 const LoginButton = ({user = {}}) => {
