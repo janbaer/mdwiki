@@ -73,7 +73,7 @@ export default class PageContent extends Component {
     }), /* @__PURE__ */ h("div", {
       class: "PageContent-body markdown-body"
     }, /* @__PURE__ */ h(ReactMarkdown, {
-      source: content,
+      children: content,
       renderers: {link: Link}
     })), /* @__PURE__ */ h(HotKey, {
       keys: ["shift", "e"],

@@ -1,4 +1,4 @@
-import {h, Component} from "../../../../../_snowpack/pkg/preact.js";
+import {h, Component, Fragment} from "../../../../../_snowpack/pkg/preact.js";
 import groupPages from "../../../helpers/page-grouper.js";
 import "./sidebar.css.proxy.js";
 export default class Sidebar extends Component {
@@ -14,7 +14,12 @@ export default class Sidebar extends Component {
   }
   scrollTo(e) {
     e.preventDefault();
-    document.querySelector(`#group${e.target.innerText}`).scrollIntoView({behavior: "smooth"});
+    const groupElement = document.getElementById(`group${e.target.innerText}`);
+    if (groupElement.scrollIntoViewIfNeeded) {
+      groupElement.scrollIntoViewIfNeeded(true);
+    } else {
+      groupElement.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+    }
   }
   renderPageEntry(page) {
     return /* @__PURE__ */ h("li", null, /* @__PURE__ */ h("button", {
@@ -37,10 +42,10 @@ export default class Sidebar extends Component {
   }
   render({pages}, state) {
     const groups = groupPages(pages);
-    return /* @__PURE__ */ h("div", {
-      class: "Sidebar-listContainer"
-    }, /* @__PURE__ */ h("div", {
+    return /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("div", {
       class: "Sidebar-groupLinkContainer"
-    }, groups.map(this.renderGroupLink)), groups.map(this.renderGroup));
+    }, groups.map(this.renderGroupLink)), /* @__PURE__ */ h("div", {
+      class: "Sidebar-listContainer"
+    }, groups.map(this.renderGroup)));
   }
 }

@@ -1,306 +1,7 @@
+import { c as compat_module } from './common/compat.module-d2e7f108.js';
 import { c as createCommonjsModule } from './common/_commonjsHelpers-16be0a9e.js';
-import './common/preact.module-4990fb49.js';
 import './common/hooks.module-dd3aa32b.js';
-import { c as compat_module } from './common/compat.module-396e714d.js';
-
-var immutable = extend;
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-function extend() {
-    var target = {};
-
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments[i];
-
-        for (var key in source) {
-            if (hasOwnProperty.call(source, key)) {
-                target[key] = source[key];
-            }
-        }
-    }
-
-    return target
-}
-
-var bail_1 = bail;
-
-function bail(err) {
-  if (err) {
-    throw err
-  }
-}
-
-/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-
-var isBuffer = function isBuffer (obj) {
-  return obj != null && obj.constructor != null &&
-    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-};
-
-var hasOwn = Object.prototype.hasOwnProperty;
-var toStr = Object.prototype.toString;
-var defineProperty = Object.defineProperty;
-var gOPD = Object.getOwnPropertyDescriptor;
-
-var isArray = function isArray(arr) {
-	if (typeof Array.isArray === 'function') {
-		return Array.isArray(arr);
-	}
-
-	return toStr.call(arr) === '[object Array]';
-};
-
-var isPlainObject = function isPlainObject(obj) {
-	if (!obj || toStr.call(obj) !== '[object Object]') {
-		return false;
-	}
-
-	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
-	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
-	// Not own constructor property must be Object
-	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
-		return false;
-	}
-
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-	var key;
-	for (key in obj) { /**/ }
-
-	return typeof key === 'undefined' || hasOwn.call(obj, key);
-};
-
-// If name is '__proto__', and Object.defineProperty is available, define __proto__ as an own property on target
-var setProperty = function setProperty(target, options) {
-	if (defineProperty && options.name === '__proto__') {
-		defineProperty(target, options.name, {
-			enumerable: true,
-			configurable: true,
-			value: options.newValue,
-			writable: true
-		});
-	} else {
-		target[options.name] = options.newValue;
-	}
-};
-
-// Return undefined instead of __proto__ if '__proto__' is not an own property
-var getProperty = function getProperty(obj, name) {
-	if (name === '__proto__') {
-		if (!hasOwn.call(obj, name)) {
-			return void 0;
-		} else if (gOPD) {
-			// In early versions of node, obj['__proto__'] is buggy when obj has
-			// __proto__ as an own property. Object.getOwnPropertyDescriptor() works.
-			return gOPD(obj, name).value;
-		}
-	}
-
-	return obj[name];
-};
-
-var extend$1 = function extend() {
-	var options, name, src, copy, copyIsArray, clone;
-	var target = arguments[0];
-	var i = 1;
-	var length = arguments.length;
-	var deep = false;
-
-	// Handle a deep copy situation
-	if (typeof target === 'boolean') {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	}
-	if (target == null || (typeof target !== 'object' && typeof target !== 'function')) {
-		target = {};
-	}
-
-	for (; i < length; ++i) {
-		options = arguments[i];
-		// Only deal with non-null/undefined values
-		if (options != null) {
-			// Extend the base object
-			for (name in options) {
-				src = getProperty(target, name);
-				copy = getProperty(options, name);
-
-				// Prevent never-ending loop
-				if (target !== copy) {
-					// Recurse if we're merging plain objects or arrays
-					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
-						if (copyIsArray) {
-							copyIsArray = false;
-							clone = src && isArray(src) ? src : [];
-						} else {
-							clone = src && isPlainObject(src) ? src : {};
-						}
-
-						// Never move original objects, clone them
-						setProperty(target, { name: name, newValue: extend(deep, clone, copy) });
-
-					// Don't bring in undefined values
-					} else if (typeof copy !== 'undefined') {
-						setProperty(target, { name: name, newValue: copy });
-					}
-				}
-			}
-		}
-	}
-
-	// Return the modified object
-	return target;
-};
-
-var isPlainObj = value => {
-	if (Object.prototype.toString.call(value) !== '[object Object]') {
-		return false;
-	}
-
-	const prototype = Object.getPrototypeOf(value);
-	return prototype === null || prototype === Object.prototype;
-};
-
-var slice = [].slice;
-
-var wrap_1 = wrap;
-
-// Wrap `fn`.
-// Can be sync or async; return a promise, receive a completion handler, return
-// new values and errors.
-function wrap(fn, callback) {
-  var invoked;
-
-  return wrapped
-
-  function wrapped() {
-    var params = slice.call(arguments, 0);
-    var callback = fn.length > params.length;
-    var result;
-
-    if (callback) {
-      params.push(done);
-    }
-
-    try {
-      result = fn.apply(null, params);
-    } catch (error) {
-      // Well, this is quite the pickle.
-      // `fn` received a callback and invoked it (thus continuing the pipeline),
-      // but later also threw an error.
-      // We’re not about to restart the pipeline again, so the only thing left
-      // to do is to throw the thing instead.
-      if (callback && invoked) {
-        throw error
-      }
-
-      return done(error)
-    }
-
-    if (!callback) {
-      if (result && typeof result.then === 'function') {
-        result.then(then, done);
-      } else if (result instanceof Error) {
-        done(result);
-      } else {
-        then(result);
-      }
-    }
-  }
-
-  // Invoke `next`, only once.
-  function done() {
-    if (!invoked) {
-      invoked = true;
-
-      callback.apply(null, arguments);
-    }
-  }
-
-  // Invoke `done` with one value.
-  // Tracks if an error is passed, too.
-  function then(value) {
-    done(null, value);
-  }
-}
-
-var trough_1 = trough;
-
-trough.wrap = wrap_1;
-
-var slice$1 = [].slice;
-
-// Create new middleware.
-function trough() {
-  var fns = [];
-  var middleware = {};
-
-  middleware.run = run;
-  middleware.use = use;
-
-  return middleware
-
-  // Run `fns`.  Last argument must be a completion handler.
-  function run() {
-    var index = -1;
-    var input = slice$1.call(arguments, 0, -1);
-    var done = arguments[arguments.length - 1];
-
-    if (typeof done !== 'function') {
-      throw new Error('Expected function as last argument, not ' + done)
-    }
-
-    next.apply(null, [null].concat(input));
-
-    // Run the next `fn`, if any.
-    function next(err) {
-      var fn = fns[++index];
-      var params = slice$1.call(arguments, 0);
-      var values = params.slice(1);
-      var length = input.length;
-      var pos = -1;
-
-      if (err) {
-        done(err);
-        return
-      }
-
-      // Copy non-nully input into values.
-      while (++pos < length) {
-        if (values[pos] === null || values[pos] === undefined) {
-          values[pos] = input[pos];
-        }
-      }
-
-      input = values;
-
-      // Next or done.
-      if (fn) {
-        wrap_1(fn, next).apply(null, input);
-      } else {
-        done.apply(null, [null].concat(input));
-      }
-    }
-  }
-
-  // Add `fn` to the list.
-  function use(fn) {
-    if (typeof fn !== 'function') {
-      throw new Error('Expected `fn` to be a function, not ' + fn)
-    }
-
-    fns.push(fn);
-
-    return middleware
-  }
-}
+import './common/preact.module-4990fb49.js';
 
 var own = {}.hasOwnProperty;
 
@@ -841,7 +542,7 @@ var minproc_browser = {
  * @license  MIT
  */
 
-var isBuffer$1 = function isBuffer (obj) {
+var isBuffer = function isBuffer (obj) {
   return obj != null && obj.constructor != null &&
     typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
 };
@@ -888,7 +589,7 @@ function VFile(options) {
 
   if (!options) {
     options = {};
-  } else if (typeof options === 'string' || isBuffer$1(options)) {
+  } else if (typeof options === 'string' || isBuffer(options)) {
     options = {contents: options};
   } else if ('message' in options && 'messages' in options) {
     return options
@@ -1058,6 +759,285 @@ function info() {
 
 var vfile = lib;
 
+var bail_1 = bail;
+
+function bail(err) {
+  if (err) {
+    throw err
+  }
+}
+
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+var isBuffer$1 = function isBuffer (obj) {
+  return obj != null && obj.constructor != null &&
+    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+};
+
+var hasOwn = Object.prototype.hasOwnProperty;
+var toStr = Object.prototype.toString;
+var defineProperty = Object.defineProperty;
+var gOPD = Object.getOwnPropertyDescriptor;
+
+var isArray = function isArray(arr) {
+	if (typeof Array.isArray === 'function') {
+		return Array.isArray(arr);
+	}
+
+	return toStr.call(arr) === '[object Array]';
+};
+
+var isPlainObject = function isPlainObject(obj) {
+	if (!obj || toStr.call(obj) !== '[object Object]') {
+		return false;
+	}
+
+	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
+	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
+	// Not own constructor property must be Object
+	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
+		return false;
+	}
+
+	// Own properties are enumerated firstly, so to speed up,
+	// if last one is own, then all properties are own.
+	var key;
+	for (key in obj) { /**/ }
+
+	return typeof key === 'undefined' || hasOwn.call(obj, key);
+};
+
+// If name is '__proto__', and Object.defineProperty is available, define __proto__ as an own property on target
+var setProperty = function setProperty(target, options) {
+	if (defineProperty && options.name === '__proto__') {
+		defineProperty(target, options.name, {
+			enumerable: true,
+			configurable: true,
+			value: options.newValue,
+			writable: true
+		});
+	} else {
+		target[options.name] = options.newValue;
+	}
+};
+
+// Return undefined instead of __proto__ if '__proto__' is not an own property
+var getProperty = function getProperty(obj, name) {
+	if (name === '__proto__') {
+		if (!hasOwn.call(obj, name)) {
+			return void 0;
+		} else if (gOPD) {
+			// In early versions of node, obj['__proto__'] is buggy when obj has
+			// __proto__ as an own property. Object.getOwnPropertyDescriptor() works.
+			return gOPD(obj, name).value;
+		}
+	}
+
+	return obj[name];
+};
+
+var extend = function extend() {
+	var options, name, src, copy, copyIsArray, clone;
+	var target = arguments[0];
+	var i = 1;
+	var length = arguments.length;
+	var deep = false;
+
+	// Handle a deep copy situation
+	if (typeof target === 'boolean') {
+		deep = target;
+		target = arguments[1] || {};
+		// skip the boolean and the target
+		i = 2;
+	}
+	if (target == null || (typeof target !== 'object' && typeof target !== 'function')) {
+		target = {};
+	}
+
+	for (; i < length; ++i) {
+		options = arguments[i];
+		// Only deal with non-null/undefined values
+		if (options != null) {
+			// Extend the base object
+			for (name in options) {
+				src = getProperty(target, name);
+				copy = getProperty(options, name);
+
+				// Prevent never-ending loop
+				if (target !== copy) {
+					// Recurse if we're merging plain objects or arrays
+					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+						if (copyIsArray) {
+							copyIsArray = false;
+							clone = src && isArray(src) ? src : [];
+						} else {
+							clone = src && isPlainObject(src) ? src : {};
+						}
+
+						// Never move original objects, clone them
+						setProperty(target, { name: name, newValue: extend(deep, clone, copy) });
+
+					// Don't bring in undefined values
+					} else if (typeof copy !== 'undefined') {
+						setProperty(target, { name: name, newValue: copy });
+					}
+				}
+			}
+		}
+	}
+
+	// Return the modified object
+	return target;
+};
+
+var isPlainObj = value => {
+	if (Object.prototype.toString.call(value) !== '[object Object]') {
+		return false;
+	}
+
+	const prototype = Object.getPrototypeOf(value);
+	return prototype === null || prototype === Object.prototype;
+};
+
+var slice = [].slice;
+
+var wrap_1 = wrap;
+
+// Wrap `fn`.
+// Can be sync or async; return a promise, receive a completion handler, return
+// new values and errors.
+function wrap(fn, callback) {
+  var invoked;
+
+  return wrapped
+
+  function wrapped() {
+    var params = slice.call(arguments, 0);
+    var callback = fn.length > params.length;
+    var result;
+
+    if (callback) {
+      params.push(done);
+    }
+
+    try {
+      result = fn.apply(null, params);
+    } catch (error) {
+      // Well, this is quite the pickle.
+      // `fn` received a callback and invoked it (thus continuing the pipeline),
+      // but later also threw an error.
+      // We’re not about to restart the pipeline again, so the only thing left
+      // to do is to throw the thing instead.
+      if (callback && invoked) {
+        throw error
+      }
+
+      return done(error)
+    }
+
+    if (!callback) {
+      if (result && typeof result.then === 'function') {
+        result.then(then, done);
+      } else if (result instanceof Error) {
+        done(result);
+      } else {
+        then(result);
+      }
+    }
+  }
+
+  // Invoke `next`, only once.
+  function done() {
+    if (!invoked) {
+      invoked = true;
+
+      callback.apply(null, arguments);
+    }
+  }
+
+  // Invoke `done` with one value.
+  // Tracks if an error is passed, too.
+  function then(value) {
+    done(null, value);
+  }
+}
+
+var trough_1 = trough;
+
+trough.wrap = wrap_1;
+
+var slice$1 = [].slice;
+
+// Create new middleware.
+function trough() {
+  var fns = [];
+  var middleware = {};
+
+  middleware.run = run;
+  middleware.use = use;
+
+  return middleware
+
+  // Run `fns`.  Last argument must be a completion handler.
+  function run() {
+    var index = -1;
+    var input = slice$1.call(arguments, 0, -1);
+    var done = arguments[arguments.length - 1];
+
+    if (typeof done !== 'function') {
+      throw new Error('Expected function as last argument, not ' + done)
+    }
+
+    next.apply(null, [null].concat(input));
+
+    // Run the next `fn`, if any.
+    function next(err) {
+      var fn = fns[++index];
+      var params = slice$1.call(arguments, 0);
+      var values = params.slice(1);
+      var length = input.length;
+      var pos = -1;
+
+      if (err) {
+        done(err);
+        return
+      }
+
+      // Copy non-nully input into values.
+      while (++pos < length) {
+        if (values[pos] === null || values[pos] === undefined) {
+          values[pos] = input[pos];
+        }
+      }
+
+      input = values;
+
+      // Next or done.
+      if (fn) {
+        wrap_1(fn, next).apply(null, input);
+      } else {
+        done.apply(null, [null].concat(input));
+      }
+    }
+  }
+
+  // Add `fn` to the list.
+  function use(fn) {
+    if (typeof fn !== 'function') {
+      throw new Error('Expected `fn` to be a function, not ' + fn)
+    }
+
+    fns.push(fn);
+
+    return middleware
+  }
+}
+
 // Expose a frozen processor.
 var unified_1 = unified().freeze();
 
@@ -1092,7 +1072,7 @@ function pipelineStringify(p, ctx) {
   var result = p.stringify(ctx.tree, ctx.file);
   var file = ctx.file;
 
-  if (result === undefined || result === null) ; else if (typeof result === 'string' || isBuffer(result)) {
+  if (result === undefined || result === null) ; else if (typeof result === 'string' || isBuffer$1(result)) {
     file.contents = result;
   } else {
     file.result = result;
@@ -1138,7 +1118,7 @@ function unified() {
       destination.use.apply(null, attachers[index]);
     }
 
-    destination.data(extend$1(true, {}, namespace));
+    destination.data(extend(true, {}, namespace));
 
     return destination
   }
@@ -1240,7 +1220,7 @@ function unified() {
     }
 
     if (settings) {
-      namespace.settings = extend$1(namespace.settings || {}, settings);
+      namespace.settings = extend(namespace.settings || {}, settings);
     }
 
     return processor
@@ -1249,7 +1229,7 @@ function unified() {
       addList(result.plugins);
 
       if (result.settings) {
-        settings = extend$1(settings || {}, result.settings);
+        settings = extend(settings || {}, result.settings);
       }
     }
 
@@ -1288,7 +1268,7 @@ function unified() {
 
       if (entry) {
         if (isPlainObj(entry[1]) && isPlainObj(value)) {
-          value = extend$1(entry[1], value);
+          value = extend(entry[1], value);
         }
 
         entry[1] = value;
@@ -7432,154 +7412,29 @@ function parse$1(options) {
   }
 }
 
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+var unistBuilder = u;
 
-var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
+function u(type, props, value) {
+  var node;
 
-var ReactPropTypesSecret_1 = ReactPropTypesSecret;
-
-function emptyFunction() {}
-function emptyFunctionWithReset() {}
-emptyFunctionWithReset.resetWarningCache = emptyFunction;
-
-var factoryWithThrowingShims = function() {
-  function shim(props, propName, componentName, location, propFullName, secret) {
-    if (secret === ReactPropTypesSecret_1) {
-      // It is still safe when called from React.
-      return;
-    }
-    var err = new Error(
-      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-      'Use PropTypes.checkPropTypes() to call them. ' +
-      'Read more at http://fb.me/use-check-prop-types'
-    );
-    err.name = 'Invariant Violation';
-    throw err;
-  }  shim.isRequired = shim;
-  function getShim() {
-    return shim;
-  }  // Important!
-  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-  var ReactPropTypes = {
-    array: shim,
-    bool: shim,
-    func: shim,
-    number: shim,
-    object: shim,
-    string: shim,
-    symbol: shim,
-
-    any: shim,
-    arrayOf: getShim,
-    element: shim,
-    elementType: shim,
-    instanceOf: getShim,
-    node: shim,
-    objectOf: getShim,
-    oneOf: getShim,
-    oneOfType: getShim,
-    shape: getShim,
-    exact: getShim,
-
-    checkPropTypes: emptyFunctionWithReset,
-    resetWarningCache: emptyFunction
-  };
-
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-var propTypes = createCommonjsModule(function (module) {
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-{
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = factoryWithThrowingShims();
-}
-});
-
-/* Expose. */
-var unistUtilVisitParents = visitParents;
-
-/* Visit. */
-function visitParents(tree, type, visitor) {
-  var stack = [];
-
-  if (typeof type === 'function') {
-    visitor = type;
-    type = null;
+  if (
+    (value === null || value === undefined) &&
+    (typeof props !== 'object' || Array.isArray(props))
+  ) {
+    value = props;
+    props = {};
   }
 
-  one(tree);
+  node = Object.assign({type: String(type)}, props);
 
-  /* Visit a single node. */
-  function one(node) {
-    var result;
-
-    if (!type || node.type === type) {
-      result = visitor(node, stack.concat());
-    }
-
-    if (node.children && result !== false) {
-      return all(node.children, node)
-    }
-
-    return result
+  if (Array.isArray(value)) {
+    node.children = value;
+  } else if (value !== null && value !== undefined) {
+    node.value = String(value);
   }
 
-  /* Visit children in `parent`. */
-  function all(children, parent) {
-    var length = children.length;
-    var index = -1;
-    var child;
-
-    stack.push(parent);
-
-    while (++index < length) {
-      child = children[index];
-
-      if (child && one(child) === false) {
-        return false
-      }
-    }
-
-    stack.pop();
-
-    return true
-  }
+  return node
 }
-
-function addListMetadata() {
-  return function (ast) {
-    unistUtilVisitParents(ast, 'list', function (listNode, parents) {
-      var depth = 0, i, n;
-      for (i = 0, n = parents.length; i < n; i++) {
-        if (parents[i].type === 'list') depth += 1;
-      }
-      for (i = 0, n = listNode.children.length; i < n; i++) {
-        var child = listNode.children[i];
-        child.index = i;
-        child.ordered = listNode.ordered;
-      }
-      listNode.depth = depth;
-    });
-    return ast;
-  };
-}
-
-var mdastAddListMetadata = addListMetadata;
 
 var convert_1 = convert;
 
@@ -7662,7 +7517,7 @@ function identity(d) {
   return d
 }
 
-var unistUtilVisitParents$1 = visitParents$1;
+var unistUtilVisitParents = visitParents;
 
 
 
@@ -7671,11 +7526,11 @@ var CONTINUE = true;
 var SKIP = 'skip';
 var EXIT = false;
 
-visitParents$1.CONTINUE = CONTINUE;
-visitParents$1.SKIP = SKIP;
-visitParents$1.EXIT = EXIT;
+visitParents.CONTINUE = CONTINUE;
+visitParents.SKIP = SKIP;
+visitParents.EXIT = EXIT;
 
-function visitParents$1(tree, test, visitor, reverse) {
+function visitParents(tree, test, visitor, reverse) {
   var step;
   var is;
 
@@ -7758,9 +7613,9 @@ var unistUtilVisit = visit;
 
 
 
-var CONTINUE$1 = unistUtilVisitParents$1.CONTINUE;
-var SKIP$1 = unistUtilVisitParents$1.SKIP;
-var EXIT$1 = unistUtilVisitParents$1.EXIT;
+var CONTINUE$1 = unistUtilVisitParents.CONTINUE;
+var SKIP$1 = unistUtilVisitParents.SKIP;
+var EXIT$1 = unistUtilVisitParents.EXIT;
 
 visit.CONTINUE = CONTINUE$1;
 visit.SKIP = SKIP$1;
@@ -7773,7 +7628,7 @@ function visit(tree, test, visitor, reverse) {
     test = null;
   }
 
-  unistUtilVisitParents$1(tree, test, overload, reverse);
+  unistUtilVisitParents(tree, test, overload, reverse);
 
   function overload(node, parents) {
     var parent = parents[parents.length - 1];
@@ -7782,141 +7637,1865 @@ function visit(tree, test, visitor, reverse) {
   }
 }
 
-/**
- * Naive, simple plugin to match inline nodes without attributes
- * This allows say <strong>foo</strong>, but not <strong class="very">foo</strong>
- * For proper HTML support, you'll want a different plugin
- **/
+var start = factory('start');
+var end = factory('end');
 
+var unistUtilPosition = position$1;
 
-var type = 'virtualHtml';
-var selfClosingRe = /^<(area|base|br|col|embed|hr|img|input|keygen|link|meta|param|source|track|wbr)\s*\/?>$/i;
-var simpleTagRe = /^<(\/?)([a-z]+)\s*>$/;
+position$1.start = start;
+position$1.end = end;
 
-var naiveHtml = function (tree) {
-  var open;
-  var currentParent;
-  unistUtilVisit(tree, 'html', function (node, index, parent) {
-    if (currentParent !== parent) {
-      open = [];
-      currentParent = parent;
+function position$1(node) {
+  return {start: start(node), end: end(node)}
+}
+
+function factory(type) {
+  point.displayName = type;
+
+  return point
+
+  function point(node) {
+    var point = (node && node.position && node.position[type]) || {};
+
+    return {
+      line: point.line || null,
+      column: point.column || null,
+      offset: isNaN(point.offset) ? null : point.offset
     }
+  }
+}
 
-    var selfClosing = getSelfClosing(node);
+var unistUtilGenerated = generated;
 
-    if (selfClosing) {
-      parent.children.splice(index, 1, {
-        type: type,
-        tag: selfClosing,
-        position: node.position
-      });
-      return true;
+function generated(node) {
+  return (
+    !node ||
+    !node.position ||
+    !node.position.start ||
+    !node.position.start.line ||
+    !node.position.start.column ||
+    !node.position.end ||
+    !node.position.end.line ||
+    !node.position.end.column
+  )
+}
+
+var mdastUtilDefinitions = getDefinitionFactory;
+
+var own$4 = {}.hasOwnProperty;
+
+// Get a definition in `node` by `identifier`.
+function getDefinitionFactory(node, options) {
+  return getterFactory(gather(node))
+}
+
+// Gather all definitions in `node`
+function gather(node) {
+  var cache = {};
+
+  if (!node || !node.type) {
+    throw new Error('mdast-util-definitions expected node')
+  }
+
+  unistUtilVisit(node, 'definition', ondefinition);
+
+  return cache
+
+  function ondefinition(definition) {
+    var id = normalise(definition.identifier);
+    if (!own$4.call(cache, id)) {
+      cache[id] = definition;
     }
+  }
+}
 
-    var current = getSimpleTag(node);
+// Factory to get a node from the given definition-cache.
+function getterFactory(cache) {
+  return getter
 
-    if (!current) {
-      return true;
-    }
+  // Get a node from the bound definition-cache.
+  function getter(identifier) {
+    var id = identifier && normalise(identifier);
+    return id && own$4.call(cache, id) ? cache[id] : null
+  }
+}
 
-    var matching = findAndPull(open, current.tag);
+function normalise(identifier) {
+  return identifier.toUpperCase()
+}
 
-    if (matching) {
-      parent.children.splice(index, 0, virtual(current, matching, parent));
-    } else if (!current.opening) {
-      open.push(current);
-    }
+var all_1 = all$1;
 
-    return true;
-  }, true // Iterate in reverse
-  );
-  return tree;
-};
 
-function findAndPull(open, matchingTag) {
-  var i = open.length;
 
-  while (i--) {
-    if (open[i].tag === matchingTag) {
-      return open.splice(i, 1)[0];
+function all$1(h, parent) {
+  var nodes = parent.children || [];
+  var length = nodes.length;
+  var values = [];
+  var index = -1;
+  var result;
+  var head;
+
+  while (++index < length) {
+    result = one_1(h, nodes[index], parent);
+
+    if (result) {
+      if (index && nodes[index - 1].type === 'break') {
+        if (result.value) {
+          result.value = result.value.replace(/^\s+/, '');
+        }
+
+        head = result.children && result.children[0];
+
+        if (head && head.value) {
+          head.value = head.value.replace(/^\s+/, '');
+        }
+      }
+
+      values = values.concat(result);
     }
   }
 
-  return false;
+  return values
 }
 
-function getSimpleTag(node, parent) {
-  var match = node.value.match(simpleTagRe);
-  return match ? {
-    tag: match[2],
-    opening: !match[1],
-    node: node
-  } : false;
+var one_1 = one;
+
+
+
+
+var own$5 = {}.hasOwnProperty;
+
+// Transform an unknown node.
+function unknown(h, node) {
+  if (text(node)) {
+    return h.augment(node, unistBuilder('text', node.value))
+  }
+
+  return h(node, 'div', all_1(h, node))
 }
 
-function getSelfClosing(node) {
-  var match = node.value.match(selfClosingRe);
-  return match ? match[1] : false;
+// Visit a node.
+function one(h, node, parent) {
+  var type = node && node.type;
+  var fn;
+
+  // Fail on non-nodes.
+  if (!type) {
+    throw new Error('Expected node, got `' + node + '`')
+  }
+
+  if (own$5.call(h.handlers, type)) {
+    fn = h.handlers[type];
+  } else if (h.passThrough && h.passThrough.indexOf(type) > -1) {
+    fn = returnNode;
+  } else {
+    fn = h.unknownHandler;
+  }
+
+  return (typeof fn === 'function' ? fn : unknown)(h, node, parent)
 }
 
-function virtual(fromNode, toNode, parent) {
-  var fromIndex = parent.children.indexOf(fromNode.node);
-  var toIndex = parent.children.indexOf(toNode.node);
-  var extracted = parent.children.splice(fromIndex, toIndex - fromIndex + 1);
-  var children = extracted.slice(1, -1);
-  return {
-    type: type,
-    children: children,
-    tag: fromNode.tag,
-    position: {
-      start: fromNode.node.position.start,
-      end: toNode.node.position.end,
-      indent: []
+// Check if the node should be renderered as a text node.
+function text(node) {
+  var data = node.data || {};
+
+  if (
+    own$5.call(data, 'hName') ||
+    own$5.call(data, 'hProperties') ||
+    own$5.call(data, 'hChildren')
+  ) {
+    return false
+  }
+
+  return 'value' in node
+}
+
+function returnNode(h, node) {
+  var clone;
+
+  if (node.children) {
+    clone = Object.assign({}, node);
+    clone.children = all_1(h, node);
+    return clone
+  }
+
+  return node
+}
+
+var thematicBreak_1$1 = thematicBreak$1;
+
+function thematicBreak$1(h, node) {
+  return h(node, 'hr')
+}
+
+var wrap_1$1 = wrap$1;
+
+
+
+// Wrap `nodes` with line feeds between each entry.
+// Optionally adds line feeds at the start and end.
+function wrap$1(nodes, loose) {
+  var result = [];
+  var index = -1;
+  var length = nodes.length;
+
+  if (loose) {
+    result.push(unistBuilder('text', '\n'));
+  }
+
+  while (++index < length) {
+    if (index) {
+      result.push(unistBuilder('text', '\n'));
     }
+
+    result.push(nodes[index]);
+  }
+
+  if (loose && nodes.length > 0) {
+    result.push(unistBuilder('text', '\n'));
+  }
+
+  return result
+}
+
+var list_1$1 = list$1;
+
+
+
+
+function list$1(h, node) {
+  var props = {};
+  var name = node.ordered ? 'ol' : 'ul';
+  var items;
+  var index = -1;
+  var length;
+
+  if (typeof node.start === 'number' && node.start !== 1) {
+    props.start = node.start;
+  }
+
+  items = all_1(h, node);
+  length = items.length;
+
+  // Like GitHub, add a class for custom styling.
+  while (++index < length) {
+    if (
+      items[index].properties.className &&
+      items[index].properties.className.indexOf('task-list-item') !== -1
+    ) {
+      props.className = ['contains-task-list'];
+      break
+    }
+  }
+
+  return h(node, name, props, wrap_1$1(items, true))
+}
+
+var footer = generateFootnotes;
+
+
+
+
+
+function generateFootnotes(h) {
+  var footnoteById = h.footnoteById;
+  var footnoteOrder = h.footnoteOrder;
+  var length = footnoteOrder.length;
+  var index = -1;
+  var listItems = [];
+  var def;
+  var backReference;
+  var content;
+  var tail;
+
+  while (++index < length) {
+    def = footnoteById[footnoteOrder[index].toUpperCase()];
+
+    if (!def) {
+      continue
+    }
+
+    content = def.children.concat();
+    tail = content[content.length - 1];
+    backReference = {
+      type: 'link',
+      url: '#fnref-' + def.identifier,
+      data: {hProperties: {className: ['footnote-backref']}},
+      children: [{type: 'text', value: '↩'}]
+    };
+
+    if (!tail || tail.type !== 'paragraph') {
+      tail = {type: 'paragraph', children: []};
+      content.push(tail);
+    }
+
+    tail.children.push(backReference);
+
+    listItems.push({
+      type: 'listItem',
+      data: {hProperties: {id: 'fn-' + def.identifier}},
+      children: content,
+      position: def.position
+    });
+  }
+
+  if (listItems.length === 0) {
+    return null
+  }
+
+  return h(
+    null,
+    'div',
+    {className: ['footnotes']},
+    wrap_1$1(
+      [
+        thematicBreak_1$1(h),
+        list_1$1(h, {type: 'list', ordered: true, children: listItems})
+      ],
+      true
+    )
+  )
+}
+
+var blockquote_1 = blockquote;
+
+
+
+
+function blockquote(h, node) {
+  return h(node, 'blockquote', wrap_1$1(all_1(h, node), true))
+}
+
+var _break = hardBreak;
+
+
+
+function hardBreak(h, node) {
+  return [h(node, 'br'), unistBuilder('text', '\n')]
+}
+
+var code_1 = code;
+
+
+
+function code(h, node) {
+  var value = node.value ? node.value + '\n' : '';
+  // To do: next major, use `node.lang` w/o regex, the splitting’s been going
+  // on for years in remark now.
+  var lang = node.lang && node.lang.match(/^[^ \t]+(?=[ \t]|$)/);
+  var props = {};
+  var code;
+
+  if (lang) {
+    props.className = ['language-' + lang];
+  }
+
+  code = h(node, 'code', props, [unistBuilder('text', value)]);
+
+  if (node.meta) {
+    code.data = {meta: node.meta};
+  }
+
+  return h(node.position, 'pre', [code])
+}
+
+var _delete = strikethrough;
+
+
+
+function strikethrough(h, node) {
+  return h(node, 'del', all_1(h, node))
+}
+
+var emphasis_1 = emphasis;
+
+
+
+function emphasis(h, node) {
+  return h(node, 'em', all_1(h, node))
+}
+
+var footnoteReference_1 = footnoteReference;
+
+
+
+function footnoteReference(h, node) {
+  var footnoteOrder = h.footnoteOrder;
+  var identifier = String(node.identifier);
+
+  if (footnoteOrder.indexOf(identifier) === -1) {
+    footnoteOrder.push(identifier);
+  }
+
+  return h(node.position, 'sup', {id: 'fnref-' + identifier}, [
+    h(node, 'a', {href: '#fn-' + identifier, className: ['footnote-ref']}, [
+      unistBuilder('text', node.label || identifier)
+    ])
+  ])
+}
+
+var footnote_1 = footnote;
+
+
+
+function footnote(h, node) {
+  var footnoteById = h.footnoteById;
+  var footnoteOrder = h.footnoteOrder;
+  var identifier = 1;
+
+  while (identifier in footnoteById) {
+    identifier++;
+  }
+
+  identifier = String(identifier);
+
+  // No need to check if `identifier` exists in `footnoteOrder`, it’s guaranteed
+  // to not exist because we just generated it.
+  footnoteOrder.push(identifier);
+
+  footnoteById[identifier] = {
+    type: 'footnoteDefinition',
+    identifier: identifier,
+    children: [{type: 'paragraph', children: node.children}],
+    position: node.position
   };
+
+  return footnoteReference_1(h, {
+    type: 'footnoteReference',
+    identifier: identifier,
+    position: node.position
+  })
 }
 
-var splice$1 = [].splice;
+var heading_1 = heading;
 
-var ofType = function (types, mode) {
-  return ifNotMatch(allow, mode);
 
-  function allow(node, index, parent) {
-    return !types.includes(node.type);
+
+function heading(h, node) {
+  return h(node, 'h' + node.depth, all_1(h, node))
+}
+
+var html_1 = html;
+
+
+
+// Return either a `raw` node in dangerous mode, otherwise nothing.
+function html(h, node) {
+  return h.dangerous ? h.augment(node, unistBuilder('raw', node.value)) : null
+}
+
+var encodeCache = {};
+
+
+// Create a lookup array where anything but characters in `chars` string
+// and alphanumeric chars is percent-encoded.
+//
+function getEncodeCache(exclude) {
+  var i, ch, cache = encodeCache[exclude];
+  if (cache) { return cache; }
+
+  cache = encodeCache[exclude] = [];
+
+  for (i = 0; i < 128; i++) {
+    ch = String.fromCharCode(i);
+
+    if (/^[0-9a-z]$/i.test(ch)) {
+      // always allow unencoded alphanumeric characters
+      cache.push(ch);
+    } else {
+      cache.push('%' + ('0' + i.toString(16).toUpperCase()).slice(-2));
+    }
   }
+
+  for (i = 0; i < exclude.length; i++) {
+    cache[exclude.charCodeAt(i)] = exclude[i];
+  }
+
+  return cache;
+}
+
+
+// Encode unsafe characters with percent-encoding, skipping already
+// encoded sequences.
+//
+//  - string       - string to encode
+//  - exclude      - list of characters to ignore (in addition to a-zA-Z0-9)
+//  - keepEscaped  - don't encode '%' in a correct escape sequence (default: true)
+//
+function encode(string, exclude, keepEscaped) {
+  var i, l, code, nextCode, cache,
+      result = '';
+
+  if (typeof exclude !== 'string') {
+    // encode(string, keepEscaped)
+    keepEscaped  = exclude;
+    exclude = encode.defaultChars;
+  }
+
+  if (typeof keepEscaped === 'undefined') {
+    keepEscaped = true;
+  }
+
+  cache = getEncodeCache(exclude);
+
+  for (i = 0, l = string.length; i < l; i++) {
+    code = string.charCodeAt(i);
+
+    if (keepEscaped && code === 0x25 /* % */ && i + 2 < l) {
+      if (/^[0-9a-f]{2}$/i.test(string.slice(i + 1, i + 3))) {
+        result += string.slice(i, i + 3);
+        i += 2;
+        continue;
+      }
+    }
+
+    if (code < 128) {
+      result += cache[code];
+      continue;
+    }
+
+    if (code >= 0xD800 && code <= 0xDFFF) {
+      if (code >= 0xD800 && code <= 0xDBFF && i + 1 < l) {
+        nextCode = string.charCodeAt(i + 1);
+        if (nextCode >= 0xDC00 && nextCode <= 0xDFFF) {
+          result += encodeURIComponent(string[i] + string[i + 1]);
+          i++;
+          continue;
+        }
+      }
+      result += '%EF%BF%BD';
+      continue;
+    }
+
+    result += encodeURIComponent(string[i]);
+  }
+
+  return result;
+}
+
+encode.defaultChars   = ";/?:@&=+$,-_.!~*'()#";
+encode.componentChars = "-_.!~*'()";
+
+
+var encode_1 = encode;
+
+var revert_1 = revert;
+
+
+
+
+// Return the content of a reference without definition as Markdown.
+function revert(h, node) {
+  var subtype = node.referenceType;
+  var suffix = ']';
+  var contents;
+  var head;
+  var tail;
+
+  if (subtype === 'collapsed') {
+    suffix += '[]';
+  } else if (subtype === 'full') {
+    suffix += '[' + (node.label || node.identifier) + ']';
+  }
+
+  if (node.type === 'imageReference') {
+    return unistBuilder('text', '![' + node.alt + suffix)
+  }
+
+  contents = all_1(h, node);
+  head = contents[0];
+
+  if (head && head.type === 'text') {
+    head.value = '[' + head.value;
+  } else {
+    contents.unshift(unistBuilder('text', '['));
+  }
+
+  tail = contents[contents.length - 1];
+
+  if (tail && tail.type === 'text') {
+    tail.value += suffix;
+  } else {
+    contents.push(unistBuilder('text', suffix));
+  }
+
+  return contents
+}
+
+var imageReference_1 = imageReference;
+
+
+
+
+function imageReference(h, node) {
+  var def = h.definition(node.identifier);
+  var props;
+
+  if (!def) {
+    return revert_1(h, node)
+  }
+
+  props = {src: encode_1(def.url || ''), alt: node.alt};
+
+  if (def.title !== null && def.title !== undefined) {
+    props.title = def.title;
+  }
+
+  return h(node, 'img', props)
+}
+
+var image_1 = image;
+
+function image(h, node) {
+  var props = {src: encode_1(node.url), alt: node.alt};
+
+  if (node.title !== null && node.title !== undefined) {
+    props.title = node.title;
+  }
+
+  return h(node, 'img', props)
+}
+
+var inlineCode_1 = inlineCode;
+
+
+
+function inlineCode(h, node) {
+  var value = node.value.replace(/\r?\n|\r/g, ' ');
+  return h(node, 'code', [unistBuilder('text', value)])
+}
+
+var linkReference_1 = linkReference;
+
+
+
+
+
+function linkReference(h, node) {
+  var def = h.definition(node.identifier);
+  var props;
+
+  if (!def) {
+    return revert_1(h, node)
+  }
+
+  props = {href: encode_1(def.url || '')};
+
+  if (def.title !== null && def.title !== undefined) {
+    props.title = def.title;
+  }
+
+  return h(node, 'a', props, all_1(h, node))
+}
+
+var link_1 = link;
+
+function link(h, node) {
+  var props = {href: encode_1(node.url)};
+
+  if (node.title !== null && node.title !== undefined) {
+    props.title = node.title;
+  }
+
+  return h(node, 'a', props, all_1(h, node))
+}
+
+var listItem_1 = listItem;
+
+
+
+
+function listItem(h, node, parent) {
+  var result = all_1(h, node);
+  var head = result[0];
+  var loose = parent ? listLoose(parent) : listItemLoose(node);
+  var props = {};
+  var wrapped = [];
+  var length;
+  var index;
+  var child;
+
+  if (typeof node.checked === 'boolean') {
+    if (!head || head.tagName !== 'p') {
+      head = h(null, 'p', []);
+      result.unshift(head);
+    }
+
+    if (head.children.length > 0) {
+      head.children.unshift(unistBuilder('text', ' '));
+    }
+
+    head.children.unshift(
+      h(null, 'input', {
+        type: 'checkbox',
+        checked: node.checked,
+        disabled: true
+      })
+    );
+
+    // According to github-markdown-css, this class hides bullet.
+    // See: <https://github.com/sindresorhus/github-markdown-css>.
+    props.className = ['task-list-item'];
+  }
+
+  length = result.length;
+  index = -1;
+
+  while (++index < length) {
+    child = result[index];
+
+    // Add eols before nodes, except if this is a loose, first paragraph.
+    if (loose || index !== 0 || child.tagName !== 'p') {
+      wrapped.push(unistBuilder('text', '\n'));
+    }
+
+    if (child.tagName === 'p' && !loose) {
+      wrapped = wrapped.concat(child.children);
+    } else {
+      wrapped.push(child);
+    }
+  }
+
+  // Add a final eol.
+  if (length && (loose || child.tagName !== 'p')) {
+    wrapped.push(unistBuilder('text', '\n'));
+  }
+
+  return h(node, 'li', props, wrapped)
+}
+
+function listLoose(node) {
+  var loose = node.spread;
+  var children = node.children;
+  var length = children.length;
+  var index = -1;
+
+  while (!loose && ++index < length) {
+    loose = listItemLoose(children[index]);
+  }
+
+  return loose
+}
+
+function listItemLoose(node) {
+  var spread = node.spread;
+
+  return spread === undefined || spread === null
+    ? node.children.length > 1
+    : spread
+}
+
+var paragraph_1 = paragraph;
+
+
+
+function paragraph(h, node) {
+  return h(node, 'p', all_1(h, node))
+}
+
+var root_1 = root;
+
+
+
+
+
+function root(h, node) {
+  return h.augment(node, unistBuilder('root', wrap_1$1(all_1(h, node))))
+}
+
+var strong_1 = strong;
+
+
+
+function strong(h, node) {
+  return h(node, 'strong', all_1(h, node))
+}
+
+var table_1 = table;
+
+
+
+
+
+function table(h, node) {
+  var rows = node.children;
+  var index = rows.length;
+  var align = node.align || [];
+  var alignLength = align.length;
+  var result = [];
+  var pos;
+  var row;
+  var out;
+  var name;
+  var cell;
+
+  while (index--) {
+    row = rows[index].children;
+    name = index === 0 ? 'th' : 'td';
+    pos = alignLength || row.length;
+    out = [];
+
+    while (pos--) {
+      cell = row[pos];
+      out[pos] = h(cell, name, {align: align[pos]}, cell ? all_1(h, cell) : []);
+    }
+
+    result[index] = h(rows[index], 'tr', wrap_1$1(out, true));
+  }
+
+  return h(
+    node,
+    'table',
+    wrap_1$1(
+      [h(result[0].position, 'thead', wrap_1$1([result[0]], true))].concat(
+        result[1]
+          ? h(
+              {
+                start: unistUtilPosition.start(result[1]),
+                end: unistUtilPosition.end(result[result.length - 1])
+              },
+              'tbody',
+              wrap_1$1(result.slice(1), true)
+            )
+          : []
+      ),
+      true
+    )
+  )
+}
+
+var text_1$1 = text$1;
+
+
+
+function text$1(h, node) {
+  return h.augment(
+    node,
+    unistBuilder('text', String(node.value).replace(/[ \t]*(\r?\n|\r)[ \t]*/g, '$1'))
+  )
+}
+
+var handlers = {
+  blockquote: blockquote_1,
+  break: _break,
+  code: code_1,
+  delete: _delete,
+  emphasis: emphasis_1,
+  footnoteReference: footnoteReference_1,
+  footnote: footnote_1,
+  heading: heading_1,
+  html: html_1,
+  imageReference: imageReference_1,
+  image: image_1,
+  inlineCode: inlineCode_1,
+  linkReference: linkReference_1,
+  link: link_1,
+  listItem: listItem_1,
+  list: list_1$1,
+  paragraph: paragraph_1,
+  root: root_1,
+  strong: strong_1,
+  table: table_1,
+  text: text_1$1,
+  thematicBreak: thematicBreak_1$1,
+  toml: ignore,
+  yaml: ignore,
+  definition: ignore,
+  footnoteDefinition: ignore
 };
 
-var ifNotMatch_1 = ifNotMatch;
+// Return nothing for nodes that are ignored.
+function ignore() {
+  return null
+}
 
-function ifNotMatch(allow, mode) {
-  return transform;
+var lib$1 = toHast;
 
+
+
+
+
+
+
+
+
+
+var own$6 = {}.hasOwnProperty;
+
+var deprecationWarningIssued = false;
+
+// Factory to transform.
+function factory$1(tree, options) {
+  var settings = options || {};
+
+  // Issue a warning if the deprecated tag 'allowDangerousHTML' is used
+  if (settings.allowDangerousHTML !== undefined && !deprecationWarningIssued) {
+    deprecationWarningIssued = true;
+    console.warn(
+      'mdast-util-to-hast: deprecation: `allowDangerousHTML` is nonstandard, use `allowDangerousHtml` instead'
+    );
+  }
+
+  var dangerous = settings.allowDangerousHtml || settings.allowDangerousHTML;
+  var footnoteById = {};
+
+  h.dangerous = dangerous;
+  h.definition = mdastUtilDefinitions(tree);
+  h.footnoteById = footnoteById;
+  h.footnoteOrder = [];
+  h.augment = augment;
+  h.handlers = Object.assign({}, handlers, settings.handlers);
+  h.unknownHandler = settings.unknownHandler;
+  h.passThrough = settings.passThrough;
+
+  unistUtilVisit(tree, 'footnoteDefinition', onfootnotedefinition);
+
+  return h
+
+  // Finalise the created `right`, a hast node, from `left`, an mdast node.
+  function augment(left, right) {
+    var data;
+    var ctx;
+
+    // Handle `data.hName`, `data.hProperties, `data.hChildren`.
+    if (left && left.data) {
+      data = left.data;
+
+      if (data.hName) {
+        if (right.type !== 'element') {
+          right = {
+            type: 'element',
+            tagName: '',
+            properties: {},
+            children: []
+          };
+        }
+
+        right.tagName = data.hName;
+      }
+
+      if (right.type === 'element' && data.hProperties) {
+        right.properties = Object.assign({}, right.properties, data.hProperties);
+      }
+
+      if (right.children && data.hChildren) {
+        right.children = data.hChildren;
+      }
+    }
+
+    ctx = left && left.position ? left : {position: left};
+
+    if (!unistUtilGenerated(ctx)) {
+      right.position = {
+        start: unistUtilPosition.start(ctx),
+        end: unistUtilPosition.end(ctx)
+      };
+    }
+
+    return right
+  }
+
+  // Create an element for `node`.
+  function h(node, tagName, props, children) {
+    if (
+      (children === undefined || children === null) &&
+      typeof props === 'object' &&
+      'length' in props
+    ) {
+      children = props;
+      props = {};
+    }
+
+    return augment(node, {
+      type: 'element',
+      tagName: tagName,
+      properties: props || {},
+      children: children || []
+    })
+  }
+
+  function onfootnotedefinition(definition) {
+    var id = String(definition.identifier).toUpperCase();
+
+    // Mimick CM behavior of link definitions.
+    // See: <https://github.com/syntax-tree/mdast-util-definitions/blob/8290999/index.js#L26>.
+    if (!own$6.call(footnoteById, id)) {
+      footnoteById[id] = definition;
+    }
+  }
+}
+
+// Transform `tree`, which is an mdast node, to a hast node.
+function toHast(tree, options) {
+  var h = factory$1(tree, options);
+  var node = one_1(h, tree);
+  var foot = footer(h);
+
+  if (foot) {
+    node.children = node.children.concat(unistBuilder('text', '\n'), foot);
+  }
+
+  return node
+}
+
+var mdastUtilToHast = lib$1;
+
+var remarkRehype = remark2rehype;
+
+// Attacher.
+// If a destination is given, runs the destination with the new hast tree
+// (bridge mode).
+// Without destination, returns the tree: further plugins run on that tree
+// (mutate mode).
+function remark2rehype(destination, options) {
+  if (destination && !destination.process) {
+    options = destination;
+    destination = null;
+  }
+
+  return destination ? bridge(destination, options) : mutate(options)
+}
+
+// Bridge mode.
+// Runs the destination with the new hast tree.
+function bridge(destination, options) {
+  return transformer
+
+  function transformer(node, file, next) {
+    destination.run(mdastUtilToHast(node, options), file, done);
+
+    function done(error) {
+      next(error);
+    }
+  }
+}
+
+// Mutate-mode.
+// Further transformers run on the hast tree.
+function mutate(options) {
+  return transformer
+
+  function transformer(node) {
+    return mdastUtilToHast(node, options)
+  }
+}
+
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
+
+var ReactPropTypesSecret_1 = ReactPropTypesSecret;
+
+function emptyFunction() {}
+function emptyFunctionWithReset() {}
+emptyFunctionWithReset.resetWarningCache = emptyFunction;
+
+var factoryWithThrowingShims = function() {
+  function shim(props, propName, componentName, location, propFullName, secret) {
+    if (secret === ReactPropTypesSecret_1) {
+      // It is still safe when called from React.
+      return;
+    }
+    var err = new Error(
+      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+      'Use PropTypes.checkPropTypes() to call them. ' +
+      'Read more at http://fb.me/use-check-prop-types'
+    );
+    err.name = 'Invariant Violation';
+    throw err;
+  }  shim.isRequired = shim;
+  function getShim() {
+    return shim;
+  }  // Important!
+  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
+  var ReactPropTypes = {
+    array: shim,
+    bool: shim,
+    func: shim,
+    number: shim,
+    object: shim,
+    string: shim,
+    symbol: shim,
+
+    any: shim,
+    arrayOf: getShim,
+    element: shim,
+    elementType: shim,
+    instanceOf: getShim,
+    node: shim,
+    objectOf: getShim,
+    oneOf: getShim,
+    oneOfType: getShim,
+    shape: getShim,
+    exact: getShim,
+
+    checkPropTypes: emptyFunctionWithReset,
+    resetWarningCache: emptyFunction
+  };
+
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+var propTypes = createCommonjsModule(function (module) {
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+{
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = factoryWithThrowingShims();
+}
+});
+
+var immutable = extend$1;
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function extend$1() {
+    var target = {};
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i];
+
+        for (var key in source) {
+            if (hasOwnProperty.call(source, key)) {
+                target[key] = source[key];
+            }
+        }
+    }
+
+    return target
+}
+
+var schema = Schema;
+
+var proto$1 = Schema.prototype;
+
+proto$1.space = null;
+proto$1.normal = {};
+proto$1.property = {};
+
+function Schema(property, normal, space) {
+  this.property = property;
+  this.normal = normal;
+
+  if (space) {
+    this.space = space;
+  }
+}
+
+var merge_1 = merge;
+
+function merge(definitions) {
+  var length = definitions.length;
+  var property = [];
+  var normal = [];
+  var index = -1;
+  var info;
+  var space;
+
+  while (++index < length) {
+    info = definitions[index];
+    property.push(info.property);
+    normal.push(info.normal);
+    space = info.space;
+  }
+
+  return new schema(
+    immutable.apply(null, property),
+    immutable.apply(null, normal),
+    space
+  )
+}
+
+var normalize_1 = normalize$1;
+
+function normalize$1(value) {
+  return value.toLowerCase()
+}
+
+var info$1 = Info;
+
+var proto$2 = Info.prototype;
+
+proto$2.space = null;
+proto$2.attribute = null;
+proto$2.property = null;
+proto$2.boolean = false;
+proto$2.booleanish = false;
+proto$2.overloadedBoolean = false;
+proto$2.number = false;
+proto$2.commaSeparated = false;
+proto$2.spaceSeparated = false;
+proto$2.commaOrSpaceSeparated = false;
+proto$2.mustUseProperty = false;
+proto$2.defined = false;
+
+function Info(property, attribute) {
+  this.property = property;
+  this.attribute = attribute;
+}
+
+var powers = 0;
+
+var boolean_1 = increment();
+var booleanish = increment();
+var overloadedBoolean = increment();
+var number = increment();
+var spaceSeparated = increment();
+var commaSeparated = increment();
+var commaOrSpaceSeparated = increment();
+
+function increment() {
+  return Math.pow(2, ++powers)
+}
+
+var types = {
+	boolean: boolean_1,
+	booleanish: booleanish,
+	overloadedBoolean: overloadedBoolean,
+	number: number,
+	spaceSeparated: spaceSeparated,
+	commaSeparated: commaSeparated,
+	commaOrSpaceSeparated: commaOrSpaceSeparated
+};
+
+var definedInfo = DefinedInfo;
+
+DefinedInfo.prototype = new info$1();
+DefinedInfo.prototype.defined = true;
+
+var checks = [
+  'boolean',
+  'booleanish',
+  'overloadedBoolean',
+  'number',
+  'commaSeparated',
+  'spaceSeparated',
+  'commaOrSpaceSeparated'
+];
+var checksLength = checks.length;
+
+function DefinedInfo(property, attribute, mask, space) {
+  var index = -1;
+  var check;
+
+  mark(this, 'space', space);
+
+  info$1.call(this, property, attribute);
+
+  while (++index < checksLength) {
+    check = checks[index];
+    mark(this, check, (mask & types[check]) === types[check]);
+  }
+}
+
+function mark(values, key, value) {
+  if (value) {
+    values[key] = value;
+  }
+}
+
+var create_1 = create;
+
+function create(definition) {
+  var space = definition.space;
+  var mustUseProperty = definition.mustUseProperty || [];
+  var attributes = definition.attributes || {};
+  var props = definition.properties;
+  var transform = definition.transform;
+  var property = {};
+  var normal = {};
+  var prop;
+  var info;
+
+  for (prop in props) {
+    info = new definedInfo(
+      prop,
+      transform(attributes, prop),
+      props[prop],
+      space
+    );
+
+    if (mustUseProperty.indexOf(prop) !== -1) {
+      info.mustUseProperty = true;
+    }
+
+    property[prop] = info;
+
+    normal[normalize_1(prop)] = prop;
+    normal[normalize_1(info.attribute)] = prop;
+  }
+
+  return new schema(property, normal, space)
+}
+
+var xlink = create_1({
+  space: 'xlink',
+  transform: xlinkTransform,
+  properties: {
+    xLinkActuate: null,
+    xLinkArcRole: null,
+    xLinkHref: null,
+    xLinkRole: null,
+    xLinkShow: null,
+    xLinkTitle: null,
+    xLinkType: null
+  }
+});
+
+function xlinkTransform(_, prop) {
+  return 'xlink:' + prop.slice(5).toLowerCase()
+}
+
+var xml = create_1({
+  space: 'xml',
+  transform: xmlTransform,
+  properties: {
+    xmlLang: null,
+    xmlBase: null,
+    xmlSpace: null
+  }
+});
+
+function xmlTransform(_, prop) {
+  return 'xml:' + prop.slice(3).toLowerCase()
+}
+
+var caseSensitiveTransform_1 = caseSensitiveTransform;
+
+function caseSensitiveTransform(attributes, attribute) {
+  return attribute in attributes ? attributes[attribute] : attribute
+}
+
+var caseInsensitiveTransform_1 = caseInsensitiveTransform;
+
+function caseInsensitiveTransform(attributes, property) {
+  return caseSensitiveTransform_1(attributes, property.toLowerCase())
+}
+
+var xmlns = create_1({
+  space: 'xmlns',
+  attributes: {
+    xmlnsxlink: 'xmlns:xlink'
+  },
+  transform: caseInsensitiveTransform_1,
+  properties: {
+    xmlns: null,
+    xmlnsXLink: null
+  }
+});
+
+var booleanish$1 = types.booleanish;
+var number$1 = types.number;
+var spaceSeparated$1 = types.spaceSeparated;
+
+var aria = create_1({
+  transform: ariaTransform,
+  properties: {
+    ariaActiveDescendant: null,
+    ariaAtomic: booleanish$1,
+    ariaAutoComplete: null,
+    ariaBusy: booleanish$1,
+    ariaChecked: booleanish$1,
+    ariaColCount: number$1,
+    ariaColIndex: number$1,
+    ariaColSpan: number$1,
+    ariaControls: spaceSeparated$1,
+    ariaCurrent: null,
+    ariaDescribedBy: spaceSeparated$1,
+    ariaDetails: null,
+    ariaDisabled: booleanish$1,
+    ariaDropEffect: spaceSeparated$1,
+    ariaErrorMessage: null,
+    ariaExpanded: booleanish$1,
+    ariaFlowTo: spaceSeparated$1,
+    ariaGrabbed: booleanish$1,
+    ariaHasPopup: null,
+    ariaHidden: booleanish$1,
+    ariaInvalid: null,
+    ariaKeyShortcuts: null,
+    ariaLabel: null,
+    ariaLabelledBy: spaceSeparated$1,
+    ariaLevel: number$1,
+    ariaLive: null,
+    ariaModal: booleanish$1,
+    ariaMultiLine: booleanish$1,
+    ariaMultiSelectable: booleanish$1,
+    ariaOrientation: null,
+    ariaOwns: spaceSeparated$1,
+    ariaPlaceholder: null,
+    ariaPosInSet: number$1,
+    ariaPressed: booleanish$1,
+    ariaReadOnly: booleanish$1,
+    ariaRelevant: null,
+    ariaRequired: booleanish$1,
+    ariaRoleDescription: spaceSeparated$1,
+    ariaRowCount: number$1,
+    ariaRowIndex: number$1,
+    ariaRowSpan: number$1,
+    ariaSelected: booleanish$1,
+    ariaSetSize: number$1,
+    ariaSort: null,
+    ariaValueMax: number$1,
+    ariaValueMin: number$1,
+    ariaValueNow: number$1,
+    ariaValueText: null,
+    role: null
+  }
+});
+
+function ariaTransform(_, prop) {
+  return prop === 'role' ? prop : 'aria-' + prop.slice(4).toLowerCase()
+}
+
+var boolean = types.boolean;
+var overloadedBoolean$1 = types.overloadedBoolean;
+var booleanish$2 = types.booleanish;
+var number$2 = types.number;
+var spaceSeparated$2 = types.spaceSeparated;
+var commaSeparated$1 = types.commaSeparated;
+
+var html$1 = create_1({
+  space: 'html',
+  attributes: {
+    acceptcharset: 'accept-charset',
+    classname: 'class',
+    htmlfor: 'for',
+    httpequiv: 'http-equiv'
+  },
+  transform: caseInsensitiveTransform_1,
+  mustUseProperty: ['checked', 'multiple', 'muted', 'selected'],
+  properties: {
+    // Standard Properties.
+    abbr: null,
+    accept: commaSeparated$1,
+    acceptCharset: spaceSeparated$2,
+    accessKey: spaceSeparated$2,
+    action: null,
+    allow: null,
+    allowFullScreen: boolean,
+    allowPaymentRequest: boolean,
+    allowUserMedia: boolean,
+    alt: null,
+    as: null,
+    async: boolean,
+    autoCapitalize: null,
+    autoComplete: spaceSeparated$2,
+    autoFocus: boolean,
+    autoPlay: boolean,
+    capture: boolean,
+    charSet: null,
+    checked: boolean,
+    cite: null,
+    className: spaceSeparated$2,
+    cols: number$2,
+    colSpan: null,
+    content: null,
+    contentEditable: booleanish$2,
+    controls: boolean,
+    controlsList: spaceSeparated$2,
+    coords: number$2 | commaSeparated$1,
+    crossOrigin: null,
+    data: null,
+    dateTime: null,
+    decoding: null,
+    default: boolean,
+    defer: boolean,
+    dir: null,
+    dirName: null,
+    disabled: boolean,
+    download: overloadedBoolean$1,
+    draggable: booleanish$2,
+    encType: null,
+    enterKeyHint: null,
+    form: null,
+    formAction: null,
+    formEncType: null,
+    formMethod: null,
+    formNoValidate: boolean,
+    formTarget: null,
+    headers: spaceSeparated$2,
+    height: number$2,
+    hidden: boolean,
+    high: number$2,
+    href: null,
+    hrefLang: null,
+    htmlFor: spaceSeparated$2,
+    httpEquiv: spaceSeparated$2,
+    id: null,
+    imageSizes: null,
+    imageSrcSet: commaSeparated$1,
+    inputMode: null,
+    integrity: null,
+    is: null,
+    isMap: boolean,
+    itemId: null,
+    itemProp: spaceSeparated$2,
+    itemRef: spaceSeparated$2,
+    itemScope: boolean,
+    itemType: spaceSeparated$2,
+    kind: null,
+    label: null,
+    lang: null,
+    language: null,
+    list: null,
+    loading: null,
+    loop: boolean,
+    low: number$2,
+    manifest: null,
+    max: null,
+    maxLength: number$2,
+    media: null,
+    method: null,
+    min: null,
+    minLength: number$2,
+    multiple: boolean,
+    muted: boolean,
+    name: null,
+    nonce: null,
+    noModule: boolean,
+    noValidate: boolean,
+    onAbort: null,
+    onAfterPrint: null,
+    onAuxClick: null,
+    onBeforePrint: null,
+    onBeforeUnload: null,
+    onBlur: null,
+    onCancel: null,
+    onCanPlay: null,
+    onCanPlayThrough: null,
+    onChange: null,
+    onClick: null,
+    onClose: null,
+    onContextMenu: null,
+    onCopy: null,
+    onCueChange: null,
+    onCut: null,
+    onDblClick: null,
+    onDrag: null,
+    onDragEnd: null,
+    onDragEnter: null,
+    onDragExit: null,
+    onDragLeave: null,
+    onDragOver: null,
+    onDragStart: null,
+    onDrop: null,
+    onDurationChange: null,
+    onEmptied: null,
+    onEnded: null,
+    onError: null,
+    onFocus: null,
+    onFormData: null,
+    onHashChange: null,
+    onInput: null,
+    onInvalid: null,
+    onKeyDown: null,
+    onKeyPress: null,
+    onKeyUp: null,
+    onLanguageChange: null,
+    onLoad: null,
+    onLoadedData: null,
+    onLoadedMetadata: null,
+    onLoadEnd: null,
+    onLoadStart: null,
+    onMessage: null,
+    onMessageError: null,
+    onMouseDown: null,
+    onMouseEnter: null,
+    onMouseLeave: null,
+    onMouseMove: null,
+    onMouseOut: null,
+    onMouseOver: null,
+    onMouseUp: null,
+    onOffline: null,
+    onOnline: null,
+    onPageHide: null,
+    onPageShow: null,
+    onPaste: null,
+    onPause: null,
+    onPlay: null,
+    onPlaying: null,
+    onPopState: null,
+    onProgress: null,
+    onRateChange: null,
+    onRejectionHandled: null,
+    onReset: null,
+    onResize: null,
+    onScroll: null,
+    onSecurityPolicyViolation: null,
+    onSeeked: null,
+    onSeeking: null,
+    onSelect: null,
+    onSlotChange: null,
+    onStalled: null,
+    onStorage: null,
+    onSubmit: null,
+    onSuspend: null,
+    onTimeUpdate: null,
+    onToggle: null,
+    onUnhandledRejection: null,
+    onUnload: null,
+    onVolumeChange: null,
+    onWaiting: null,
+    onWheel: null,
+    open: boolean,
+    optimum: number$2,
+    pattern: null,
+    ping: spaceSeparated$2,
+    placeholder: null,
+    playsInline: boolean,
+    poster: null,
+    preload: null,
+    readOnly: boolean,
+    referrerPolicy: null,
+    rel: spaceSeparated$2,
+    required: boolean,
+    reversed: boolean,
+    rows: number$2,
+    rowSpan: number$2,
+    sandbox: spaceSeparated$2,
+    scope: null,
+    scoped: boolean,
+    seamless: boolean,
+    selected: boolean,
+    shape: null,
+    size: number$2,
+    sizes: null,
+    slot: null,
+    span: number$2,
+    spellCheck: booleanish$2,
+    src: null,
+    srcDoc: null,
+    srcLang: null,
+    srcSet: commaSeparated$1,
+    start: number$2,
+    step: null,
+    style: null,
+    tabIndex: number$2,
+    target: null,
+    title: null,
+    translate: null,
+    type: null,
+    typeMustMatch: boolean,
+    useMap: null,
+    value: booleanish$2,
+    width: number$2,
+    wrap: null,
+
+    // Legacy.
+    // See: https://html.spec.whatwg.org/#other-elements,-attributes-and-apis
+    align: null, // Several. Use CSS `text-align` instead,
+    aLink: null, // `<body>`. Use CSS `a:active {color}` instead
+    archive: spaceSeparated$2, // `<object>`. List of URIs to archives
+    axis: null, // `<td>` and `<th>`. Use `scope` on `<th>`
+    background: null, // `<body>`. Use CSS `background-image` instead
+    bgColor: null, // `<body>` and table elements. Use CSS `background-color` instead
+    border: number$2, // `<table>`. Use CSS `border-width` instead,
+    borderColor: null, // `<table>`. Use CSS `border-color` instead,
+    bottomMargin: number$2, // `<body>`
+    cellPadding: null, // `<table>`
+    cellSpacing: null, // `<table>`
+    char: null, // Several table elements. When `align=char`, sets the character to align on
+    charOff: null, // Several table elements. When `char`, offsets the alignment
+    classId: null, // `<object>`
+    clear: null, // `<br>`. Use CSS `clear` instead
+    code: null, // `<object>`
+    codeBase: null, // `<object>`
+    codeType: null, // `<object>`
+    color: null, // `<font>` and `<hr>`. Use CSS instead
+    compact: boolean, // Lists. Use CSS to reduce space between items instead
+    declare: boolean, // `<object>`
+    event: null, // `<script>`
+    face: null, // `<font>`. Use CSS instead
+    frame: null, // `<table>`
+    frameBorder: null, // `<iframe>`. Use CSS `border` instead
+    hSpace: number$2, // `<img>` and `<object>`
+    leftMargin: number$2, // `<body>`
+    link: null, // `<body>`. Use CSS `a:link {color: *}` instead
+    longDesc: null, // `<frame>`, `<iframe>`, and `<img>`. Use an `<a>`
+    lowSrc: null, // `<img>`. Use a `<picture>`
+    marginHeight: number$2, // `<body>`
+    marginWidth: number$2, // `<body>`
+    noResize: boolean, // `<frame>`
+    noHref: boolean, // `<area>`. Use no href instead of an explicit `nohref`
+    noShade: boolean, // `<hr>`. Use background-color and height instead of borders
+    noWrap: boolean, // `<td>` and `<th>`
+    object: null, // `<applet>`
+    profile: null, // `<head>`
+    prompt: null, // `<isindex>`
+    rev: null, // `<link>`
+    rightMargin: number$2, // `<body>`
+    rules: null, // `<table>`
+    scheme: null, // `<meta>`
+    scrolling: booleanish$2, // `<frame>`. Use overflow in the child context
+    standby: null, // `<object>`
+    summary: null, // `<table>`
+    text: null, // `<body>`. Use CSS `color` instead
+    topMargin: number$2, // `<body>`
+    valueType: null, // `<param>`
+    version: null, // `<html>`. Use a doctype.
+    vAlign: null, // Several. Use CSS `vertical-align` instead
+    vLink: null, // `<body>`. Use CSS `a:visited {color}` instead
+    vSpace: number$2, // `<img>` and `<object>`
+
+    // Non-standard Properties.
+    allowTransparency: null,
+    autoCorrect: null,
+    autoSave: null,
+    disablePictureInPicture: boolean,
+    disableRemotePlayback: boolean,
+    prefix: null,
+    property: null,
+    results: number$2,
+    security: null,
+    unselectable: null
+  }
+});
+
+var html_1$1 = merge_1([xml, xlink, xmlns, aria, html$1]);
+
+const splice$1 = [].splice;
+
+var rehypeFilter_1 = rehypeFilter;
+
+/**
+ * @typedef {import('hast').Root} Root
+ * @typedef {import('hast').Element} Element
+ *
+ * @callback AllowElement
+ * @param {Element} element
+ * @param {number} index
+ * @param {Element|Root} parent
+ * @returns {boolean}
+ *
+ * @typedef {Object} RehypeFilterOptions
+ * @property {Array.<string>} [allowedElements]
+ * @property {Array.<string>} [disallowedElements=[]]
+ * @property {AllowElement} [allowElement]
+ * @property {boolean} [unwrapDisallowed=false]
+ */
+
+/**
+ * @param {RehypeFilterOptions} options
+ */
+function rehypeFilter(options) {
+  if (options.allowedElements && options.disallowedElements) {
+    throw new TypeError(
+      'Only one of `allowedElements` and `disallowedElements` should be defined'
+    )
+  }
+
+  return options.allowedElements ||
+    options.disallowedElements ||
+    options.allowElement
+    ? transform
+    : undefined
+
+  /**
+   * @param {Root} tree
+   */
   function transform(tree) {
-    unistUtilVisit(tree, filter);
-    return tree;
-  } // eslint-disable-next-line consistent-return
+    unistUtilVisit(tree, 'element', onelement);
+  }
 
+  /**
+   * @param {Element} node
+   * @param {number} index
+   * @param {Element|Root} parent
+   * @returns {number|void}
+   */
+  function onelement(node, index, parent) {
+    /** @type {boolean} */
+    let remove;
 
-  function filter(node, index, parent) {
-    if (parent && !allow(node, index, parent)) {
-      var parameters = [index, 1];
+    if (options.allowedElements) {
+      remove = !options.allowedElements.includes(node.tagName);
+    } else if (options.disallowedElements) {
+      remove = options.disallowedElements.includes(node.tagName);
+    }
 
-      if (mode === 'unwrap' && node.children) {
+    if (!remove && options.allowElement) {
+      remove = !options.allowElement(node, index, parent);
+    }
+
+    if (remove) {
+      /** @type {Array.<unknown>} */
+      let parameters = [index, 1];
+
+      if (options.unwrapDisallowed && node.children) {
         parameters = parameters.concat(node.children);
       }
 
       splice$1.apply(parent.children, parameters);
-      return index;
+      return index
     }
+
+    return undefined
   }
 }
 
-var disallowNode = {
-	ofType: ofType,
-	ifNotMatch: ifNotMatch_1
-};
+const protocols = ['http', 'https', 'mailto', 'tel'];
 
-/** @license React v16.13.1
+var uriTransformer_1 = uriTransformer;
+
+/**
+ * @param {string} uri
+ * @returns {string}
+ */
+function uriTransformer(uri) {
+  const url = (uri || '').trim();
+  const first = url.charAt(0);
+
+  if (first === '#' || first === '/') {
+    return url
+  }
+
+  const colon = url.indexOf(':');
+  if (colon === -1) {
+    return url
+  }
+
+  let index = -1;
+
+  while (++index < protocols.length) {
+    const protocol = protocols[index];
+
+    if (
+      colon === protocol.length &&
+      url.slice(0, protocol.length).toLowerCase() === protocol
+    ) {
+      return url
+    }
+  }
+
+  index = url.indexOf('?');
+  if (index !== -1 && colon > index) {
+    return url
+  }
+
+  index = url.indexOf('#');
+  if (index !== -1 && colon > index) {
+    return url
+  }
+
+  // eslint-disable-next-line no-script-url
+  return 'javascript:void(0)'
+}
+
+/** @license React v17.0.2
  * react-is.production.min.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -7924,16 +9503,14 @@ var disallowNode = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var b="function"===typeof Symbol&&Symbol.for,c=b?Symbol.for("react.element"):60103,d=b?Symbol.for("react.portal"):60106,e=b?Symbol.for("react.fragment"):60107,f=b?Symbol.for("react.strict_mode"):60108,g=b?Symbol.for("react.profiler"):60114,h=b?Symbol.for("react.provider"):60109,k=b?Symbol.for("react.context"):60110,l=b?Symbol.for("react.async_mode"):60111,m=b?Symbol.for("react.concurrent_mode"):60111,n=b?Symbol.for("react.forward_ref"):60112,p=b?Symbol.for("react.suspense"):60113,q=b?
-Symbol.for("react.suspense_list"):60120,r=b?Symbol.for("react.memo"):60115,t=b?Symbol.for("react.lazy"):60116,v=b?Symbol.for("react.block"):60121,w=b?Symbol.for("react.fundamental"):60117,x=b?Symbol.for("react.responder"):60118,y=b?Symbol.for("react.scope"):60119;
-function z(a){if("object"===typeof a&&null!==a){var u=a.$$typeof;switch(u){case c:switch(a=a.type,a){case l:case m:case e:case g:case f:case p:return a;default:switch(a=a&&a.$$typeof,a){case k:case n:case t:case r:case h:return a;default:return u}}case d:return u}}}function A(a){return z(a)===m}var AsyncMode=l;var ConcurrentMode=m;var ContextConsumer=k;var ContextProvider=h;var Element=c;var ForwardRef=n;var Fragment=e;var Lazy=t;var Memo=r;var Portal=d;
-var Profiler=g;var StrictMode=f;var Suspense=p;var isAsyncMode=function(a){return A(a)||z(a)===l};var isConcurrentMode=A;var isContextConsumer=function(a){return z(a)===k};var isContextProvider=function(a){return z(a)===h};var isElement=function(a){return "object"===typeof a&&null!==a&&a.$$typeof===c};var isForwardRef=function(a){return z(a)===n};var isFragment=function(a){return z(a)===e};var isLazy=function(a){return z(a)===t};
-var isMemo=function(a){return z(a)===r};var isPortal=function(a){return z(a)===d};var isProfiler=function(a){return z(a)===g};var isStrictMode=function(a){return z(a)===f};var isSuspense=function(a){return z(a)===p};
-var isValidElementType=function(a){return "string"===typeof a||"function"===typeof a||a===e||a===m||a===g||a===f||a===p||a===q||"object"===typeof a&&null!==a&&(a.$$typeof===t||a.$$typeof===r||a.$$typeof===h||a.$$typeof===k||a.$$typeof===n||a.$$typeof===w||a.$$typeof===x||a.$$typeof===y||a.$$typeof===v)};var typeOf=z;
+var b=60103,c=60106,d=60107,e=60108,f=60114,g=60109,h=60110,k=60112,l=60113,m=60120,n=60115,p=60116,q=60121,r=60122,u$1=60117,v=60129,w=60131;
+if("function"===typeof Symbol&&Symbol.for){var x=Symbol.for;b=x("react.element");c=x("react.portal");d=x("react.fragment");e=x("react.strict_mode");f=x("react.profiler");g=x("react.provider");h=x("react.context");k=x("react.forward_ref");l=x("react.suspense");m=x("react.suspense_list");n=x("react.memo");p=x("react.lazy");q=x("react.block");r=x("react.server.block");u$1=x("react.fundamental");v=x("react.debug_trace_mode");w=x("react.legacy_hidden");}
+function y(a){if("object"===typeof a&&null!==a){var t=a.$$typeof;switch(t){case b:switch(a=a.type,a){case d:case f:case e:case l:case m:return a;default:switch(a=a&&a.$$typeof,a){case h:case k:case p:case n:case g:return a;default:return t}}case c:return t}}}var z=g,A=b,B=k,C=d,D=p,E=n,F=c,G=f,H=e,I=l;var ContextConsumer=h;var ContextProvider=z;var Element=A;var ForwardRef=B;var Fragment=C;var Lazy=D;var Memo=E;var Portal=F;var Profiler=G;var StrictMode=H;
+var Suspense=I;var isAsyncMode=function(){return !1};var isConcurrentMode=function(){return !1};var isContextConsumer=function(a){return y(a)===h};var isContextProvider=function(a){return y(a)===g};var isElement=function(a){return "object"===typeof a&&null!==a&&a.$$typeof===b};var isForwardRef=function(a){return y(a)===k};var isFragment=function(a){return y(a)===d};var isLazy=function(a){return y(a)===p};var isMemo=function(a){return y(a)===n};
+var isPortal=function(a){return y(a)===c};var isProfiler=function(a){return y(a)===f};var isStrictMode=function(a){return y(a)===e};var isSuspense=function(a){return y(a)===l};var isValidElementType=function(a){return "string"===typeof a||"function"===typeof a||a===d||a===f||a===v||a===e||a===l||a===m||a===w||"object"===typeof a&&null!==a&&(a.$$typeof===p||a.$$typeof===n||a.$$typeof===g||a.$$typeof===h||a.$$typeof===k||a.$$typeof===u$1||a.$$typeof===q||a[0]===r)?!0:!1};
+var typeOf=y;
 
 var reactIs_production_min = {
-	AsyncMode: AsyncMode,
-	ConcurrentMode: ConcurrentMode,
 	ContextConsumer: ContextConsumer,
 	ContextProvider: ContextProvider,
 	Element: Element,
@@ -7969,620 +9546,1703 @@ var reactIs = createCommonjsModule(function (module) {
 }
 });
 
-function astToReact(node, options) {
-  var parent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-  var renderer = options.renderers[node.type]; // Nodes created by plugins do not have positional info, in which case we set
+var boolean$1 = types.boolean;
+var number$3 = types.number;
+var spaceSeparated$3 = types.spaceSeparated;
+var commaSeparated$2 = types.commaSeparated;
+var commaOrSpaceSeparated$1 = types.commaOrSpaceSeparated;
+
+var svg = create_1({
+  space: 'svg',
+  attributes: {
+    accentHeight: 'accent-height',
+    alignmentBaseline: 'alignment-baseline',
+    arabicForm: 'arabic-form',
+    baselineShift: 'baseline-shift',
+    capHeight: 'cap-height',
+    className: 'class',
+    clipPath: 'clip-path',
+    clipRule: 'clip-rule',
+    colorInterpolation: 'color-interpolation',
+    colorInterpolationFilters: 'color-interpolation-filters',
+    colorProfile: 'color-profile',
+    colorRendering: 'color-rendering',
+    crossOrigin: 'crossorigin',
+    dataType: 'datatype',
+    dominantBaseline: 'dominant-baseline',
+    enableBackground: 'enable-background',
+    fillOpacity: 'fill-opacity',
+    fillRule: 'fill-rule',
+    floodColor: 'flood-color',
+    floodOpacity: 'flood-opacity',
+    fontFamily: 'font-family',
+    fontSize: 'font-size',
+    fontSizeAdjust: 'font-size-adjust',
+    fontStretch: 'font-stretch',
+    fontStyle: 'font-style',
+    fontVariant: 'font-variant',
+    fontWeight: 'font-weight',
+    glyphName: 'glyph-name',
+    glyphOrientationHorizontal: 'glyph-orientation-horizontal',
+    glyphOrientationVertical: 'glyph-orientation-vertical',
+    hrefLang: 'hreflang',
+    horizAdvX: 'horiz-adv-x',
+    horizOriginX: 'horiz-origin-x',
+    horizOriginY: 'horiz-origin-y',
+    imageRendering: 'image-rendering',
+    letterSpacing: 'letter-spacing',
+    lightingColor: 'lighting-color',
+    markerEnd: 'marker-end',
+    markerMid: 'marker-mid',
+    markerStart: 'marker-start',
+    navDown: 'nav-down',
+    navDownLeft: 'nav-down-left',
+    navDownRight: 'nav-down-right',
+    navLeft: 'nav-left',
+    navNext: 'nav-next',
+    navPrev: 'nav-prev',
+    navRight: 'nav-right',
+    navUp: 'nav-up',
+    navUpLeft: 'nav-up-left',
+    navUpRight: 'nav-up-right',
+    onAbort: 'onabort',
+    onActivate: 'onactivate',
+    onAfterPrint: 'onafterprint',
+    onBeforePrint: 'onbeforeprint',
+    onBegin: 'onbegin',
+    onCancel: 'oncancel',
+    onCanPlay: 'oncanplay',
+    onCanPlayThrough: 'oncanplaythrough',
+    onChange: 'onchange',
+    onClick: 'onclick',
+    onClose: 'onclose',
+    onCopy: 'oncopy',
+    onCueChange: 'oncuechange',
+    onCut: 'oncut',
+    onDblClick: 'ondblclick',
+    onDrag: 'ondrag',
+    onDragEnd: 'ondragend',
+    onDragEnter: 'ondragenter',
+    onDragExit: 'ondragexit',
+    onDragLeave: 'ondragleave',
+    onDragOver: 'ondragover',
+    onDragStart: 'ondragstart',
+    onDrop: 'ondrop',
+    onDurationChange: 'ondurationchange',
+    onEmptied: 'onemptied',
+    onEnd: 'onend',
+    onEnded: 'onended',
+    onError: 'onerror',
+    onFocus: 'onfocus',
+    onFocusIn: 'onfocusin',
+    onFocusOut: 'onfocusout',
+    onHashChange: 'onhashchange',
+    onInput: 'oninput',
+    onInvalid: 'oninvalid',
+    onKeyDown: 'onkeydown',
+    onKeyPress: 'onkeypress',
+    onKeyUp: 'onkeyup',
+    onLoad: 'onload',
+    onLoadedData: 'onloadeddata',
+    onLoadedMetadata: 'onloadedmetadata',
+    onLoadStart: 'onloadstart',
+    onMessage: 'onmessage',
+    onMouseDown: 'onmousedown',
+    onMouseEnter: 'onmouseenter',
+    onMouseLeave: 'onmouseleave',
+    onMouseMove: 'onmousemove',
+    onMouseOut: 'onmouseout',
+    onMouseOver: 'onmouseover',
+    onMouseUp: 'onmouseup',
+    onMouseWheel: 'onmousewheel',
+    onOffline: 'onoffline',
+    onOnline: 'ononline',
+    onPageHide: 'onpagehide',
+    onPageShow: 'onpageshow',
+    onPaste: 'onpaste',
+    onPause: 'onpause',
+    onPlay: 'onplay',
+    onPlaying: 'onplaying',
+    onPopState: 'onpopstate',
+    onProgress: 'onprogress',
+    onRateChange: 'onratechange',
+    onRepeat: 'onrepeat',
+    onReset: 'onreset',
+    onResize: 'onresize',
+    onScroll: 'onscroll',
+    onSeeked: 'onseeked',
+    onSeeking: 'onseeking',
+    onSelect: 'onselect',
+    onShow: 'onshow',
+    onStalled: 'onstalled',
+    onStorage: 'onstorage',
+    onSubmit: 'onsubmit',
+    onSuspend: 'onsuspend',
+    onTimeUpdate: 'ontimeupdate',
+    onToggle: 'ontoggle',
+    onUnload: 'onunload',
+    onVolumeChange: 'onvolumechange',
+    onWaiting: 'onwaiting',
+    onZoom: 'onzoom',
+    overlinePosition: 'overline-position',
+    overlineThickness: 'overline-thickness',
+    paintOrder: 'paint-order',
+    panose1: 'panose-1',
+    pointerEvents: 'pointer-events',
+    referrerPolicy: 'referrerpolicy',
+    renderingIntent: 'rendering-intent',
+    shapeRendering: 'shape-rendering',
+    stopColor: 'stop-color',
+    stopOpacity: 'stop-opacity',
+    strikethroughPosition: 'strikethrough-position',
+    strikethroughThickness: 'strikethrough-thickness',
+    strokeDashArray: 'stroke-dasharray',
+    strokeDashOffset: 'stroke-dashoffset',
+    strokeLineCap: 'stroke-linecap',
+    strokeLineJoin: 'stroke-linejoin',
+    strokeMiterLimit: 'stroke-miterlimit',
+    strokeOpacity: 'stroke-opacity',
+    strokeWidth: 'stroke-width',
+    tabIndex: 'tabindex',
+    textAnchor: 'text-anchor',
+    textDecoration: 'text-decoration',
+    textRendering: 'text-rendering',
+    typeOf: 'typeof',
+    underlinePosition: 'underline-position',
+    underlineThickness: 'underline-thickness',
+    unicodeBidi: 'unicode-bidi',
+    unicodeRange: 'unicode-range',
+    unitsPerEm: 'units-per-em',
+    vAlphabetic: 'v-alphabetic',
+    vHanging: 'v-hanging',
+    vIdeographic: 'v-ideographic',
+    vMathematical: 'v-mathematical',
+    vectorEffect: 'vector-effect',
+    vertAdvY: 'vert-adv-y',
+    vertOriginX: 'vert-origin-x',
+    vertOriginY: 'vert-origin-y',
+    wordSpacing: 'word-spacing',
+    writingMode: 'writing-mode',
+    xHeight: 'x-height',
+    // These were camelcased in Tiny. Now lowercased in SVG 2
+    playbackOrder: 'playbackorder',
+    timelineBegin: 'timelinebegin'
+  },
+  transform: caseSensitiveTransform_1,
+  properties: {
+    about: commaOrSpaceSeparated$1,
+    accentHeight: number$3,
+    accumulate: null,
+    additive: null,
+    alignmentBaseline: null,
+    alphabetic: number$3,
+    amplitude: number$3,
+    arabicForm: null,
+    ascent: number$3,
+    attributeName: null,
+    attributeType: null,
+    azimuth: number$3,
+    bandwidth: null,
+    baselineShift: null,
+    baseFrequency: null,
+    baseProfile: null,
+    bbox: null,
+    begin: null,
+    bias: number$3,
+    by: null,
+    calcMode: null,
+    capHeight: number$3,
+    className: spaceSeparated$3,
+    clip: null,
+    clipPath: null,
+    clipPathUnits: null,
+    clipRule: null,
+    color: null,
+    colorInterpolation: null,
+    colorInterpolationFilters: null,
+    colorProfile: null,
+    colorRendering: null,
+    content: null,
+    contentScriptType: null,
+    contentStyleType: null,
+    crossOrigin: null,
+    cursor: null,
+    cx: null,
+    cy: null,
+    d: null,
+    dataType: null,
+    defaultAction: null,
+    descent: number$3,
+    diffuseConstant: number$3,
+    direction: null,
+    display: null,
+    dur: null,
+    divisor: number$3,
+    dominantBaseline: null,
+    download: boolean$1,
+    dx: null,
+    dy: null,
+    edgeMode: null,
+    editable: null,
+    elevation: number$3,
+    enableBackground: null,
+    end: null,
+    event: null,
+    exponent: number$3,
+    externalResourcesRequired: null,
+    fill: null,
+    fillOpacity: number$3,
+    fillRule: null,
+    filter: null,
+    filterRes: null,
+    filterUnits: null,
+    floodColor: null,
+    floodOpacity: null,
+    focusable: null,
+    focusHighlight: null,
+    fontFamily: null,
+    fontSize: null,
+    fontSizeAdjust: null,
+    fontStretch: null,
+    fontStyle: null,
+    fontVariant: null,
+    fontWeight: null,
+    format: null,
+    fr: null,
+    from: null,
+    fx: null,
+    fy: null,
+    g1: commaSeparated$2,
+    g2: commaSeparated$2,
+    glyphName: commaSeparated$2,
+    glyphOrientationHorizontal: null,
+    glyphOrientationVertical: null,
+    glyphRef: null,
+    gradientTransform: null,
+    gradientUnits: null,
+    handler: null,
+    hanging: number$3,
+    hatchContentUnits: null,
+    hatchUnits: null,
+    height: null,
+    href: null,
+    hrefLang: null,
+    horizAdvX: number$3,
+    horizOriginX: number$3,
+    horizOriginY: number$3,
+    id: null,
+    ideographic: number$3,
+    imageRendering: null,
+    initialVisibility: null,
+    in: null,
+    in2: null,
+    intercept: number$3,
+    k: number$3,
+    k1: number$3,
+    k2: number$3,
+    k3: number$3,
+    k4: number$3,
+    kernelMatrix: commaOrSpaceSeparated$1,
+    kernelUnitLength: null,
+    keyPoints: null, // SEMI_COLON_SEPARATED
+    keySplines: null, // SEMI_COLON_SEPARATED
+    keyTimes: null, // SEMI_COLON_SEPARATED
+    kerning: null,
+    lang: null,
+    lengthAdjust: null,
+    letterSpacing: null,
+    lightingColor: null,
+    limitingConeAngle: number$3,
+    local: null,
+    markerEnd: null,
+    markerMid: null,
+    markerStart: null,
+    markerHeight: null,
+    markerUnits: null,
+    markerWidth: null,
+    mask: null,
+    maskContentUnits: null,
+    maskUnits: null,
+    mathematical: null,
+    max: null,
+    media: null,
+    mediaCharacterEncoding: null,
+    mediaContentEncodings: null,
+    mediaSize: number$3,
+    mediaTime: null,
+    method: null,
+    min: null,
+    mode: null,
+    name: null,
+    navDown: null,
+    navDownLeft: null,
+    navDownRight: null,
+    navLeft: null,
+    navNext: null,
+    navPrev: null,
+    navRight: null,
+    navUp: null,
+    navUpLeft: null,
+    navUpRight: null,
+    numOctaves: null,
+    observer: null,
+    offset: null,
+    onAbort: null,
+    onActivate: null,
+    onAfterPrint: null,
+    onBeforePrint: null,
+    onBegin: null,
+    onCancel: null,
+    onCanPlay: null,
+    onCanPlayThrough: null,
+    onChange: null,
+    onClick: null,
+    onClose: null,
+    onCopy: null,
+    onCueChange: null,
+    onCut: null,
+    onDblClick: null,
+    onDrag: null,
+    onDragEnd: null,
+    onDragEnter: null,
+    onDragExit: null,
+    onDragLeave: null,
+    onDragOver: null,
+    onDragStart: null,
+    onDrop: null,
+    onDurationChange: null,
+    onEmptied: null,
+    onEnd: null,
+    onEnded: null,
+    onError: null,
+    onFocus: null,
+    onFocusIn: null,
+    onFocusOut: null,
+    onHashChange: null,
+    onInput: null,
+    onInvalid: null,
+    onKeyDown: null,
+    onKeyPress: null,
+    onKeyUp: null,
+    onLoad: null,
+    onLoadedData: null,
+    onLoadedMetadata: null,
+    onLoadStart: null,
+    onMessage: null,
+    onMouseDown: null,
+    onMouseEnter: null,
+    onMouseLeave: null,
+    onMouseMove: null,
+    onMouseOut: null,
+    onMouseOver: null,
+    onMouseUp: null,
+    onMouseWheel: null,
+    onOffline: null,
+    onOnline: null,
+    onPageHide: null,
+    onPageShow: null,
+    onPaste: null,
+    onPause: null,
+    onPlay: null,
+    onPlaying: null,
+    onPopState: null,
+    onProgress: null,
+    onRateChange: null,
+    onRepeat: null,
+    onReset: null,
+    onResize: null,
+    onScroll: null,
+    onSeeked: null,
+    onSeeking: null,
+    onSelect: null,
+    onShow: null,
+    onStalled: null,
+    onStorage: null,
+    onSubmit: null,
+    onSuspend: null,
+    onTimeUpdate: null,
+    onToggle: null,
+    onUnload: null,
+    onVolumeChange: null,
+    onWaiting: null,
+    onZoom: null,
+    opacity: null,
+    operator: null,
+    order: null,
+    orient: null,
+    orientation: null,
+    origin: null,
+    overflow: null,
+    overlay: null,
+    overlinePosition: number$3,
+    overlineThickness: number$3,
+    paintOrder: null,
+    panose1: null,
+    path: null,
+    pathLength: number$3,
+    patternContentUnits: null,
+    patternTransform: null,
+    patternUnits: null,
+    phase: null,
+    ping: spaceSeparated$3,
+    pitch: null,
+    playbackOrder: null,
+    pointerEvents: null,
+    points: null,
+    pointsAtX: number$3,
+    pointsAtY: number$3,
+    pointsAtZ: number$3,
+    preserveAlpha: null,
+    preserveAspectRatio: null,
+    primitiveUnits: null,
+    propagate: null,
+    property: commaOrSpaceSeparated$1,
+    r: null,
+    radius: null,
+    referrerPolicy: null,
+    refX: null,
+    refY: null,
+    rel: commaOrSpaceSeparated$1,
+    rev: commaOrSpaceSeparated$1,
+    renderingIntent: null,
+    repeatCount: null,
+    repeatDur: null,
+    requiredExtensions: commaOrSpaceSeparated$1,
+    requiredFeatures: commaOrSpaceSeparated$1,
+    requiredFonts: commaOrSpaceSeparated$1,
+    requiredFormats: commaOrSpaceSeparated$1,
+    resource: null,
+    restart: null,
+    result: null,
+    rotate: null,
+    rx: null,
+    ry: null,
+    scale: null,
+    seed: null,
+    shapeRendering: null,
+    side: null,
+    slope: null,
+    snapshotTime: null,
+    specularConstant: number$3,
+    specularExponent: number$3,
+    spreadMethod: null,
+    spacing: null,
+    startOffset: null,
+    stdDeviation: null,
+    stemh: null,
+    stemv: null,
+    stitchTiles: null,
+    stopColor: null,
+    stopOpacity: null,
+    strikethroughPosition: number$3,
+    strikethroughThickness: number$3,
+    string: null,
+    stroke: null,
+    strokeDashArray: commaOrSpaceSeparated$1,
+    strokeDashOffset: null,
+    strokeLineCap: null,
+    strokeLineJoin: null,
+    strokeMiterLimit: number$3,
+    strokeOpacity: number$3,
+    strokeWidth: null,
+    style: null,
+    surfaceScale: number$3,
+    syncBehavior: null,
+    syncBehaviorDefault: null,
+    syncMaster: null,
+    syncTolerance: null,
+    syncToleranceDefault: null,
+    systemLanguage: commaOrSpaceSeparated$1,
+    tabIndex: number$3,
+    tableValues: null,
+    target: null,
+    targetX: number$3,
+    targetY: number$3,
+    textAnchor: null,
+    textDecoration: null,
+    textRendering: null,
+    textLength: null,
+    timelineBegin: null,
+    title: null,
+    transformBehavior: null,
+    type: null,
+    typeOf: commaOrSpaceSeparated$1,
+    to: null,
+    transform: null,
+    u1: null,
+    u2: null,
+    underlinePosition: number$3,
+    underlineThickness: number$3,
+    unicode: null,
+    unicodeBidi: null,
+    unicodeRange: null,
+    unitsPerEm: number$3,
+    values: null,
+    vAlphabetic: number$3,
+    vMathematical: number$3,
+    vectorEffect: null,
+    vHanging: number$3,
+    vIdeographic: number$3,
+    version: null,
+    vertAdvY: number$3,
+    vertOriginX: number$3,
+    vertOriginY: number$3,
+    viewBox: null,
+    viewTarget: null,
+    visibility: null,
+    width: null,
+    widths: null,
+    wordSpacing: null,
+    writingMode: null,
+    x: null,
+    x1: null,
+    x2: null,
+    xChannelSelector: null,
+    xHeight: number$3,
+    y: null,
+    y1: null,
+    y2: null,
+    yChannelSelector: null,
+    z: null,
+    zoomAndPan: null
+  }
+});
+
+var svg_1 = merge_1([xml, xlink, xmlns, aria, svg]);
+
+var data = 'data';
+
+var find_1 = find;
+
+var valid = /^data[-\w.:]+$/i;
+var dash = /-[a-z]/g;
+var cap = /[A-Z]/g;
+
+function find(schema, value) {
+  var normal = normalize_1(value);
+  var prop = value;
+  var Type = info$1;
+
+  if (normal in schema.normal) {
+    return schema.property[schema.normal[normal]]
+  }
+
+  if (normal.length > 4 && normal.slice(0, 4) === data && valid.test(value)) {
+    // Attribute or property.
+    if (value.charAt(4) === '-') {
+      prop = datasetToProperty(value);
+    } else {
+      value = datasetToAttribute(value);
+    }
+
+    Type = definedInfo;
+  }
+
+  return new Type(prop, value)
+}
+
+function datasetToProperty(attribute) {
+  var value = attribute.slice(5).replace(dash, camelcase);
+  return data + value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function datasetToAttribute(property) {
+  var value = property.slice(4);
+
+  if (dash.test(value)) {
+    return property
+  }
+
+  value = value.replace(cap, kebab);
+
+  if (value.charAt(0) !== '-') {
+    value = '-' + value;
+  }
+
+  return data + value
+}
+
+function kebab($0) {
+  return '-' + $0.toLowerCase()
+}
+
+function camelcase($0) {
+  return $0.charAt(1).toUpperCase()
+}
+
+const classId = "classID";
+const dataType = "datatype";
+const itemId = "itemID";
+const strokeDashArray = "strokeDasharray";
+const strokeDashOffset = "strokeDashoffset";
+const strokeLineCap = "strokeLinecap";
+const strokeLineJoin = "strokeLinejoin";
+const strokeMiterLimit = "strokeMiterlimit";
+const typeOf$1 = "typeof";
+const xLinkActuate = "xlinkActuate";
+const xLinkArcRole = "xlinkArcrole";
+const xLinkHref = "xlinkHref";
+const xLinkRole = "xlinkRole";
+const xLinkShow = "xlinkShow";
+const xLinkTitle = "xlinkTitle";
+const xLinkType = "xlinkType";
+const xmlnsXLink = "xmlnsXlink";
+var hastToReact = {
+  classId: classId,
+  dataType: dataType,
+  itemId: itemId,
+  strokeDashArray: strokeDashArray,
+  strokeDashOffset: strokeDashOffset,
+  strokeLineCap: strokeLineCap,
+  strokeLineJoin: strokeLineJoin,
+  strokeMiterLimit: strokeMiterLimit,
+  typeOf: typeOf$1,
+  xLinkActuate: xLinkActuate,
+  xLinkArcRole: xLinkArcRole,
+  xLinkHref: xLinkHref,
+  xLinkRole: xLinkRole,
+  xLinkShow: xLinkShow,
+  xLinkTitle: xLinkTitle,
+  xLinkType: xLinkType,
+  xmlnsXLink: xmlnsXLink
+};
+
+var parse_1$1 = parse$2;
+var stringify_1 = stringify$1;
+
+var empty = '';
+var space = ' ';
+var whiteSpace = /[ \t\n\r\f]+/g;
+
+function parse$2(value) {
+  var input = String(value || empty).trim();
+  return input === empty ? [] : input.split(whiteSpace)
+}
+
+function stringify$1(values) {
+  return values.join(space).trim()
+}
+
+var spaceSeparatedTokens = {
+	parse: parse_1$1,
+	stringify: stringify_1
+};
+
+var parse_1$2 = parse$3;
+var stringify_1$1 = stringify$2;
+
+var comma = ',';
+var space$1 = ' ';
+var empty$1 = '';
+
+// Parse comma-separated tokens to an array.
+function parse$3(value) {
+  var values = [];
+  var input = String(value || empty$1);
+  var index = input.indexOf(comma);
+  var lastIndex = 0;
+  var end = false;
+  var val;
+
+  while (!end) {
+    if (index === -1) {
+      index = input.length;
+      end = true;
+    }
+
+    val = input.slice(lastIndex, index).trim();
+
+    if (val || !end) {
+      values.push(val);
+    }
+
+    lastIndex = index + 1;
+    index = input.indexOf(comma, lastIndex);
+  }
+
+  return values
+}
+
+// Compile an array to comma-separated tokens.
+// `options.padLeft` (default: `true`) pads a space left of each token, and
+// `options.padRight` (default: `false`) pads a space to the right of each token.
+function stringify$2(values, options) {
+  var settings = options || {};
+  var left = settings.padLeft === false ? empty$1 : space$1;
+  var right = settings.padRight ? space$1 : empty$1;
+
+  // Ensure the last empty entry is seen.
+  if (values[values.length - 1] === empty$1) {
+    values = values.concat(empty$1);
+  }
+
+  return values.join(right + comma + left).trim()
+}
+
+var commaSeparatedTokens = {
+	parse: parse_1$2,
+	stringify: stringify_1$1
+};
+
+// http://www.w3.org/TR/CSS21/grammar.html
+// https://github.com/visionmedia/css-parse/pull/49#issuecomment-30088027
+var COMMENT_REGEX = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//g;
+
+var NEWLINE_REGEX = /\n/g;
+var WHITESPACE_REGEX = /^\s*/;
+
+// declaration
+var PROPERTY_REGEX = /^(\*?[-#/*\\\w]+(\[[0-9a-z_-]+\])?)\s*/;
+var COLON_REGEX = /^:\s*/;
+var VALUE_REGEX = /^((?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^)]*?\)|[^};])+)/;
+var SEMICOLON_REGEX = /^[;\s]*/;
+
+// https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String/Trim#Polyfill
+var TRIM_REGEX = /^\s+|\s+$/g;
+
+// strings
+var NEWLINE = '\n';
+var FORWARD_SLASH = '/';
+var ASTERISK = '*';
+var EMPTY_STRING = '';
+
+// types
+var TYPE_COMMENT = 'comment';
+var TYPE_DECLARATION = 'declaration';
+
+/**
+ * @param {String} style
+ * @param {Object} [options]
+ * @return {Object[]}
+ * @throws {TypeError}
+ * @throws {Error}
+ */
+var inlineStyleParser = function(style, options) {
+  if (typeof style !== 'string') {
+    throw new TypeError('First argument must be a string');
+  }
+
+  if (!style) return [];
+
+  options = options || {};
+
+  /**
+   * Positional.
+   */
+  var lineno = 1;
+  var column = 1;
+
+  /**
+   * Update lineno and column based on `str`.
+   *
+   * @param {String} str
+   */
+  function updatePosition(str) {
+    var lines = str.match(NEWLINE_REGEX);
+    if (lines) lineno += lines.length;
+    var i = str.lastIndexOf(NEWLINE);
+    column = ~i ? str.length - i : column + str.length;
+  }
+
+  /**
+   * Mark position and patch `node.position`.
+   *
+   * @return {Function}
+   */
+  function position() {
+    var start = { line: lineno, column: column };
+    return function(node) {
+      node.position = new Position(start);
+      whitespace();
+      return node;
+    };
+  }
+
+  /**
+   * Store position information for a node.
+   *
+   * @constructor
+   * @property {Object} start
+   * @property {Object} end
+   * @property {undefined|String} source
+   */
+  function Position(start) {
+    this.start = start;
+    this.end = { line: lineno, column: column };
+    this.source = options.source;
+  }
+
+  /**
+   * Non-enumerable source string.
+   */
+  Position.prototype.content = style;
+
+  /**
+   * Error `msg`.
+   *
+   * @param {String} msg
+   * @throws {Error}
+   */
+  function error(msg) {
+    var err = new Error(
+      options.source + ':' + lineno + ':' + column + ': ' + msg
+    );
+    err.reason = msg;
+    err.filename = options.source;
+    err.line = lineno;
+    err.column = column;
+    err.source = style;
+
+    if (options.silent) ; else {
+      throw err;
+    }
+  }
+
+  /**
+   * Match `re` and return captures.
+   *
+   * @param {RegExp} re
+   * @return {undefined|Array}
+   */
+  function match(re) {
+    var m = re.exec(style);
+    if (!m) return;
+    var str = m[0];
+    updatePosition(str);
+    style = style.slice(str.length);
+    return m;
+  }
+
+  /**
+   * Parse whitespace.
+   */
+  function whitespace() {
+    match(WHITESPACE_REGEX);
+  }
+
+  /**
+   * Parse comments.
+   *
+   * @param {Object[]} [rules]
+   * @return {Object[]}
+   */
+  function comments(rules) {
+    var c;
+    rules = rules || [];
+    while ((c = comment())) {
+      if (c !== false) {
+        rules.push(c);
+      }
+    }
+    return rules;
+  }
+
+  /**
+   * Parse comment.
+   *
+   * @return {Object}
+   * @throws {Error}
+   */
+  function comment() {
+    var pos = position();
+    if (FORWARD_SLASH != style.charAt(0) || ASTERISK != style.charAt(1)) return;
+
+    var i = 2;
+    while (
+      EMPTY_STRING != style.charAt(i) &&
+      (ASTERISK != style.charAt(i) || FORWARD_SLASH != style.charAt(i + 1))
+    ) {
+      ++i;
+    }
+    i += 2;
+
+    if (EMPTY_STRING === style.charAt(i - 1)) {
+      return error('End of comment missing');
+    }
+
+    var str = style.slice(2, i - 2);
+    column += 2;
+    updatePosition(str);
+    style = style.slice(i);
+    column += 2;
+
+    return pos({
+      type: TYPE_COMMENT,
+      comment: str
+    });
+  }
+
+  /**
+   * Parse declaration.
+   *
+   * @return {Object}
+   * @throws {Error}
+   */
+  function declaration() {
+    var pos = position();
+
+    // prop
+    var prop = match(PROPERTY_REGEX);
+    if (!prop) return;
+    comment();
+
+    // :
+    if (!match(COLON_REGEX)) return error("property missing ':'");
+
+    // val
+    var val = match(VALUE_REGEX);
+
+    var ret = pos({
+      type: TYPE_DECLARATION,
+      property: trim(prop[0].replace(COMMENT_REGEX, EMPTY_STRING)),
+      value: val
+        ? trim(val[0].replace(COMMENT_REGEX, EMPTY_STRING))
+        : EMPTY_STRING
+    });
+
+    // ;
+    match(SEMICOLON_REGEX);
+
+    return ret;
+  }
+
+  /**
+   * Parse declarations.
+   *
+   * @return {Object[]}
+   */
+  function declarations() {
+    var decls = [];
+
+    comments(decls);
+
+    // declarations
+    var decl;
+    while ((decl = declaration())) {
+      if (decl !== false) {
+        decls.push(decl);
+        comments(decls);
+      }
+    }
+
+    return decls;
+  }
+
+  whitespace();
+  return declarations();
+};
+
+/**
+ * Trim `str`.
+ *
+ * @param {String} str
+ * @return {String}
+ */
+function trim(str) {
+  return str ? str.replace(TRIM_REGEX, EMPTY_STRING) : EMPTY_STRING;
+}
+
+/**
+ * Parses inline style to object.
+ *
+ * @example
+ * // returns { 'line-height': '42' }
+ * StyleToObject('line-height: 42;');
+ *
+ * @param  {String}      style      - The inline style.
+ * @param  {Function}    [iterator] - The iterator function.
+ * @return {null|Object}
+ */
+function StyleToObject(style, iterator) {
+  var output = null;
+  if (!style || typeof style !== 'string') {
+    return output;
+  }
+
+  var declaration;
+  var declarations = inlineStyleParser(style);
+  var hasIterator = typeof iterator === 'function';
+  var property;
+  var value;
+
+  for (var i = 0, len = declarations.length; i < len; i++) {
+    declaration = declarations[i];
+    property = declaration.property;
+    value = declaration.value;
+
+    if (hasIterator) {
+      iterator(property, value, declaration);
+    } else if (value) {
+      output || (output = {});
+      output[property] = value;
+    }
+  }
+
+  return output;
+}
+
+var styleToObject = StyleToObject;
+
+// @ts-ignore remove when typed
+
+// @ts-ignore remove when typed
+
+// @ts-ignore remove when typed
+
+// @ts-ignore remove when typed
+
+// @ts-ignore remove when typed
+
+
+
+var hastToReact_1 = toReact;
+var hastChildrenToReact = childrenToReact;
+
+/**
+ * @typedef {JSX.IntrinsicElements} IntrinsicElements
+ * @typedef {import('react').ReactNode} ReactNode
+ * @typedef {import('unist').Position} Position
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('hast').Root} Root
+ * @typedef {import('hast').Text} Text
+ * @typedef {import('hast').Comment} Comment
+ * @typedef {import('hast').DocType} Doctype
+ */
+
+/**
+ * @typedef {Object} Info
+ * @property {string?} space
+ * @property {string?} attribute
+ * @property {string?} property
+ * @property {boolean} boolean
+ * @property {boolean} booleanish
+ * @property {boolean} overloadedBoolean
+ * @property {boolean} number
+ * @property {boolean} commaSeparated
+ * @property {boolean} spaceSeparated
+ * @property {boolean} commaOrSpaceSeparated
+ * @property {boolean} mustUseProperty
+ * @property {boolean} defined
+ *
+ * @typedef {Object} Schema
+ * @property {Object.<string, Info>} property
+ * @property {Object.<string, string>} normal
+ * @property {string?} space
+ *
+ * @typedef {Object} Raw
+ * @property {'raw'} type
+ * @property {string} value
+ *
+ * @typedef {Object} Context
+ * @property {TransformOptions} options
+ * @property {Schema} schema
+ * @property {number} listDepth
+ *
+ * @callback TransformLink
+ * @param {string} href
+ * @param {Array.<Comment|Element|Text>} children
+ * @param {string?} title
+ * @returns {string}
+ *
+ * @callback TransformImage
+ * @param {string} src
+ * @param {string} alt
+ * @param {string?} title
+ * @returns {string}
+ *
+ * @callback TransformLinkTarget
+ * @param {string} href
+ * @param {Array.<Comment|Element|Text>} children
+ * @param {string?} title
+ * @returns {string}
+ *
+ * @typedef {keyof IntrinsicElements} ReactMarkdownNames
+ *
+ * @typedef {{ [key: string]: unknown, className?: string }} ReactBaseProps
+ *
+ * To do: is `data-sourcepos` typeable?
+ *
+ * @typedef {Object} ReactMarkdownProps
+ * @property {Element} node
+ * @property {string} key
+ * @property {ReactNode[]} children
+ * @property {Position?} [sourcePosition] Passed when `options.rawSourcePos` is given
+ * @property {number} [index] Passed when `options.includeElementIndex` is given
+ * @property {number} [siblingCount] Passed when `options.includeElementIndex` is given
+ *
+ * @callback NormalComponent
+ * @param {ReactBaseProps & ReactMarkdownProps} props
+ * @returns {ReactNode}
+ *
+ * @callback CodeComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {inline?: boolean}} props
+ * @returns {ReactNode}
+ *
+ * @callback HeadingComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {level: number}} props
+ * @returns {ReactNode}
+ *
+ * @callback LiComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {checked: boolean|null, index: number, ordered: boolean}} props
+ * @returns {ReactNode}
+ *
+ * @callback OrderedListComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {depth: number, ordered: true}} props
+ * @returns {ReactNode}
+ *
+ * @callback TableCellComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {style?: Object.<string, unknown>, isHeader: boolean}} props
+ * @returns {ReactNode}
+ *
+ * @callback TableRowComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {isHeader: boolean}} props
+ * @returns {ReactNode}
+ *
+ * @callback UnorderedListComponent
+ * @param {ReactBaseProps & ReactMarkdownProps & {depth: number, ordered: false}} props
+ * @returns {ReactNode}
+ *
+ * @typedef {Object} SpecialComponents
+ * @property {CodeComponent|ReactMarkdownNames} code
+ * @property {HeadingComponent|ReactMarkdownNames} h1
+ * @property {HeadingComponent|ReactMarkdownNames} h2
+ * @property {HeadingComponent|ReactMarkdownNames} h3
+ * @property {HeadingComponent|ReactMarkdownNames} h4
+ * @property {HeadingComponent|ReactMarkdownNames} h5
+ * @property {HeadingComponent|ReactMarkdownNames} h6
+ * @property {LiComponent|ReactMarkdownNames} li
+ * @property {OrderedListComponent|ReactMarkdownNames} ol
+ * @property {TableCellComponent|ReactMarkdownNames} td
+ * @property {TableCellComponent|ReactMarkdownNames} th
+ * @property {TableRowComponent|ReactMarkdownNames} tr
+ * @property {UnorderedListComponent|ReactMarkdownNames} ul
+ *
+ * @typedef {Record<Exclude<ReactMarkdownNames, keyof SpecialComponents>, NormalComponent|ReactMarkdownNames>} NormalComponents
+ * @typedef {Partial<NormalComponents & SpecialComponents>} Components
+ */
+
+/**
+ * @typedef {Object} TransformOptions
+ * @property {boolean} [sourcePos=false]
+ * @property {boolean} [rawSourcePos=false]
+ * @property {boolean} [skipHtml=false]
+ * @property {boolean} [includeElementIndex=false]
+ * @property {false|TransformLink} [transformLinkUri]
+ * @property {TransformImage} [transformImageUri]
+ * @property {string|TransformLinkTarget} [linkTarget]
+ * @property {Components} [components]
+ */
+
+const own$7 = {}.hasOwnProperty;
+
+// The table-related elements that must not contain whitespace text according
+// to React.
+const tableElements = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr']);
+
+/**
+ * @param {Context} context
+ * @param {Element|Root} node
+ */
+function childrenToReact(context, node) {
+  /** @type {Array.<ReactNode>} */
+  const children = [];
+  let childIndex = -1;
+  /** @type {Comment|Doctype|Element|Raw|Text} */
+  let child;
+
+  while (++childIndex < node.children.length) {
+    child = node.children[childIndex];
+
+    if (child.type === 'element') {
+      children.push(toReact(context, child, childIndex, node));
+    } else if (child.type === 'text') {
+      // React does not permit whitespace text elements as children of table:
+      // cf. https://github.com/remarkjs/react-markdown/issues/576
+      if (
+        node.type !== 'element' ||
+        !tableElements.has(node.tagName) ||
+        child.value !== '\n'
+      ) {
+        children.push(child.value);
+      }
+    }
+    // @ts-ignore `raw` nodes are non-standard
+    else if (child.type === 'raw' && !context.options.skipHtml) {
+      // Default behavior is to show (encoded) HTML.
+      // @ts-ignore `raw` nodes are non-standard
+      children.push(child.value);
+    }
+  }
+
+  return children
+}
+
+/**
+ * @param {Context} context
+ * @param {Element} node
+ * @param {number} index
+ * @param {Element|Root} parent
+ */
+function toReact(context, node, index, parent) {
+  const options = context.options;
+  const parentSchema = context.schema;
+  /** @type {ReactMarkdownNames} */
+  // @ts-ignore assume a known HTML/SVG element.
+  const name = node.tagName;
+  /** @type {Object.<string, unknown>} */
+  const properties = {};
+  let schema = parentSchema;
+  /** @type {string} */
+  let property;
+
+  if (parentSchema.space === 'html' && name === 'svg') {
+    schema = svg_1;
+    context.schema = schema;
+  }
+
+  for (property in node.properties) {
+    /* istanbul ignore else - prototype polution. */
+    if (own$7.call(node.properties, property)) {
+      addProperty(properties, property, node.properties[property], context);
+    }
+  }
+
+  if (name === 'ol' || name === 'ul') {
+    context.listDepth++;
+  }
+
+  const children = childrenToReact(context, node);
+
+  if (name === 'ol' || name === 'ul') {
+    context.listDepth--;
+  }
+
+  // Restore parent schema.
+  context.schema = parentSchema;
+
+  // Nodes created by plugins do not have positional info, in which case we use
   // an object that matches the positon interface.
-
-  if (!node.position) {
-    node.position = {
-      start: {
-        line: null,
-        column: null,
-        offset: null
-      },
-      end: {
-        line: null,
-        column: null,
-        offset: null
-      }
-    };
-  }
-
-  var pos = node.position.start;
-  var key = [node.type, pos.line, pos.column, index].join('-');
-
-  if (!reactIs.isValidElementType(renderer)) {
-    throw new Error("Renderer for type `".concat(node.type, "` not defined or is not renderable"));
-  }
-
-  var nodeProps = getNodeProps(node, key, options, renderer, parent, index);
-  return compat_module.createElement(renderer, nodeProps, nodeProps.children || resolveChildren() || undefined);
-
-  function resolveChildren() {
-    return node.children && node.children.map(function (childNode, i) {
-      return astToReact(childNode, options, {
-        node: node,
-        props: nodeProps
-      }, i);
-    });
-  }
-} // eslint-disable-next-line max-params, complexity
-
-
-function getNodeProps(node, key, opts, renderer, parent, index) {
-  var props = {
-    key: key
+  const position = node.position || {
+    start: {line: null, column: null, offset: null},
+    end: {line: null, column: null, offset: null}
   };
-  var isSimpleRenderer = typeof renderer === 'string' || renderer === compat_module.Fragment; // `sourcePos` is true if the user wants source information (line/column info from markdown source)
+  /** @type {NormalComponent|SpecialComponents[keyof SpecialComponents]|ReactMarkdownNames} */
+  const component =
+    options.components && own$7.call(options.components, name)
+      ? options.components[name]
+      : name;
+  const basic = typeof component === 'string' || component === compat_module.Fragment;
 
-  if (opts.sourcePos && node.position) {
-    props['data-sourcepos'] = flattenPosition(node.position);
+  if (!reactIs.isValidElementType(component)) {
+    throw new TypeError(
+      `Component for name \`${name}\` not defined or is not renderable`
+    )
   }
 
-  if (opts.rawSourcePos && !isSimpleRenderer) {
-    props.sourcePosition = node.position;
-  } // If `includeNodeIndex` is true, pass node index info to all non-tag renderers
+  properties.key = [
+    name,
+    position.start.line,
+    position.start.column,
+    index
+  ].join('-');
 
-
-  if (opts.includeNodeIndex && parent.node && parent.node.children && !isSimpleRenderer) {
-    props.index = parent.node.children.indexOf(node);
-    props.parentChildCount = parent.node.children.length;
+  if (name === 'a' && options.linkTarget) {
+    properties.target =
+      typeof options.linkTarget === 'function'
+        ? // @ts-ignore assume `href` is a string
+          options.linkTarget(properties.href, node.children, properties.title)
+        : options.linkTarget;
   }
 
-  var ref = node.identifier !== null && node.identifier !== undefined ?
-  /* istanbul ignore next - plugins could inject an undefined reference. */
-  opts.definitions[node.identifier.toUpperCase()] || {} : null;
-
-  switch (node.type) {
-    case 'root':
-      assignDefined(props, {
-        className: opts.className
-      });
-      break;
-
-    case 'text':
-      props.nodeKey = key;
-      props.children = node.value;
-      break;
-
-    case 'heading':
-      props.level = node.depth;
-      break;
-
-    case 'list':
-      props.start = node.start;
-      props.ordered = node.ordered;
-      props.spread = node.spread;
-      props.depth = node.depth;
-      break;
-
-    case 'listItem':
-      props.checked = node.checked;
-      props.spread = node.spread;
-      props.ordered = node.ordered;
-      props.index = node.index;
-      props.children = getListItemChildren(node, parent).map(function (childNode, i) {
-        return astToReact(childNode, opts, {
-          node: node,
-          props: props
-        }, i);
-      });
-      break;
-
-    case 'definition':
-      assignDefined(props, {
-        identifier: node.identifier,
-        title: node.title,
-        url: node.url
-      });
-      break;
-
-    case 'code':
-      assignDefined(props, {
-        language: node.lang && node.lang.split(/\s/, 1)[0]
-      });
-      break;
-
-    case 'inlineCode':
-      props.children = node.value;
-      props.inline = true;
-      break;
-
-    case 'link':
-      assignDefined(props, {
-        title: node.title || undefined,
-        target: typeof opts.linkTarget === 'function' ? opts.linkTarget(node.url, node.children, node.title) : opts.linkTarget,
-        href: opts.transformLinkUri ? opts.transformLinkUri(node.url, node.children, node.title) : node.url
-      });
-      break;
-
-    case 'image':
-      assignDefined(props, {
-        src: opts.transformImageUri ? opts.transformImageUri(node.url, node.children, node.title, node.alt) : node.url,
-        alt: node.alt || '',
-        title: node.title || undefined
-      });
-      break;
-
-    case 'linkReference':
-      assignDefined(props, immutable(ref, {
-        href: opts.transformLinkUri ? opts.transformLinkUri(ref.href) : ref.href
-      }));
-      break;
-
-    case 'imageReference':
-      assignDefined(props, {
-        src: opts.transformImageUri && ref.href ? opts.transformImageUri(ref.href, node.children, ref.title, node.alt) : ref.href,
-        alt: node.alt || '',
-        title: ref.title || undefined
-      });
-      break;
-
-    case 'table':
-    case 'tableHead':
-    case 'tableBody':
-      props.columnAlignment = node.align;
-      break;
-
-    case 'tableRow':
-      props.isHeader = parent.node.type === 'tableHead';
-      props.columnAlignment = parent.props.columnAlignment;
-      break;
-
-    case 'tableCell':
-      assignDefined(props, {
-        isHeader: parent.props.isHeader,
-        align: parent.props.columnAlignment[index]
-      });
-      break;
-
-    case 'virtualHtml':
-      props.tag = node.tag;
-      break;
-
-    case 'html':
-      // @todo find a better way than this
-      props.isBlock = node.position.start.line !== node.position.end.line;
-      props.allowDangerousHtml = opts.allowDangerousHtml;
-      props.escapeHtml = opts.escapeHtml;
-      props.skipHtml = opts.skipHtml;
-      break;
-
-    case 'parsedHtml':
-      {
-        var parsedChildren;
-
-        if (node.children) {
-          parsedChildren = node.children.map(function (child, i) {
-            return astToReact(child, opts, {
-              node: node,
-              props: props
-            }, i);
-          });
-        }
-
-        props.allowDangerousHtml = opts.allowDangerousHtml;
-        props.escapeHtml = opts.escapeHtml;
-        props.skipHtml = opts.skipHtml;
-        props.element = node.element ? mergeNodeChildren(node, parsedChildren) : null;
-        break;
-      }
-
-    default:
-      assignDefined(props, immutable(node, {
-        type: undefined,
-        position: undefined,
-        children: undefined
-      }));
+  if (name === 'a' && options.transformLinkUri) {
+    properties.href = options.transformLinkUri(
+      // @ts-ignore assume `href` is a string
+      properties.href,
+      node.children,
+      properties.title
+    );
   }
 
-  if (!isSimpleRenderer && node.value) {
-    props.value = node.value;
+  if (!basic && name === 'code' && parent.tagName !== 'pre') {
+    properties.inline = true;
   }
 
-  if (!isSimpleRenderer) {
-    props.node = node;
+  if (
+    !basic &&
+    (name === 'h1' ||
+      name === 'h2' ||
+      name === 'h3' ||
+      name === 'h4' ||
+      name === 'h5' ||
+      name === 'h6')
+  ) {
+    properties.level = parseInt(name.charAt(1), 10);
   }
 
-  return props;
-}
+  if (name === 'img' && options.transformImageUri) {
+    properties.src = options.transformImageUri(
+      // @ts-ignore assume `src` is a string
+      properties.src,
+      properties.alt,
+      properties.title
+    );
+  }
 
-function assignDefined(target, attrs) {
-  for (var key in attrs) {
-    if (typeof attrs[key] !== 'undefined') {
-      target[key] = attrs[key];
+  if (!basic && name === 'li') {
+    const input = getInputElement(node);
+    properties.checked = input ? Boolean(input.properties.checked) : null;
+    properties.index = getElementsBeforeCount(parent, node);
+    properties.ordered = parent.tagName === 'ol';
+  }
+
+  if (!basic && (name === 'ol' || name === 'ul')) {
+    properties.ordered = name === 'ol';
+    properties.depth = context.listDepth;
+  }
+
+  if (name === 'td' || name === 'th') {
+    if (properties.align) {
+      if (!properties.style) properties.style = {};
+      // @ts-ignore assume `style` is an object
+      properties.style.textAlign = properties.align;
+      delete properties.align;
+    }
+
+    if (!basic) {
+      properties.isHeader = name === 'th';
     }
   }
-}
 
-function mergeNodeChildren(node, parsedChildren) {
-  var el = node.element;
-
-  if (Array.isArray(el)) {
-    /* istanbul ignore next - `div` fallback for old React. */
-    var Fragment = compat_module.Fragment || 'div';
-    return compat_module.createElement(Fragment, null, el);
+  if (!basic && name === 'tr') {
+    properties.isHeader = Boolean(parent.tagName === 'thead');
   }
 
-  if (el.props.children || parsedChildren) {
-    var children = compat_module.Children.toArray(el.props.children).concat(parsedChildren);
-    return compat_module.cloneElement(el, null, children);
+  // If `sourcePos` is given, pass source information (line/column info from markdown source).
+  if (options.sourcePos) {
+    properties['data-sourcepos'] = flattenPosition(position);
   }
 
-  return compat_module.cloneElement(el, null);
+  if (!basic && options.rawSourcePos) {
+    properties.sourcePosition = node.position;
+  }
+
+  // If `includeElementIndex` is given, pass node index info to components.
+  if (!basic && options.includeElementIndex) {
+    properties.index = getElementsBeforeCount(parent, node);
+    properties.siblingCount = getElementsBeforeCount(parent);
+  }
+
+  if (!basic) {
+    properties.node = node;
+  }
+
+  // Ensure no React warnings are emitted for void elements w/ children.
+  return children.length > 0
+    ? compat_module.createElement(component, properties, children)
+    : compat_module.createElement(component, properties)
 }
 
+/**
+ * @param {Element|Root} node
+ * @returns {Element?}
+ */
+function getInputElement(node) {
+  let index = -1;
+
+  while (++index < node.children.length) {
+    const child = node.children[index];
+
+    if (child.type === 'element' && child.tagName === 'input') {
+      return child
+    }
+  }
+
+  return null
+}
+
+/**
+ * @param {Element|Root} parent
+ * @param {Element} [node]
+ * @returns {number}
+ */
+function getElementsBeforeCount(parent, node) {
+  let index = -1;
+  let count = 0;
+
+  while (++index < parent.children.length) {
+    if (parent.children[index] === node) break
+    if (parent.children[index].type === 'element') count++;
+  }
+
+  return count
+}
+
+/**
+ * @param {Object.<string, unknown>} props
+ * @param {string} prop
+ * @param {unknown} value
+ * @param {Context} ctx
+ */
+function addProperty(props, prop, value, ctx) {
+  /** @type {Info} */
+  const info = find_1(ctx.schema, prop);
+  let result = value;
+
+  // Ignore nullish and `NaN` values.
+  // eslint-disable-next-line no-self-compare
+  if (result === null || result === undefined || result !== result) {
+    return
+  }
+
+  // Accept `array`.
+  // Most props are space-separated.
+  if (result && typeof result === 'object' && 'length' in result) {
+    // type-coverage:ignore-next-line remove when typed.
+    result = (info.commaSeparated ? commaSeparatedTokens : spaceSeparatedTokens).stringify(result);
+  }
+
+  if (info.property === 'style' && typeof result === 'string') {
+    result = parseStyle(result);
+  }
+
+  if (info.space) {
+    props[
+      own$7.call(hastToReact, info.property)
+        ? hastToReact[info.property]
+        : info.property
+    ] = result;
+  } else {
+    props[info.attribute] = result;
+  }
+}
+
+/**
+ * @param {string} value
+ * @returns {Object.<string, string>}
+ */
+function parseStyle(value) {
+  /** @type {Object.<string, string>} */
+  const result = {};
+
+  try {
+    styleToObject(value, iterator);
+  } catch (/** @type {Error} */ _) {
+    // Silent.
+  }
+
+  return result
+
+  /**
+   * @param {string} name
+   * @param {string} v
+   */
+  function iterator(name, v) {
+    const k = name.slice(0, 4) === '-ms-' ? `ms-${name.slice(4)}` : name;
+    result[k.replace(/-([a-z])/g, styleReplacer)] = v;
+  }
+}
+
+/**
+ * @param {unknown} _
+ * @param {string} $1
+ */
+function styleReplacer(_, $1) {
+  return $1.toUpperCase()
+}
+
+/**
+ * @param {Position} pos
+ * @returns {string}
+ */
 function flattenPosition(pos) {
-  return [pos.start.line, ':', pos.start.column, '-', pos.end.line, ':', pos.end.column].map(String).join('');
+  return [
+    pos.start.line,
+    ':',
+    pos.start.column,
+    '-',
+    pos.end.line,
+    ':',
+    pos.end.column
+  ]
+    .map((d) => String(d))
+    .join('')
 }
 
-function getListItemChildren(node, parent) {
-  /* istanbul ignore next - list items are always in a list, but best to be sure. */
-  var loose = parent && parent.node ? listLoose(parent.node) : listItemLoose(node);
-  return loose ? node.children : unwrapParagraphs(node);
-}
-
-function unwrapParagraphs(node) {
-  return node.children.reduce(function (array, child) {
-    return array.concat(child.type === 'paragraph' ? child.children : [child]);
-  }, []);
-}
-
-function listLoose(node) {
-  var children = node.children;
-  var loose = node.spread;
-  var index = -1;
-
-  while (!loose && ++index < children.length) {
-    loose = listItemLoose(children[index]);
-  }
-
-  return loose;
-}
-
-function listItemLoose(node) {
-  var spread = node.spread;
-  /* istanbul ignore next - spread is present from remark-parse, but maybe plugins don’t set it. */
-
-  return spread === undefined || spread === null ? node.children.length > 1 : spread;
-}
-
-var astToReact_1 = astToReact;
-
-var wrapTableRows = function (node) {
-  unistUtilVisit(node, 'table', wrap$1);
-  return node;
+var astToReact = {
+	hastToReact: hastToReact_1,
+	hastChildrenToReact: hastChildrenToReact
 };
 
-function wrap$1(table) {
-  var children = table.children;
-  table.children = [{
-    type: 'tableHead',
-    align: table.align,
-    children: [children[0]],
-    position: children[0].position
-  }];
+// @ts-ignore remove when typed
 
-  if (children.length > 1) {
-    table.children.push({
-      type: 'tableBody',
-      align: table.align,
-      children: children.slice(1),
-      position: {
-        start: children[1].position.start,
-        end: children[children.length - 1].position.end
-      }
-    });
+
+
+const childrenToReact$1 = astToReact.hastChildrenToReact;
+
+/**
+ * @typedef {import('react').ReactNode} ReactNode
+ * @typedef {import('react').ReactElement<{}>} ReactElement
+ * @typedef {import('unified').PluggableList} PluggableList
+ * @typedef {import('hast').Root} Root
+ * @typedef {import('./rehype-filter.js').RehypeFilterOptions} FilterOptions
+ * @typedef {import('./ast-to-react.js').TransformOptions} TransformOptions
+ *
+ * @typedef {Object} CoreOptions
+ * @property {string} children
+ *
+ * @typedef {Object} PluginOptions
+ * @property {PluggableList} [plugins=[]] **deprecated**: use `remarkPlugins` instead
+ * @property {PluggableList} [remarkPlugins=[]]
+ * @property {PluggableList} [rehypePlugins=[]]
+ *
+ * @typedef {Object} LayoutOptions
+ * @property {string} [className]
+ *
+ * @typedef {CoreOptions & PluginOptions & LayoutOptions & FilterOptions & TransformOptions} ReactMarkdownOptions
+ */
+
+var reactMarkdown = ReactMarkdown;
+
+const own$8 = {}.hasOwnProperty;
+const changelog =
+  'https://github.com/remarkjs/react-markdown/blob/main/changelog.md';
+
+/**
+ * @typedef {Object} Deprecation
+ * @property {string} id
+ * @property {string} [to]
+ */
+
+/**
+ * @type {Object.<string, Deprecation>}
+ */
+const deprecated = {
+  renderers: {to: 'components', id: 'change-renderers-to-components'},
+  astPlugins: {id: 'remove-buggy-html-in-markdown-parser'},
+  allowDangerousHtml: {id: 'remove-buggy-html-in-markdown-parser'},
+  escapeHtml: {id: 'remove-buggy-html-in-markdown-parser'},
+  source: {to: 'children', id: 'change-source-to-children'},
+  allowNode: {
+    to: 'allowElement',
+    id: 'replace-allownode-allowedtypes-and-disallowedtypes'
+  },
+  allowedTypes: {
+    to: 'allowedElements',
+    id: 'replace-allownode-allowedtypes-and-disallowedtypes'
+  },
+  disallowedTypes: {
+    to: 'disallowedElements',
+    id: 'replace-allownode-allowedtypes-and-disallowedtypes'
+  },
+  includeNodeIndex: {
+    to: 'includeElementIndex',
+    id: 'change-includenodeindex-to-includeelementindex'
   }
-}
-
-var getDefinitions = function getDefinitions(tree) {
-  var definitions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  unistUtilVisit(tree, 'definition', function (node) {
-    var identifier = node.identifier.toUpperCase();
-    if (identifier in definitions) return;
-    definitions[identifier] = {
-      href: node.url,
-      title: node.title
-    };
-  });
-  return definitions;
 };
 
-var protocols = ['http', 'https', 'mailto', 'tel'];
-
-var uriTransformer = function uriTransformer(uri) {
-  var url = (uri || '').trim();
-  var first = url.charAt(0);
-
-  if (first === '#' || first === '/') {
-    return url;
-  }
-
-  var colon = url.indexOf(':');
-
-  if (colon === -1) {
-    return url;
-  }
-
-  var length = protocols.length;
-  var index = -1;
-
-  while (++index < length) {
-    var protocol = protocols[index];
-
-    if (colon === protocol.length && url.slice(0, protocol.length).toLowerCase() === protocol) {
-      return url;
+/**
+ * @param {ReactMarkdownOptions} options
+ * @returns {ReactElement}
+ */
+function ReactMarkdown(options) {
+  for (const key in deprecated) {
+    if (own$8.call(deprecated, key) && own$8.call(options, key)) {
+      /** @type {Deprecation} */
+      const deprecation = deprecated[key];
+      console.warn(
+        `[react-markdown] Warning: please ${
+          deprecation.to ? `use \`${deprecation.to}\` instead of` : 'remove'
+        } \`${key}\` (see <${changelog}#${deprecation.id}> for more info)`
+      );
+      delete deprecated[key];
     }
   }
 
-  index = url.indexOf('?');
+  const processor = unified_1()
+    .use(remarkParse)
+    // TODO: deprecate `plugins` in v7.0.0.
+    .use(options.remarkPlugins || options.plugins || [])
+    .use(remarkRehype, {allowDangerousHtml: true})
+    .use(options.rehypePlugins || [])
+    .use(rehypeFilter_1, options);
 
-  if (index !== -1 && colon > index) {
-    return url;
-  }
+  /** @type {vfile} */
+  let file;
 
-  index = url.indexOf('#');
-
-  if (index !== -1 && colon > index) {
-    return url;
-  } // eslint-disable-next-line no-script-url
-
-
-  return 'javascript:void(0)';
-};
-
-/* istanbul ignore next - Don’t crash on old React. */
-
-
-var supportsStringRender = parseInt((compat_module.version || '16').slice(0, 2), 10) >= 16;
-var createElement = compat_module.createElement;
-var renderers = {
-  break: 'br',
-  paragraph: 'p',
-  emphasis: 'em',
-  strong: 'strong',
-  thematicBreak: 'hr',
-  blockquote: 'blockquote',
-  delete: 'del',
-  link: 'a',
-  image: 'img',
-  linkReference: 'a',
-  imageReference: 'img',
-  table: SimpleRenderer.bind(null, 'table'),
-  tableHead: SimpleRenderer.bind(null, 'thead'),
-  tableBody: SimpleRenderer.bind(null, 'tbody'),
-  tableRow: SimpleRenderer.bind(null, 'tr'),
-  tableCell: TableCell,
-  root: Root,
-  text: TextRenderer,
-  list: List,
-  listItem: ListItem,
-  definition: NullRenderer,
-  heading: Heading,
-  inlineCode: InlineCode,
-  code: CodeBlock,
-  html: Html,
-  virtualHtml: VirtualHtml,
-  parsedHtml: ParsedHtml
-};
-
-function TextRenderer(props) {
-  /* istanbul ignore next - a text node w/o a value could be injected by plugins */
-  var children = props.children || '';
-  /* istanbul ignore next - `span` is a fallback for old React. */
-
-  return supportsStringRender ? children : createElement('span', null, children);
-}
-
-function Root(props) {
-  var className = props.className;
-  var root = !className && compat_module.Fragment || 'div';
-  return createElement(root, className ? {
-    className: className
-  } : null, props.children);
-}
-
-function SimpleRenderer(tag, props) {
-  return createElement(tag, getCoreProps(props), props.children);
-}
-
-function TableCell(props) {
-  var style = props.align ? {
-    textAlign: props.align
-  } : undefined;
-  var coreProps = getCoreProps(props);
-  return createElement(props.isHeader ? 'th' : 'td', style ? immutable({
-    style: style
-  }, coreProps) : coreProps, props.children);
-}
-
-function Heading(props) {
-  return createElement("h".concat(props.level), getCoreProps(props), props.children);
-}
-
-function List(props) {
-  var attrs = getCoreProps(props);
-
-  if (props.start !== null && props.start !== 1 && props.start !== undefined) {
-    attrs.start = props.start.toString();
-  }
-
-  return createElement(props.ordered ? 'ol' : 'ul', attrs, props.children);
-}
-
-function ListItem(props) {
-  var checkbox = null;
-
-  if (props.checked !== null && props.checked !== undefined) {
-    var checked = props.checked;
-    checkbox = createElement('input', {
-      type: 'checkbox',
-      checked: checked,
-      readOnly: true
-    });
-  }
-
-  return createElement('li', getCoreProps(props), checkbox, props.children);
-}
-
-function CodeBlock(props) {
-  var className = props.language && "language-".concat(props.language);
-  var code = createElement('code', className ? {
-    className: className
-  } : null, props.value);
-  return createElement('pre', getCoreProps(props), code);
-}
-
-function InlineCode(props) {
-  return createElement('code', getCoreProps(props), props.children);
-}
-
-function Html(props) {
-  if (props.skipHtml) {
-    return null;
-  }
-
-  var dangerous = props.allowDangerousHtml || props.escapeHtml === false;
-  var tag = props.isBlock ? 'div' : 'span';
-
-  if (!dangerous) {
-    /* istanbul ignore next - `tag` is a fallback for old React. */
-    return createElement(compat_module.Fragment || tag, null, props.value);
-  }
-
-  var nodeProps = {
-    dangerouslySetInnerHTML: {
-      __html: props.value
+  if (typeof options.children === 'string') {
+    file = vfile(options.children);
+  } else {
+    if (options.children !== undefined && options.children !== null) {
+      console.warn(
+        `[react-markdown] Warning: please pass a string as \`children\` (not: \`${options.children}\`)`
+      );
     }
-  };
-  return createElement(tag, nodeProps);
-}
 
-function ParsedHtml(props) {
-  /* To do: `React.cloneElement` is slow, is it really needed? */
-  return props['data-sourcepos'] ? compat_module.cloneElement(props.element, {
-    'data-sourcepos': props['data-sourcepos']
-  }) : props.element;
-}
-
-function VirtualHtml(props) {
-  return createElement(props.tag, getCoreProps(props), props.children);
-}
-
-function NullRenderer() {
-  return null;
-}
-
-function getCoreProps(props) {
-  var source = props['data-sourcepos'];
-  /* istanbul ignore next - nodes from plugins w/o position */
-
-  return source ? {
-    'data-sourcepos': source
-  } : {};
-}
-
-var HtmlParser = '__RMD_HTML_PARSER__';
-/* istanbul ignore next - Fallback for `Symbol`. */
-
-var HtmlParser_1 = typeof Symbol === 'undefined' ? HtmlParser : Symbol(HtmlParser);
-
-var symbols = {
-	HtmlParser: HtmlParser_1
-};
-
-var allTypes = Object.keys(renderers);
-
-var ReactMarkdown = function ReactMarkdown(props) {
-  // To do in next major: remove `source`.
-  var src = props.source || props.children || '';
-
-  if (props.allowedTypes && props.disallowedTypes) {
-    throw new Error('Only one of `allowedTypes` and `disallowedTypes` should be defined');
+    file = vfile();
   }
 
-  var renderers$1 = immutable(renderers, props.renderers);
-  var processor = unified_1().use(remarkParse).use(props.plugins || []); // eslint-disable-next-line no-sync
+  /** @type {Root} */
+  // @ts-ignore we’ll throw if it isn’t a root next.
+  const hastNode = processor.runSync(processor.parse(file), file);
 
-  var tree = processor.runSync(processor.parse(src));
-  var renderProps = immutable(props, {
-    renderers: renderers$1,
-    definitions: getDefinitions(tree)
-  });
-  determineAstToReactTransforms(props).forEach(function (transform) {
-    tree = transform(tree, renderProps);
-  });
-  return tree;
-};
-
-function determineAstToReactTransforms(props) {
-  var transforms = [wrapTableRows, mdastAddListMetadata()];
-  var disallowedTypes = props.disallowedTypes;
-
-  if (props.allowedTypes) {
-    disallowedTypes = allTypes.filter(function (type) {
-      return type !== 'root' && props.allowedTypes.indexOf(type) === -1;
-    });
+  if (hastNode.type !== 'root') {
+    throw new TypeError('Expected a `root` node')
   }
 
-  var removalMethod = props.unwrapDisallowed ? 'unwrap' : 'remove';
+  /** @type {ReactElement} */
+  let result = compat_module.createElement(
+    compat_module.Fragment,
+    {},
+    childrenToReact$1({options: options, schema: html_1$1, listDepth: 0}, hastNode)
+  );
 
-  if (disallowedTypes && disallowedTypes.length > 0) {
-    transforms.push(disallowNode.ofType(disallowedTypes, removalMethod));
+  if (options.className) {
+    result = compat_module.createElement('div', {className: options.className}, result);
   }
 
-  if (props.allowNode) {
-    transforms.push(disallowNode.ifNotMatch(props.allowNode, removalMethod));
-  } // To do in next major: remove `escapeHtml`.
-
-
-  var renderHtml = (props.allowDangerousHtml || props.escapeHtml === false) && !props.skipHtml;
-  var hasHtmlParser = (props.astPlugins || []).some(function (transform) {
-    return transform.identity === symbols.HtmlParser;
-  });
-
-  if (renderHtml && !hasHtmlParser) {
-    transforms.push(naiveHtml);
-  }
-
-  if (props.astPlugins) {
-    transforms = transforms.concat(props.astPlugins);
-  } // Add the final transform to turn everything into React.
-
-
-  transforms.push(astToReact_1);
-  return transforms;
+  return result
 }
 
-ReactMarkdown.defaultProps = {
-  transformLinkUri: uriTransformer
-};
+ReactMarkdown.defaultProps = {transformLinkUri: uriTransformer_1};
+
 ReactMarkdown.propTypes = {
-  className: propTypes.string,
-  source: propTypes.string,
+  // Core options:
   children: propTypes.string,
+  // Layout options:
+  className: propTypes.string,
+  // Filter options:
+  allowElement: propTypes.func,
+  allowedElements: propTypes.arrayOf(propTypes.string),
+  disallowedElements: propTypes.arrayOf(propTypes.string),
+  unwrapDisallowed: propTypes.bool,
+  // Plugin options:
+  // type-coverage:ignore-next-line
+  remarkPlugins: propTypes.arrayOf(
+    propTypes.oneOfType([
+      propTypes.object,
+      propTypes.func,
+      propTypes.arrayOf(propTypes.oneOfType([propTypes.object, propTypes.func]))
+    ])
+  ),
+  // type-coverage:ignore-next-line
+  rehypePlugins: propTypes.arrayOf(
+    propTypes.oneOfType([
+      propTypes.object,
+      propTypes.func,
+      propTypes.arrayOf(propTypes.oneOfType([propTypes.object, propTypes.func]))
+    ])
+  ),
+  // Transform options:
   sourcePos: propTypes.bool,
   rawSourcePos: propTypes.bool,
-  escapeHtml: propTypes.bool,
-  allowDangerousHtml: propTypes.bool,
   skipHtml: propTypes.bool,
-  allowNode: propTypes.func,
-  allowedTypes: propTypes.arrayOf(propTypes.oneOf(allTypes)),
-  disallowedTypes: propTypes.arrayOf(propTypes.oneOf(allTypes)),
+  includeElementIndex: propTypes.bool,
   transformLinkUri: propTypes.oneOfType([propTypes.func, propTypes.bool]),
   linkTarget: propTypes.oneOfType([propTypes.func, propTypes.string]),
   transformImageUri: propTypes.func,
-  astPlugins: propTypes.arrayOf(propTypes.func),
-  unwrapDisallowed: propTypes.bool,
-  renderers: propTypes.object,
-  plugins: propTypes.array
+  components: propTypes.object
 };
-ReactMarkdown.types = allTypes;
-ReactMarkdown.renderers = renderers;
-ReactMarkdown.uriTransformer = uriTransformer;
-var reactMarkdown = ReactMarkdown;
+
+ReactMarkdown.uriTransformer = uriTransformer_1;
 
 export default reactMarkdown;
