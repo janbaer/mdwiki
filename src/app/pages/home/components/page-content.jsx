@@ -95,7 +95,7 @@ export default class PageContent extends Component {
           canDelete={canDelete}
         />
         <div class="PageContent-body markdown-body">
-          <ReactMarkdown source={content} renderers={{ link: Link }} />
+          <ReactMarkdown children={content} renderers={{ link: Link }} />
         </div>
         <HotKey
           keys={['shift', 'e']}

@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 
 import groupPages from '@app/helpers/page-grouper';
 
@@ -19,7 +19,12 @@ export default class Sidebar extends Component {
 
   scrollTo(e) {
     e.preventDefault();
-    document.querySelector(`#group${e.target.innerText}`).scrollIntoView({ behavior: 'smooth' });
+    const groupElement = document.getElementById(`group${e.target.innerText}`);
+    if (groupElement.scrollIntoViewIfNeeded) {
+      groupElement.scrollIntoViewIfNeeded(true);
+    } else {
+      groupElement.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+    }
   }
 
   renderPageEntry(page) {
@@ -51,12 +56,14 @@ export default class Sidebar extends Component {
   render({ pages }, state) {
     const groups = groupPages(pages);
     return (
-      <div class="Sidebar-listContainer">
+      <Fragment>
         <div class="Sidebar-groupLinkContainer">
           {groups.map(this.renderGroupLink)}
         </div>
-        {groups.map(this.renderGroup)}
-      </div>
+        <div class="Sidebar-listContainer">
+          {groups.map(this.renderGroup)}
+        </div>
+      </Fragment>
     );
   }
 }
