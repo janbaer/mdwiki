@@ -15,3 +15,11 @@ hosted in an easy way as **GitHub** page. And since **GitHub** is providing supp
 I use **Preact.js** instead of *React* and the **Parcel.js** bundler
 which gives a big help to concentrate on the functionality of MDWiki and not waste too much time
 with configuring and maintaining the build and deployment process.
+
+# Deploying a new version
+
+To deploy a new version you just have to create a new Git tag and push it to GitHub. The deployment to the Github pages branch will happen then automatically with the configured GitHub action.
+
+```
+git tag -a 3.2.6 -m "3.2.66 - Fix wrong domain name in CNAME" && git push --tags
+```
