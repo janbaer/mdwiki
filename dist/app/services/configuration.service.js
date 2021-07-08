@@ -49,7 +49,7 @@ class ConfigurationService {
     } else if (this.isLan) {
       oauthClientId = '5e9db2b459c52458a8a2';
     }
-    return `https://github-oauth-bridge.jan-baer.now.sh/api/login?clientId=${oauthClientId}`;
+    return `https://github-oauth-bridge.jan-baer.vercel.app/api/login?clientId=${oauthClientId}`;
   }
 
   get user() {

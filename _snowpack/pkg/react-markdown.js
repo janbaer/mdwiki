@@ -1,7 +1,7 @@
-import { c as compat_module } from './common/compat.module-d2e7f108.js';
+import { c as compat_module } from './common/compat.module-f1eea9c0.js';
 import { c as createCommonjsModule } from './common/_commonjsHelpers-16be0a9e.js';
-import './common/hooks.module-dd3aa32b.js';
-import './common/preact.module-4990fb49.js';
+import './common/hooks.module-048906d5.js';
+import './common/preact.module-46160530.js';
 
 var own = {}.hasOwnProperty;
 
@@ -767,18 +767,6 @@ function bail(err) {
   }
 }
 
-/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-
-var isBuffer$1 = function isBuffer (obj) {
-  return obj != null && obj.constructor != null &&
-    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-};
-
 var hasOwn = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
 var defineProperty = Object.defineProperty;
@@ -1072,7 +1060,7 @@ function pipelineStringify(p, ctx) {
   var result = p.stringify(ctx.tree, ctx.file);
   var file = ctx.file;
 
-  if (result === undefined || result === null) ; else if (typeof result === 'string' || isBuffer$1(result)) {
+  if (result === undefined || result === null) ; else if (typeof result === 'string' || isBuffer(result)) {
     file.contents = result;
   } else {
     file.result = result;

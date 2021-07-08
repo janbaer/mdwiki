@@ -1,3 +1,3 @@
-export { L as Suspense, D as lazy } from '../common/compat.module-d2e7f108.js';
-import '../common/hooks.module-dd3aa32b.js';
-import '../common/preact.module-4990fb49.js';
+export { L as Suspense, F as lazy } from '../common/compat.module-f1eea9c0.js';
+import '../common/hooks.module-048906d5.js';
+import '../common/preact.module-46160530.js';
