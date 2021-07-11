@@ -74,7 +74,7 @@ export default class PageContent extends Component {
       class: "PageContent-body markdown-body"
     }, /* @__PURE__ */ h(ReactMarkdown, {
       children: content,
-      renderers: {link: Link}
+      components: {a: Link}
     })), /* @__PURE__ */ h(HotKey, {
       keys: ["shift", "e"],
       simultaneous: true,
