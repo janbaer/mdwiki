@@ -1,5 +1,5 @@
 import { h, Component } from 'preact';
-import SimpleMDE from 'react-simplemde-editor';
+import { SimpleMdeReact } from 'react-simplemde-editor';
 
 import HotKey from '@app/components/hotkey';
 import ModalInputDialog from '@app/components/modal-input-dialog';
@@ -64,6 +64,10 @@ export default class PageEditor extends Component {
     SimpleMDEOptions.toolbar = [...myButtons, ...defaultToolbar];
   }
 
+  _getCodemirrorInstance(codeMirror) {
+    this.codeMirror = codeMirror;
+  }
+
   onHideCommitMessageDialog(dialogResult, commitMessage) {
     if (dialogResult) {
       this.props.onSave(this.state.content, commitMessage);
@@ -76,7 +80,7 @@ export default class PageEditor extends Component {
     let selectedText = '';
 
     if (this.simpleMDE) {
-      selectedText = this.simpleMDE.simpleMde.codemirror.getSelection();
+      selectedText = this.codeMirror.getSelection();
     }
     this.setState({ selectedText, isCommitMessageDialogShown });
   }
@@ -114,11 +118,12 @@ export default class PageEditor extends Component {
     return (
       <div>
         { this.renderCommitMessageDialog(defaultCommitMessage) }
-        <SimpleMDE
+        <SimpleMdeReact
           ref={simpleMDE => { this.simpleMDE = simpleMDE; }} // eslint-disable-line
           onChange={this.changeState}
           value={content}
           options={SimpleMDEOptions}
+          getCodemirrorInstance={codeMirror => this._getCodemirrorInstance(codeMirror)}
         />
         <HotKey
           keys={['alt', 's']}
