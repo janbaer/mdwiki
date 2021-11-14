@@ -1,13 +1,36 @@
-import { c as compat_module } from './common/compat.module-f1eea9c0.js';
-import { c as createCommonjsModule } from './common/_commonjsHelpers-16be0a9e.js';
-import './common/hooks.module-048906d5.js';
-import './common/preact.module-46160530.js';
+import { R as React } from './common/compat.module-0acb3fb2.js';
+import { c as createCommonjsModule } from './common/_commonjsHelpers-1405211c.js';
+import './common/hooks.module-abe71a1a.js';
+import './common/preact.module-c8b5c1c7.js';
+
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+var isBuffer = function isBuffer (obj) {
+  return obj != null && obj.constructor != null &&
+    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+};
 
 var own = {}.hasOwnProperty;
 
-var unistUtilStringifyPosition = stringify;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Position} Position
+ * @typedef {import('unist').Point} Point
+ */
 
-function stringify(value) {
+/**
+ * Stringify one point, a position (start and end points), or a node’s
+ * positional information.
+ *
+ * @param {Node|Position|Point} [value]
+ * @returns {string}
+ */
+function stringifyPosition(value) {
   // Nothing.
   if (!value || typeof value !== 'object') {
     return ''
@@ -15,16 +38,19 @@ function stringify(value) {
 
   // Node.
   if (own.call(value, 'position') || own.call(value, 'type')) {
+    // @ts-ignore looks like a node.
     return position(value.position)
   }
 
   // Position.
   if (own.call(value, 'start') || own.call(value, 'end')) {
+    // @ts-ignore looks like a position.
     return position(value)
   }
 
   // Point.
   if (own.call(value, 'line') || own.call(value, 'column')) {
+    // @ts-ignore looks like a point.
     return point(value)
   }
 
@@ -32,116 +58,170 @@ function stringify(value) {
   return ''
 }
 
+/**
+ * @param {Point} point
+ * @returns {string}
+ */
 function point(point) {
-  if (!point || typeof point !== 'object') {
-    point = {};
-  }
-
-  return index(point.line) + ':' + index(point.column)
+  return index(point && point.line) + ':' + index(point && point.column)
 }
 
+/**
+ * @param {Position} pos
+ * @returns {string}
+ */
 function position(pos) {
-  if (!pos || typeof pos !== 'object') {
-    pos = {};
-  }
-
-  return point(pos.start) + '-' + point(pos.end)
+  return point(pos && pos.start) + '-' + point(pos && pos.end)
 }
 
+/**
+ * @param {number} value
+ * @returns {number}
+ */
 function index(value) {
   return value && typeof value === 'number' ? value : 1
 }
 
-var vfileMessage = VMessage;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Position} Position
+ * @typedef {import('unist').Point} Point
+ */
 
-// Inherit from `Error#`.
-function VMessagePrototype() {}
-VMessagePrototype.prototype = Error.prototype;
-VMessage.prototype = new VMessagePrototype();
+class VFileMessage extends Error {
+  /**
+   * Constructor of a message for `reason` at `place` from `origin`.
+   * When an error is passed in as `reason`, copies the `stack`.
+   *
+   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
+   * @param {Node|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
+   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   */
+  constructor(reason, place, origin) {
+    /** @type {[string?, string?]} */
+    var parts = [null, null];
+    /** @type {Position} */
+    var position = {
+      start: {line: null, column: null},
+      end: {line: null, column: null}
+    };
+    /** @type {number} */
+    var index;
 
-// Message properties.
-var proto = VMessage.prototype;
+    super();
 
-proto.file = '';
-proto.name = '';
-proto.reason = '';
-proto.message = '';
-proto.stack = '';
-proto.fatal = null;
-proto.column = null;
-proto.line = null;
+    if (typeof place === 'string') {
+      origin = place;
+      place = null;
+    }
 
-// Construct a new VMessage.
-//
-// Note: We cannot invoke `Error` on the created context, as that adds readonly
-// `line` and `column` attributes on Safari 9, thus throwing and failing the
-// data.
-function VMessage(reason, position, origin) {
-  var parts;
-  var range;
-  var location;
+    if (typeof origin === 'string') {
+      index = origin.indexOf(':');
 
-  if (typeof position === 'string') {
-    origin = position;
-    position = null;
-  }
+      if (index === -1) {
+        parts[1] = origin;
+      } else {
+        parts[0] = origin.slice(0, index);
+        parts[1] = origin.slice(index + 1);
+      }
+    }
 
-  parts = parseOrigin(origin);
-  range = unistUtilStringifyPosition(position) || '1:1';
-
-  location = {
-    start: {line: null, column: null},
-    end: {line: null, column: null}
-  };
-
-  // Node.
-  if (position && position.position) {
-    position = position.position;
-  }
-
-  if (position) {
-    // Position.
-    if (position.start) {
-      location = position;
-      position = position.start;
-    } else {
+    if (place) {
+      // Node.
+      if ('type' in place || 'position' in place) {
+        if (place.position) {
+          position = place.position;
+        }
+      }
+      // Position.
+      else if ('start' in place || 'end' in place) {
+        // @ts-ignore Looks like a position.
+        position = place;
+      }
       // Point.
-      location.start = position;
+      else if ('line' in place || 'column' in place) {
+        // @ts-ignore Looks like a point.
+        position.start = place;
+      }
     }
-  }
 
-  if (reason.stack) {
-    this.stack = reason.stack;
-    reason = reason.message;
-  }
+    // Fields from `Error`
+    this.name = stringifyPosition(place) || '1:1';
+    this.message = typeof reason === 'object' ? reason.message : reason;
+    this.stack = typeof reason === 'object' ? reason.stack : '';
 
-  this.message = reason;
-  this.name = range;
-  this.reason = reason;
-  this.line = position ? position.line : null;
-  this.column = position ? position.column : null;
-  this.location = location;
-  this.source = parts[0];
-  this.ruleId = parts[1];
+    /**
+     * Reason for message.
+     * @type {string}
+     */
+    this.reason = this.message;
+    /**
+     * Starting line of error.
+     * @type {number?}
+     */
+    this.line = position.start.line;
+    /**
+     * Starting column of error.
+     * @type {number?}
+     */
+    this.column = position.start.column;
+    /**
+     * Namespace of warning.
+     * @type {string?}
+     */
+    this.source = parts[0];
+    /**
+     * Category of message.
+     * @type {string?}
+     */
+    this.ruleId = parts[1];
+    /**
+     * Full range information, when available.
+     * Has start and end properties, both set to an object with line and column, set to number?.
+     * @type {Position?}
+     */
+    this.position = position;
+
+    // The following fields are “well known”.
+    // Not standard.
+    // Feel free to add other non-standard fields to your messages.
+
+    /* eslint-disable no-unused-expressions */
+    /**
+     * You may add a file property with a path of a file (used throughout the VFile ecosystem).
+     * @type {string?}
+     */
+    this.file;
+    /**
+     * If true, marks associated file as no longer processable.
+     * @type {boolean?}
+     */
+    this.fatal;
+    /**
+     * You may add a url property with a link to documentation for the message.
+     * @type {string?}
+     */
+    this.url;
+    /**
+     * You may add a note property with a long form description of the message (supported by vfile-reporter).
+     * @type {string?}
+     */
+    this.note;
+    /* eslint-enable no-unused-expressions */
+  }
 }
 
-function parseOrigin(origin) {
-  var result = [null, null];
-  var index;
-
-  if (typeof origin === 'string') {
-    index = origin.indexOf(':');
-
-    if (index === -1) {
-      result[1] = origin;
-    } else {
-      result[0] = origin.slice(0, index);
-      result[1] = origin.slice(index + 1);
-    }
-  }
-
-  return result
-}
+VFileMessage.prototype.file = '';
+VFileMessage.prototype.name = '';
+VFileMessage.prototype.reason = '';
+VFileMessage.prototype.message = '';
+VFileMessage.prototype.stack = '';
+VFileMessage.prototype.fatal = null;
+VFileMessage.prototype.column = null;
+VFileMessage.prototype.line = null;
+VFileMessage.prototype.source = null;
+VFileMessage.prototype.ruleId = null;
+VFileMessage.prototype.position = null;
 
 // A derivative work based on:
 // <https://github.com/browserify/path-browserify>.
@@ -194,28 +274,28 @@ function parseOrigin(origin) {
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var basename_1 = basename;
-var dirname_1 = dirname;
-var extname_1 = extname;
-var join_1 = join;
-var sep = '/';
+const path = {basename, dirname, extname, join, sep: '/'};
 
+/* eslint-disable max-depth, complexity */
+
+/**
+ * @param {string} path
+ * @param {string} [ext]
+ * @returns {string}
+ */
 function basename(path, ext) {
-  var start = 0;
-  var end = -1;
-  var index;
-  var firstNonSlashEnd;
-  var seenNonSlash;
-  var extIndex;
-
   if (ext !== undefined && typeof ext !== 'string') {
     throw new TypeError('"ext" argument must be a string')
   }
 
   assertPath(path);
-  index = path.length;
+  let start = 0;
+  let end = -1;
+  let index = path.length;
+  /** @type {boolean|undefined} */
+  let seenNonSlash;
 
-  if (ext === undefined || !ext.length || ext.length > path.length) {
+  if (ext === undefined || ext.length === 0 || ext.length > path.length) {
     while (index--) {
       if (path.charCodeAt(index) === 47 /* `/` */) {
         // If we reached a path separator that was not part of a set of path
@@ -239,8 +319,8 @@ function basename(path, ext) {
     return ''
   }
 
-  firstNonSlashEnd = -1;
-  extIndex = ext.length - 1;
+  let firstNonSlashEnd = -1;
+  let extIndex = ext.length - 1;
 
   while (index--) {
     if (path.charCodeAt(index) === 47 /* `/` */) {
@@ -285,19 +365,21 @@ function basename(path, ext) {
   return path.slice(start, end)
 }
 
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function dirname(path) {
-  var end;
-  var unmatchedSlash;
-  var index;
-
   assertPath(path);
 
-  if (!path.length) {
+  if (path.length === 0) {
     return '.'
   }
 
-  end = -1;
-  index = path.length;
+  let end = -1;
+  let index = path.length;
+  /** @type {boolean|undefined} */
+  let unmatchedSlash;
 
   // Prefix `--` is important to not run on `0`.
   while (--index) {
@@ -321,23 +403,26 @@ function dirname(path) {
     : path.slice(0, end)
 }
 
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function extname(path) {
-  var startDot = -1;
-  var startPart = 0;
-  var end = -1;
-  // Track the state of characters (if any) we see before our first dot and
-  // after any path separator we find.
-  var preDotState = 0;
-  var unmatchedSlash;
-  var code;
-  var index;
-
   assertPath(path);
 
-  index = path.length;
+  let index = path.length;
+
+  let end = -1;
+  let startPart = 0;
+  let startDot = -1;
+  // Track the state of characters (if any) we see before our first dot and
+  // after any path separator we find.
+  let preDotState = 0;
+  /** @type {boolean|undefined} */
+  let unmatchedSlash;
 
   while (index--) {
-    code = path.charCodeAt(index);
+    const code = path.charCodeAt(index);
 
     if (code === 47 /* `/` */) {
       // If we reached a path separator that was not part of a set of path
@@ -385,57 +470,70 @@ function extname(path) {
   return path.slice(startDot, end)
 }
 
-function join() {
-  var index = -1;
-  var joined;
+/**
+ * @param {Array.<string>} segments
+ * @returns {string}
+ */
+function join(...segments) {
+  let index = -1;
+  /** @type {string|undefined} */
+  let joined;
 
-  while (++index < arguments.length) {
-    assertPath(arguments[index]);
+  while (++index < segments.length) {
+    assertPath(segments[index]);
 
-    if (arguments[index]) {
+    if (segments[index]) {
       joined =
-        joined === undefined
-          ? arguments[index]
-          : joined + '/' + arguments[index];
+        joined === undefined ? segments[index] : joined + '/' + segments[index];
     }
   }
 
   return joined === undefined ? '.' : normalize(joined)
 }
 
-// Note: `normalize` is not exposed as `path.normalize`, so some code is
-// manually removed from it.
+/**
+ * Note: `normalize` is not exposed as `path.normalize`, so some code is
+ * manually removed from it.
+ *
+ * @param {string} path
+ * @returns {string}
+ */
 function normalize(path) {
-  var absolute;
-  var value;
-
   assertPath(path);
 
-  absolute = path.charCodeAt(0) === 47; /* `/` */
+  const absolute = path.charCodeAt(0) === 47; /* `/` */
 
   // Normalize the path according to POSIX rules.
-  value = normalizeString(path, !absolute);
+  let value = normalizeString(path, !absolute);
 
-  if (!value.length && !absolute) {
+  if (value.length === 0 && !absolute) {
     value = '.';
   }
 
-  if (value.length && path.charCodeAt(path.length - 1) === 47 /* / */) {
+  if (value.length > 0 && path.charCodeAt(path.length - 1) === 47 /* / */) {
     value += '/';
   }
 
   return absolute ? '/' + value : value
 }
 
-// Resolve `.` and `..` elements in a path with directory names.
+/**
+ * Resolve `.` and `..` elements in a path with directory names.
+ *
+ * @param {string} path
+ * @param {boolean} allowAboveRoot
+ * @returns {string}
+ */
 function normalizeString(path, allowAboveRoot) {
-  var result = '';
-  var lastSegmentLength = 0;
-  var lastSlash = -1;
-  var dots = 0;
-  var index = -1;
-  var code;
-  var lastSlashIndex;
+  let result = '';
+  let lastSegmentLength = 0;
+  let lastSlash = -1;
+  let dots = 0;
+  let index = -1;
+  /** @type {number|undefined} */
+  let code;
+  /** @type {number} */
+  let lastSlashIndex;
 
   while (++index <= path.length) {
     if (index < path.length) {
@@ -457,7 +555,6 @@ function normalizeString(path, allowAboveRoot) {
           if (result.length > 2) {
             lastSlashIndex = result.lastIndexOf('/');
 
-            /* istanbul ignore else - No clue how to cover it. */
             if (lastSlashIndex !== result.length - 1) {
               if (lastSlashIndex < 0) {
                 result = '';
@@ -471,7 +568,7 @@ function normalizeString(path, allowAboveRoot) {
               dots = 0;
               continue
             }
-          } else if (result.length) {
+          } else if (result.length > 0) {
             result = '';
             lastSegmentLength = 0;
             lastSlash = index;
@@ -481,11 +578,11 @@ function normalizeString(path, allowAboveRoot) {
         }
 
         if (allowAboveRoot) {
-          result = result.length ? result + '/..' : '..';
+          result = result.length > 0 ? result + '/..' : '..';
           lastSegmentLength = 2;
         }
       } else {
-        if (result.length) {
+        if (result.length > 0) {
           result += '/' + path.slice(lastSlash + 1, index);
         } else {
           result = path.slice(lastSlash + 1, index);
@@ -506,6 +603,9 @@ function normalizeString(path, allowAboveRoot) {
   return result
 }
 
+/**
+ * @param {string} path
+ */
 function assertPath(path) {
   if (typeof path !== 'string') {
     throw new TypeError(
@@ -514,256 +614,513 @@ function assertPath(path) {
   }
 }
 
-var minpath_browser = {
-	basename: basename_1,
-	dirname: dirname_1,
-	extname: extname_1,
-	join: join_1,
-	sep: sep
-};
+/* eslint-enable max-depth, complexity */
 
 // Somewhat based on:
 // <https://github.com/defunctzombie/node-process/blob/master/browser.js>.
 // But I don’t think one tiny line of code can be copyrighted. 😅
-var cwd_1 = cwd;
+const proc = {cwd};
 
 function cwd() {
   return '/'
 }
 
-var minproc_browser = {
-	cwd: cwd_1
-};
-
-/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
+/**
+ * @typedef URL
+ * @property {string} hash
+ * @property {string} host
+ * @property {string} hostname
+ * @property {string} href
+ * @property {string} origin
+ * @property {string} password
+ * @property {string} pathname
+ * @property {string} port
+ * @property {string} protocol
+ * @property {string} search
+ * @property {any} searchParams
+ * @property {string} username
+ * @property {() => string} toString
+ * @property {() => string} toJSON
  */
 
-var isBuffer = function isBuffer (obj) {
-  return obj != null && obj.constructor != null &&
-    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-};
+/**
+ * @param {unknown} fileURLOrPath
+ * @returns {fileURLOrPath is URL}
+ */
+// From: <https://github.com/nodejs/node/blob/fcf8ba4/lib/internal/url.js#L1501>
+function isUrl(fileURLOrPath) {
+  return (
+    fileURLOrPath !== null &&
+    typeof fileURLOrPath === 'object' &&
+    // @ts-expect-error: indexable.
+    fileURLOrPath.href &&
+    // @ts-expect-error: indexable.
+    fileURLOrPath.origin
+  )
+}
 
-var core = VFile;
+/// <reference lib="dom" />
 
-var own$1 = {}.hasOwnProperty;
+// See: <https://github.com/nodejs/node/blob/fcf8ba4/lib/internal/url.js>
+
+/**
+ * @param {string|URL} path
+ */
+function urlToPath(path) {
+  if (typeof path === 'string') {
+    path = new URL(path);
+  } else if (!isUrl(path)) {
+    /** @type {NodeJS.ErrnoException} */
+    const error = new TypeError(
+      'The "path" argument must be of type string or an instance of URL. Received `' +
+        path +
+        '`'
+    );
+    error.code = 'ERR_INVALID_ARG_TYPE';
+    throw error
+  }
+
+  if (path.protocol !== 'file:') {
+    /** @type {NodeJS.ErrnoException} */
+    const error = new TypeError('The URL must be of scheme file');
+    error.code = 'ERR_INVALID_URL_SCHEME';
+    throw error
+  }
+
+  return getPathFromURLPosix(path)
+}
+
+/**
+ * @param {URL} url
+ */
+function getPathFromURLPosix(url) {
+  if (url.hostname !== '') {
+    /** @type {NodeJS.ErrnoException} */
+    const error = new TypeError(
+      'File URL host must be "localhost" or empty on darwin'
+    );
+    error.code = 'ERR_INVALID_FILE_URL_HOST';
+    throw error
+  }
+
+  const pathname = url.pathname;
+  let index = -1;
+
+  while (++index < pathname.length) {
+    if (
+      pathname.charCodeAt(index) === 37 /* `%` */ &&
+      pathname.charCodeAt(index + 1) === 50 /* `2` */
+    ) {
+      const third = pathname.charCodeAt(index + 2);
+      if (third === 70 /* `F` */ || third === 102 /* `f` */) {
+        /** @type {NodeJS.ErrnoException} */
+        const error = new TypeError(
+          'File URL path must not include encoded / characters'
+        );
+        error.code = 'ERR_INVALID_FILE_URL_PATH';
+        throw error
+      }
+    }
+  }
+
+  return decodeURIComponent(pathname)
+}
+
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Position} Position
+ * @typedef {import('unist').Point} Point
+ * @typedef {import('./minurl.shared.js').URL} URL
+ *
+ * @typedef {'ascii'|'utf8'|'utf-8'|'utf16le'|'ucs2'|'ucs-2'|'base64'|'latin1'|'binary'|'hex'} BufferEncoding
+ *   Encodings supported by the buffer class.
+ *   This is a copy of the typing from Node, copied to prevent Node globals from
+ *   being needed.
+ *   Copied from: <https://github.com/DefinitelyTyped/DefinitelyTyped/blob/a2bc1d8/types/node/globals.d.ts#L174>
+ *
+ * @typedef {string|Uint8Array} VFileValue
+ *   Contents of the file.
+ *   Can either be text, or a Buffer like structure.
+ *   This does not directly use type `Buffer`, because it can also be used in a
+ *   browser context.
+ *   Instead this leverages `Uint8Array` which is the base type for `Buffer`,
+ *   and a native JavaScript construct.
+ *
+ * @typedef {VFileValue|VFileOptions|VFile|URL} VFileCompatible
+ *   Things that can be passed to the constructor.
+ *
+ * @typedef VFileCoreOptions
+ * @property {VFileValue} [value]
+ * @property {string} [cwd]
+ * @property {Array.<string>} [history]
+ * @property {string|URL} [path]
+ * @property {string} [basename]
+ * @property {string} [stem]
+ * @property {string} [extname]
+ * @property {string} [dirname]
+ * @property {Object.<string, unknown>} [data]
+ *
+ * @typedef {{[key: string]: unknown} & VFileCoreOptions} VFileOptions
+ *   Configuration: a bunch of keys that will be shallow copied over to the new
+ *   file.
+ *
+ * @typedef {Object.<string, unknown>} VFileReporterSettings
+ * @typedef {<T = VFileReporterSettings>(files: VFile[], options: T) => string} VFileReporter
+ */
 
 // Order of setting (least specific to most), we need this because otherwise
 // `{stem: 'a', path: '~/b.js'}` would throw, as a path is needed before a
 // stem can be set.
-var order = ['history', 'path', 'basename', 'stem', 'extname', 'dirname'];
+const order = ['history', 'path', 'basename', 'stem', 'extname', 'dirname'];
 
-VFile.prototype.toString = toString;
+class VFile {
+  /**
+   * Create a new virtual file.
+   *
+   * If `options` is `string` or `Buffer`, treats it as `{value: options}`.
+   * If `options` is a `VFile`, shallow copies its data over to the new file.
+   * All other given fields are set on the newly created `VFile`.
+   *
+   * Path related properties are set in the following order (least specific to
+   * most specific): `history`, `path`, `basename`, `stem`, `extname`,
+   * `dirname`.
+   *
+   * It’s not possible to set either `dirname` or `extname` without setting
+   * either `history`, `path`, `basename`, or `stem` as well.
+   *
+   * @param {VFileCompatible} [value]
+   */
+  constructor(value) {
+    /** @type {VFileOptions} */
+    let options;
 
-// Access full path (`~/index.min.js`).
-Object.defineProperty(VFile.prototype, 'path', {get: getPath, set: setPath});
+    if (!value) {
+      options = {};
+    } else if (typeof value === 'string' || isBuffer(value)) {
+      // @ts-expect-error Looks like a buffer.
+      options = {value};
+    } else if (isUrl(value)) {
+      options = {path: value};
+    } else {
+      // @ts-expect-error Looks like file or options.
+      options = value;
+    }
 
-// Access parent path (`~`).
-Object.defineProperty(VFile.prototype, 'dirname', {
-  get: getDirname,
-  set: setDirname
-});
+    /**
+     * Place to store custom information.
+     * It’s OK to store custom data directly on the file, moving it to `data`
+     * gives a little more privacy.
+     * @type {Object.<string, unknown>}
+     */
+    this.data = {};
 
-// Access basename (`index.min.js`).
-Object.defineProperty(VFile.prototype, 'basename', {
-  get: getBasename,
-  set: setBasename
-});
+    /**
+     * List of messages associated with the file.
+     * @type {Array.<VFileMessage>}
+     */
+    this.messages = [];
 
-// Access extname (`.js`).
-Object.defineProperty(VFile.prototype, 'extname', {
-  get: getExtname,
-  set: setExtname
-});
+    /**
+     * List of file paths the file moved between.
+     * @type {Array.<string>}
+     */
+    this.history = [];
 
-// Access stem (`index.min`).
-Object.defineProperty(VFile.prototype, 'stem', {get: getStem, set: setStem});
+    /**
+     * Base of `path`.
+     * Defaults to `process.cwd()` (`/` in browsers).
+     * @type {string}
+     */
+    this.cwd = proc.cwd();
 
-// Construct a new file.
-function VFile(options) {
-  var prop;
-  var index;
+    /* eslint-disable no-unused-expressions */
+    /**
+     * Raw value.
+     * @type {VFileValue}
+     */
+    this.value;
 
-  if (!options) {
-    options = {};
-  } else if (typeof options === 'string' || isBuffer(options)) {
-    options = {contents: options};
-  } else if ('message' in options && 'messages' in options) {
-    return options
-  }
+    // The below are non-standard, they are “well-known”.
+    // As in, used in several tools.
 
-  if (!(this instanceof VFile)) {
-    return new VFile(options)
-  }
+    /**
+     * Whether a file was saved to disk.
+     * This is used by vfile reporters.
+     * @type {boolean}
+     */
+    this.stored;
 
-  this.data = {};
-  this.messages = [];
-  this.history = [];
-  this.cwd = minproc_browser.cwd();
+    /**
+     * Sometimes files have a non-string representation.
+     * This can be stored in the `result` field.
+     * One example is when turning markdown into React nodes.
+     * This is used by unified to store non-string results.
+     * @type {unknown}
+     */
+    this.result;
 
-  // Set path related properties in the correct order.
-  index = -1;
+    /**
+     * Sometimes files have a source map associated with them.
+     * This can be stored in the `map` field.
+     * This should be a `RawSourceMap` type from the `source-map` module.
+     * @type {unknown}
+     */
+    this.map;
+    /* eslint-enable no-unused-expressions */
 
-  while (++index < order.length) {
-    prop = order[index];
+    // Set path related properties in the correct order.
+    let index = -1;
 
-    if (own$1.call(options, prop)) {
-      this[prop] = options[prop];
+    while (++index < order.length) {
+      const prop = order[index];
+
+      // Note: we specifically use `in` instead of `hasOwnProperty` to accept
+      // `vfile`s too.
+      if (prop in options && options[prop] !== undefined) {
+        // @ts-expect-error: TS is confused by the different types for `history`.
+        this[prop] = prop === 'history' ? [...options[prop]] : options[prop];
+      }
+    }
+
+    /** @type {string} */
+    let prop;
+
+    // Set non-path related properties.
+    for (prop in options) {
+      // @ts-expect-error: fine to set other things.
+      if (!order.includes(prop)) this[prop] = options[prop];
     }
   }
 
-  // Set non-path related properties.
-  for (prop in options) {
-    if (order.indexOf(prop) < 0) {
-      this[prop] = options[prop];
-    }
+  /**
+   * Access full path (`~/index.min.js`).
+   *
+   * @returns {string}
+   */
+  get path() {
+    return this.history[this.history.length - 1]
   }
-}
 
-function getPath() {
-  return this.history[this.history.length - 1]
-}
-
-function setPath(path) {
-  assertNonEmpty(path, 'path');
-
-  if (this.path !== path) {
-    this.history.push(path);
-  }
-}
-
-function getDirname() {
-  return typeof this.path === 'string' ? minpath_browser.dirname(this.path) : undefined
-}
-
-function setDirname(dirname) {
-  assertPath$1(this.path, 'dirname');
-  this.path = minpath_browser.join(dirname || '', this.basename);
-}
-
-function getBasename() {
-  return typeof this.path === 'string' ? minpath_browser.basename(this.path) : undefined
-}
-
-function setBasename(basename) {
-  assertNonEmpty(basename, 'basename');
-  assertPart(basename, 'basename');
-  this.path = minpath_browser.join(this.dirname || '', basename);
-}
-
-function getExtname() {
-  return typeof this.path === 'string' ? minpath_browser.extname(this.path) : undefined
-}
-
-function setExtname(extname) {
-  assertPart(extname, 'extname');
-  assertPath$1(this.path, 'extname');
-
-  if (extname) {
-    if (extname.charCodeAt(0) !== 46 /* `.` */) {
-      throw new Error('`extname` must start with `.`')
+  /**
+   * Set full path (`~/index.min.js`).
+   * Cannot be nullified.
+   *
+   * @param {string|URL} path
+   */
+  set path(path) {
+    if (isUrl(path)) {
+      path = urlToPath(path);
     }
 
-    if (extname.indexOf('.', 1) > -1) {
-      throw new Error('`extname` cannot contain multiple dots')
+    assertNonEmpty(path, 'path');
+
+    if (this.path !== path) {
+      this.history.push(path);
     }
   }
 
-  this.path = minpath_browser.join(this.dirname, this.stem + (extname || ''));
+  /**
+   * Access parent path (`~`).
+   */
+  get dirname() {
+    return typeof this.path === 'string' ? path.dirname(this.path) : undefined
+  }
+
+  /**
+   * Set parent path (`~`).
+   * Cannot be set if there's no `path` yet.
+   */
+  set dirname(dirname) {
+    assertPath$1(this.basename, 'dirname');
+    this.path = path.join(dirname || '', this.basename);
+  }
+
+  /**
+   * Access basename (including extname) (`index.min.js`).
+   */
+  get basename() {
+    return typeof this.path === 'string' ? path.basename(this.path) : undefined
+  }
+
+  /**
+   * Set basename (`index.min.js`).
+   * Cannot contain path separators.
+   * Cannot be nullified either (use `file.path = file.dirname` instead).
+   */
+  set basename(basename) {
+    assertNonEmpty(basename, 'basename');
+    assertPart(basename, 'basename');
+    this.path = path.join(this.dirname || '', basename);
+  }
+
+  /**
+   * Access extname (including dot) (`.js`).
+   */
+  get extname() {
+    return typeof this.path === 'string' ? path.extname(this.path) : undefined
+  }
+
+  /**
+   * Set extname (including dot) (`.js`).
+   * Cannot be set if there's no `path` yet and cannot contain path separators.
+   */
+  set extname(extname) {
+    assertPart(extname, 'extname');
+    assertPath$1(this.dirname, 'extname');
+
+    if (extname) {
+      if (extname.charCodeAt(0) !== 46 /* `.` */) {
+        throw new Error('`extname` must start with `.`')
+      }
+
+      if (extname.includes('.', 1)) {
+        throw new Error('`extname` cannot contain multiple dots')
+      }
+    }
+
+    this.path = path.join(this.dirname, this.stem + (extname || ''));
+  }
+
+  /**
+   * Access stem (w/o extname) (`index.min`).
+   */
+  get stem() {
+    return typeof this.path === 'string'
+      ? path.basename(this.path, this.extname)
+      : undefined
+  }
+
+  /**
+   * Set stem (w/o extname) (`index.min`).
+   * Cannot be nullified, and cannot contain path separators.
+   */
+  set stem(stem) {
+    assertNonEmpty(stem, 'stem');
+    assertPart(stem, 'stem');
+    this.path = path.join(this.dirname || '', stem + (this.extname || ''));
+  }
+
+  /**
+   * Serialize the file.
+   *
+   * @param {BufferEncoding} [encoding='utf8'] If `file.value` is a buffer, `encoding` is used to serialize buffers.
+   * @returns {string}
+   */
+  toString(encoding) {
+    // @ts-expect-error string’s don’t accept the parameter, but buffers do.
+    return (this.value || '').toString(encoding)
+  }
+
+  /**
+   * Create a message and associates it w/ the file.
+   *
+   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
+   * @param {Node|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
+   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * @returns {VFileMessage}
+   */
+  message(reason, place, origin) {
+    const message = new VFileMessage(reason, place, origin);
+
+    if (this.path) {
+      message.name = this.path + ':' + message.name;
+      message.file = this.path;
+    }
+
+    message.fatal = false;
+
+    this.messages.push(message);
+
+    return message
+  }
+
+  /**
+   * Info: create a message, associate it with the file, and mark the fatality
+   * as `null`.
+   * Calls `message()` internally.
+   *
+   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
+   * @param {Node|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
+   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * @returns {VFileMessage}
+   */
+  info(reason, place, origin) {
+    const message = this.message(reason, place, origin);
+
+    message.fatal = null;
+
+    return message
+  }
+
+  /**
+   * Fail: create a message, associate it with the file, mark the fatality as
+   * `true`.
+   * Note: fatal errors mean a file is no longer processable.
+   * Calls `message()` internally.
+   *
+   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
+   * @param {Node|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
+   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * @returns {never}
+   */
+  fail(reason, place, origin) {
+    const message = this.message(reason, place, origin);
+
+    message.fatal = true;
+
+    throw message
+  }
 }
 
-function getStem() {
-  return typeof this.path === 'string'
-    ? minpath_browser.basename(this.path, this.extname)
-    : undefined
-}
-
-function setStem(stem) {
-  assertNonEmpty(stem, 'stem');
-  assertPart(stem, 'stem');
-  this.path = minpath_browser.join(this.dirname || '', stem + (this.extname || ''));
-}
-
-// Get the value of the file.
-function toString(encoding) {
-  return (this.contents || '').toString(encoding)
-}
-
-// Assert that `part` is not a path (i.e., does not contain `p.sep`).
+/**
+ * Assert that `part` is not a path (as in, does not contain `path.sep`).
+ *
+ * @param {string|undefined} part
+ * @param {string} name
+ * @returns {void}
+ */
 function assertPart(part, name) {
-  if (part && part.indexOf(minpath_browser.sep) > -1) {
+  if (part && part.includes(path.sep)) {
     throw new Error(
-      '`' + name + '` cannot be a path: did not expect `' + minpath_browser.sep + '`'
+      '`' + name + '` cannot be a path: did not expect `' + path.sep + '`'
     )
   }
 }
 
-// Assert that `part` is not empty.
+/**
+ * Assert that `part` is not empty.
+ *
+ * @param {string|undefined} part
+ * @param {string} name
+ * @returns {asserts part is string}
+ */
 function assertNonEmpty(part, name) {
   if (!part) {
     throw new Error('`' + name + '` cannot be empty')
   }
 }
 
-// Assert `path` exists.
+/**
+ * Assert `path` exists.
+ *
+ * @param {string|undefined} path
+ * @param {string} name
+ * @returns {asserts path is string}
+ */
 function assertPath$1(path, name) {
   if (!path) {
     throw new Error('Setting `' + name + '` requires `path` to be set too')
   }
 }
 
-var lib = core;
-
-core.prototype.message = message;
-core.prototype.info = info;
-core.prototype.fail = fail;
-
-// Create a message with `reason` at `position`.
-// When an error is passed in as `reason`, copies the stack.
-function message(reason, position, origin) {
-  var message = new vfileMessage(reason, position, origin);
-
-  if (this.path) {
-    message.name = this.path + ':' + message.name;
-    message.file = this.path;
-  }
-
-  message.fatal = false;
-
-  this.messages.push(message);
-
-  return message
-}
-
-// Fail: creates a vmessage, associates it with the file, and throws it.
-function fail() {
-  var message = this.message.apply(this, arguments);
-
-  message.fatal = true;
-
-  throw message
-}
-
-// Info: creates a vmessage, associates it with the file, and marks the fatality
-// as null.
-function info() {
-  var message = this.message.apply(this, arguments);
-
-  message.fatal = null;
-
-  return message
-}
-
-var vfile = lib;
-
-var bail_1 = bail;
-
-function bail(err) {
-  if (err) {
-    throw err
+/**
+ * Throw a given error.
+ *
+ * @param {Error | null | undefined} [error]
+ */
+function bail(error) {
+  if (error) {
+    throw error
   }
 }
 
@@ -883,53 +1240,143 @@ var extend = function extend() {
 	return target;
 };
 
-var isPlainObj = value => {
+function isPlainObject$1(value) {
 	if (Object.prototype.toString.call(value) !== '[object Object]') {
 		return false;
 	}
 
 	const prototype = Object.getPrototypeOf(value);
 	return prototype === null || prototype === Object.prototype;
-};
+}
 
-var slice = [].slice;
+/**
+ * @typedef {(error?: Error|null|undefined, ...output: any[]) => void} Callback
+ * @typedef {(...input: any[]) => any} Middleware
+ *
+ * @typedef {(...input: any[]) => void} Run Call all middleware.
+ * @typedef {(fn: Middleware) => Pipeline} Use Add `fn` (middleware) to the list.
+ * @typedef {{run: Run, use: Use}} Pipeline
+ */
 
-var wrap_1 = wrap;
+/**
+ * Create new middleware.
+ *
+ * @returns {Pipeline}
+ */
+function trough() {
+  /** @type {Middleware[]} */
+  const fns = [];
+  /** @type {Pipeline} */
+  const pipeline = {run, use};
 
-// Wrap `fn`.
-// Can be sync or async; return a promise, receive a completion handler, return
-// new values and errors.
-function wrap(fn, callback) {
-  var invoked;
+  return pipeline
+
+  /** @type {Run} */
+  function run(...values) {
+    let middlewareIndex = -1;
+    /** @type {Callback} */
+    const callback = values.pop();
+
+    if (typeof callback !== 'function') {
+      throw new TypeError('Expected function as last argument, not ' + callback)
+    }
+
+    next(null, ...values);
+
+    /**
+     * Run the next `fn`, or we’re done.
+     *
+     * @param {Error|null|undefined} error
+     * @param {any[]} output
+     */
+    function next(error, ...output) {
+      const fn = fns[++middlewareIndex];
+      let index = -1;
+
+      if (error) {
+        callback(error);
+        return
+      }
+
+      // Copy non-nullish input into values.
+      while (++index < values.length) {
+        if (output[index] === null || output[index] === undefined) {
+          output[index] = values[index];
+        }
+      }
+
+      // Save the newly created `output` for the next call.
+      values = output;
+
+      // Next or done.
+      if (fn) {
+        wrap(fn, next)(...output);
+      } else {
+        callback(null, ...output);
+      }
+    }
+  }
+
+  /** @type {Use} */
+  function use(middelware) {
+    if (typeof middelware !== 'function') {
+      throw new TypeError(
+        'Expected `middelware` to be a function, not ' + middelware
+      )
+    }
+
+    fns.push(middelware);
+    return pipeline
+  }
+}
+
+/**
+ * Wrap `middleware`.
+ * Can be sync or async; return a promise, receive a callback, or return new
+ * values and errors.
+ *
+ * @param {Middleware} middleware
+ * @param {Callback} callback
+ */
+function wrap(middleware, callback) {
+  /** @type {boolean} */
+  let called;
 
   return wrapped
 
-  function wrapped() {
-    var params = slice.call(arguments, 0);
-    var callback = fn.length > params.length;
-    var result;
+  /**
+   * Call `middleware`.
+   * @param {any[]} parameters
+   * @returns {void}
+   */
+  function wrapped(...parameters) {
+    const fnExpectsCallback = middleware.length > parameters.length;
+    /** @type {any} */
+    let result;
 
-    if (callback) {
-      params.push(done);
+    if (fnExpectsCallback) {
+      parameters.push(done);
     }
 
     try {
-      result = fn.apply(null, params);
+      result = middleware(...parameters);
     } catch (error) {
+      /** @type {Error} */
+      const exception = error;
+
       // Well, this is quite the pickle.
-      // `fn` received a callback and invoked it (thus continuing the pipeline),
-      // but later also threw an error.
-      // We’re not about to restart the pipeline again, so the only thing left
-      // to do is to throw the thing instead.
-      if (callback && invoked) {
-        throw error
+      // `middleware` received a callback and called it synchronously, but that
+      // threw an error.
+      // The only thing left to do is to throw the thing instead.
+      if (fnExpectsCallback && called) {
+        throw exception
       }
 
-      return done(error)
+      return done(exception)
     }
 
-    if (!callback) {
-      if (result && typeof result.then === 'function') {
+    if (!fnExpectsCallback) {
+      if (result instanceof Promise) {
         result.then(then, done);
       } else if (result instanceof Error) {
         done(result);
@@ -939,157 +1386,87 @@ function wrap(fn, callback) {
     }
   }
 
-  // Invoke `next`, only once.
-  function done() {
-    if (!invoked) {
-      invoked = true;
-
-      callback.apply(null, arguments);
+  /**
+   * Call `callback`, only once.
+   * @type {Callback}
+   */
+  function done(error, ...output) {
+    if (!called) {
+      called = true;
+      callback(error, ...output);
     }
   }
 
-  // Invoke `done` with one value.
-  // Tracks if an error is passed, too.
+  /**
+   * Call `done` with one value.
+   *
+   * @param {any} [value]
+   */
   function then(value) {
     done(null, value);
   }
 }
 
-var trough_1 = trough;
-
-trough.wrap = wrap_1;
-
-var slice$1 = [].slice;
-
-// Create new middleware.
-function trough() {
-  var fns = [];
-  var middleware = {};
-
-  middleware.run = run;
-  middleware.use = use;
-
-  return middleware
-
-  // Run `fns`.  Last argument must be a completion handler.
-  function run() {
-    var index = -1;
-    var input = slice$1.call(arguments, 0, -1);
-    var done = arguments[arguments.length - 1];
-
-    if (typeof done !== 'function') {
-      throw new Error('Expected function as last argument, not ' + done)
-    }
-
-    next.apply(null, [null].concat(input));
-
-    // Run the next `fn`, if any.
-    function next(err) {
-      var fn = fns[++index];
-      var params = slice$1.call(arguments, 0);
-      var values = params.slice(1);
-      var length = input.length;
-      var pos = -1;
-
-      if (err) {
-        done(err);
-        return
-      }
-
-      // Copy non-nully input into values.
-      while (++pos < length) {
-        if (values[pos] === null || values[pos] === undefined) {
-          values[pos] = input[pos];
-        }
-      }
-
-      input = values;
-
-      // Next or done.
-      if (fn) {
-        wrap_1(fn, next).apply(null, input);
-      } else {
-        done.apply(null, [null].concat(input));
-      }
-    }
-  }
-
-  // Add `fn` to the list.
-  function use(fn) {
-    if (typeof fn !== 'function') {
-      throw new Error('Expected `fn` to be a function, not ' + fn)
-    }
-
-    fns.push(fn);
-
-    return middleware
-  }
-}
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('vfile').VFileCompatible} VFileCompatible
+ * @typedef {import('vfile').VFileValue} VFileValue
+ * @typedef {import('..').Processor} Processor
+ * @typedef {import('..').Plugin} Plugin
+ * @typedef {import('..').Preset} Preset
+ * @typedef {import('..').Pluggable} Pluggable
+ * @typedef {import('..').PluggableList} PluggableList
+ * @typedef {import('..').Transformer} Transformer
+ * @typedef {import('..').Parser} Parser
+ * @typedef {import('..').Compiler} Compiler
+ * @typedef {import('..').RunCallback} RunCallback
+ * @typedef {import('..').ProcessCallback} ProcessCallback
+ *
+ * @typedef Context
+ * @property {Node} tree
+ * @property {VFile} file
+ */
 
 // Expose a frozen processor.
-var unified_1 = unified().freeze();
+const unified = base().freeze();
 
-var slice$2 = [].slice;
-var own$2 = {}.hasOwnProperty;
-
-// Process pipeline.
-var pipeline = trough_1()
-  .use(pipelineParse)
-  .use(pipelineRun)
-  .use(pipelineStringify);
-
-function pipelineParse(p, ctx) {
-  ctx.tree = p.parse(ctx.file);
-}
-
-function pipelineRun(p, ctx, next) {
-  p.run(ctx.tree, ctx.file, done);
-
-  function done(err, tree, file) {
-    if (err) {
-      next(err);
-    } else {
-      ctx.tree = tree;
-      ctx.file = file;
-      next();
-    }
-  }
-}
-
-function pipelineStringify(p, ctx) {
-  var result = p.stringify(ctx.tree, ctx.file);
-  var file = ctx.file;
-
-  if (result === undefined || result === null) ; else if (typeof result === 'string' || isBuffer(result)) {
-    file.contents = result;
-  } else {
-    file.result = result;
-  }
-}
+const own$1 = {}.hasOwnProperty;
 
 // Function to create the first processor.
-function unified() {
-  var attachers = [];
-  var transformers = trough_1();
-  var namespace = {};
-  var frozen = false;
-  var freezeIndex = -1;
+/**
+ * @returns {Processor}
+ */
+function base() {
+  const transformers = trough();
+  /** @type {Processor['attachers']} */
+  const attachers = [];
+  /** @type {Record<string, unknown>} */
+  let namespace = {};
+  /** @type {boolean|undefined} */
+  let frozen;
+  let freezeIndex = -1;
 
   // Data management.
+  // @ts-expect-error: overloads are handled.
   processor.data = data;
+  processor.Parser = undefined;
+  processor.Compiler = undefined;
 
   // Lock.
   processor.freeze = freeze;
 
   // Plugins.
   processor.attachers = attachers;
+  // @ts-expect-error: overloads are handled.
   processor.use = use;
 
   // API.
   processor.parse = parse;
   processor.stringify = stringify;
+  // @ts-expect-error: overloads are handled.
   processor.run = run;
   processor.runSync = runSync;
+  // @ts-expect-error: overloads are handled.
   processor.process = process;
   processor.processSync = processSync;
 
@@ -1097,13 +1474,13 @@ function unified() {
   return processor
 
   // Create a new processor based on the processor in the current scope.
+  /** @type {Processor} */
   function processor() {
-    var destination = unified();
-    var length = attachers.length;
-    var index = -1;
+    const destination = base();
+    let index = -1;
 
-    while (++index < length) {
-      destination.use.apply(null, attachers[index]);
+    while (++index < attachers.length) {
+      destination.use(...attachers[index]);
     }
 
     destination.data(extend(true, {}, namespace));
@@ -1111,65 +1488,22 @@ function unified() {
     return destination
   }
 
-  // Freeze: used to signal a processor that has finished configuration.
-  //
-  // For example, take unified itself: it’s frozen.
-  // Plugins should not be added to it.
-  // Rather, it should be extended, by invoking it, before modifying it.
-  //
-  // In essence, always invoke this when exporting a processor.
-  function freeze() {
-    var values;
-    var plugin;
-    var options;
-    var transformer;
-
-    if (frozen) {
-      return processor
-    }
-
-    while (++freezeIndex < attachers.length) {
-      values = attachers[freezeIndex];
-      plugin = values[0];
-      options = values[1];
-      transformer = null;
-
-      if (options === false) {
-        continue
-      }
-
-      if (options === true) {
-        values[1] = undefined;
-      }
-
-      transformer = plugin.apply(processor, values.slice(1));
-
-      if (typeof transformer === 'function') {
-        transformers.use(transformer);
-      }
-    }
-
-    frozen = true;
-    freezeIndex = Infinity;
-
-    return processor
-  }
-
-  // Data management.
-  // Getter / setter for processor-specific informtion.
+  /**
+   * @param {string|Record<string, unknown>} [key]
+   * @param {unknown} [value]
+   * @returns {unknown}
+   */
   function data(key, value) {
     if (typeof key === 'string') {
       // Set `key`.
       if (arguments.length === 2) {
         assertUnfrozen('data', frozen);
-
         namespace[key] = value;
-
         return processor
       }
 
       // Get `key`.
-      return (own$2.call(namespace, key) && namespace[key]) || null
+      return (own$1.call(namespace, key) && namespace[key]) || null
     }
 
     // Set space.
@@ -1183,300 +1517,446 @@ function unified() {
     return namespace
   }
 
-  // Plugin management.
-  //
-  // Pass it:
-  // *   an attacher and options,
-  // *   a preset,
-  // *   a list of presets, attachers, and arguments (list of attachers and
-  //     options).
-  function use(value) {
-    var settings;
+  /** @type {Processor['freeze']} */
+  function freeze() {
+    if (frozen) {
+      return processor
+    }
+
+    while (++freezeIndex < attachers.length) {
+      const [attacher, ...options] = attachers[freezeIndex];
+
+      if (options[0] === false) {
+        continue
+      }
+
+      if (options[0] === true) {
+        options[1] = undefined;
+      }
+
+      /** @type {Transformer|void} */
+      const transformer = attacher.call(processor, ...options);
+
+      if (typeof transformer === 'function') {
+        transformers.use(transformer);
+      }
+    }
+
+    frozen = true;
+    freezeIndex = Number.POSITIVE_INFINITY;
+
+    return processor
+  }
+
+  /**
+   * @param {Pluggable|null|undefined} [value]
+   * @param {...unknown} options
+   * @returns {Processor}
+   */
+  function use(value, ...options) {
+    /** @type {Record<string, unknown>|undefined} */
+    let settings;
 
     assertUnfrozen('use', frozen);
 
     if (value === null || value === undefined) ; else if (typeof value === 'function') {
-      addPlugin.apply(null, arguments);
+      addPlugin(value, ...options);
     } else if (typeof value === 'object') {
-      if ('length' in value) {
+      if (Array.isArray(value)) {
         addList(value);
       } else {
         addPreset(value);
       }
     } else {
-      throw new Error('Expected usable value, not `' + value + '`')
+      throw new TypeError('Expected usable value, not `' + value + '`')
     }
 
     if (settings) {
-      namespace.settings = extend(namespace.settings || {}, settings);
+      namespace.settings = Object.assign(namespace.settings || {}, settings);
     }
 
     return processor
 
-    function addPreset(result) {
-      addList(result.plugins);
-
-      if (result.settings) {
-        settings = extend(settings || {}, result.settings);
-      }
-    }
-
+    /**
+     * @param {import('..').Pluggable<unknown[]>} value
+     * @returns {void}
+     */
     function add(value) {
       if (typeof value === 'function') {
         addPlugin(value);
       } else if (typeof value === 'object') {
-        if ('length' in value) {
-          addPlugin.apply(null, value);
+        if (Array.isArray(value)) {
+          const [plugin, ...options] = value;
+          addPlugin(plugin, ...options);
         } else {
           addPreset(value);
         }
       } else {
-        throw new Error('Expected usable value, not `' + value + '`')
+        throw new TypeError('Expected usable value, not `' + value + '`')
       }
     }
 
+    /**
+     * @param {Preset} result
+     * @returns {void}
+     */
+    function addPreset(result) {
+      addList(result.plugins);
+
+      if (result.settings) {
+        settings = Object.assign(settings || {}, result.settings);
+      }
+    }
+
+    /**
+     * @param {PluggableList|null|undefined} [plugins]
+     * @returns {void}
+     */
     function addList(plugins) {
-      var length;
-      var index;
+      let index = -1;
 
-      if (plugins === null || plugins === undefined) ; else if (typeof plugins === 'object' && 'length' in plugins) {
-        length = plugins.length;
-        index = -1;
-
-        while (++index < length) {
-          add(plugins[index]);
+      if (plugins === null || plugins === undefined) ; else if (Array.isArray(plugins)) {
+        while (++index < plugins.length) {
+          const thing = plugins[index];
+          add(thing);
         }
       } else {
-        throw new Error('Expected a list of plugins, not `' + plugins + '`')
+        throw new TypeError('Expected a list of plugins, not `' + plugins + '`')
       }
     }
 
+    /**
+     * @param {Plugin} plugin
+     * @param {...unknown} [value]
+     * @returns {void}
+     */
     function addPlugin(plugin, value) {
-      var entry = find(plugin);
+      let index = -1;
+      /** @type {Processor['attachers'][number]|undefined} */
+      let entry;
+
+      while (++index < attachers.length) {
+        if (attachers[index][0] === plugin) {
+          entry = attachers[index];
+          break
+        }
+      }
 
       if (entry) {
-        if (isPlainObj(entry[1]) && isPlainObj(value)) {
-          value = extend(entry[1], value);
+        if (isPlainObject$1(entry[1]) && isPlainObject$1(value)) {
+          value = extend(true, entry[1], value);
         }
 
         entry[1] = value;
       } else {
-        attachers.push(slice$2.call(arguments));
+        // @ts-expect-error: fine.
+        attachers.push([...arguments]);
       }
     }
   }
 
-  function find(plugin) {
-    var length = attachers.length;
-    var index = -1;
-    var entry;
-
-    while (++index < length) {
-      entry = attachers[index];
-
-      if (entry[0] === plugin) {
-        return entry
-      }
-    }
-  }
-
-  // Parse a file (in string or vfile representation) into a unist node using
-  // the `Parser` on the processor.
+  /** @type {Processor['parse']} */
   function parse(doc) {
-    var file = vfile(doc);
-    var Parser;
-
-    freeze();
-    Parser = processor.Parser;
+    processor.freeze();
+    const file = vfile(doc);
+    const Parser = processor.Parser;
     assertParser('parse', Parser);
 
     if (newable(Parser, 'parse')) {
+      // @ts-expect-error: `newable` checks this.
       return new Parser(String(file), file).parse()
     }
 
+    // @ts-expect-error: `newable` checks this.
     return Parser(String(file), file) // eslint-disable-line new-cap
   }
 
-  // Run transforms on a unist node representation of a file (in string or
-  // vfile representation), async.
-  function run(node, file, cb) {
-    assertNode(node);
-    freeze();
-
-    if (!cb && typeof file === 'function') {
-      cb = file;
-      file = null;
-    }
-
-    if (!cb) {
-      return new Promise(executor)
-    }
-
-    executor(null, cb);
-
-    function executor(resolve, reject) {
-      transformers.run(node, vfile(file), done);
-
-      function done(err, tree, file) {
-        tree = tree || node;
-        if (err) {
-          reject(err);
-        } else if (resolve) {
-          resolve(tree);
-        } else {
-          cb(null, tree, file);
-        }
-      }
-    }
-  }
-
-  // Run transforms on a unist node representation of a file (in string or
-  // vfile representation), sync.
-  function runSync(node, file) {
-    var complete = false;
-    var result;
-
-    run(node, file, done);
-
-    assertDone('runSync', 'run', complete);
-
-    return result
-
-    function done(err, tree) {
-      complete = true;
-      bail_1(err);
-      result = tree;
-    }
-  }
-
-  // Stringify a unist node representation of a file (in string or vfile
-  // representation) into a string using the `Compiler` on the processor.
+  /** @type {Processor['stringify']} */
   function stringify(node, doc) {
-    var file = vfile(doc);
-    var Compiler;
-
-    freeze();
-    Compiler = processor.Compiler;
+    processor.freeze();
+    const file = vfile(doc);
+    const Compiler = processor.Compiler;
     assertCompiler('stringify', Compiler);
     assertNode(node);
 
     if (newable(Compiler, 'compile')) {
+      // @ts-expect-error: `newable` checks this.
       return new Compiler(node, file).compile()
     }
 
+    // @ts-expect-error: `newable` checks this.
     return Compiler(node, file) // eslint-disable-line new-cap
   }
 
-  // Parse a file (in string or vfile representation) into a unist node using
-  // the `Parser` on the processor, then run transforms on that node, and
-  // compile the resulting node using the `Compiler` on the processor, and
-  // store that result on the vfile.
-  function process(doc, cb) {
-    freeze();
-    assertParser('process', processor.Parser);
-    assertCompiler('process', processor.Compiler);
+  /**
+   * @param {Node} node
+   * @param {VFileCompatible|RunCallback} [doc]
+   * @param {RunCallback} [callback]
+   * @returns {Promise<Node>|void}
+   */
+  function run(node, doc, callback) {
+    assertNode(node);
+    processor.freeze();
 
-    if (!cb) {
+    if (!callback && typeof doc === 'function') {
+      callback = doc;
+      doc = undefined;
+    }
+
+    if (!callback) {
       return new Promise(executor)
     }
 
-    executor(null, cb);
+    executor(null, callback);
 
+    /**
+     * @param {null|((node: Node) => void)} resolve
+     * @param {(error: Error) => void} reject
+     * @returns {void}
+     */
     function executor(resolve, reject) {
-      var file = vfile(doc);
+      // @ts-expect-error: `doc` can’t be a callback anymore, we checked.
+      transformers.run(node, vfile(doc), done);
 
-      pipeline.run(processor, {file: file}, done);
-
-      function done(err) {
-        if (err) {
-          reject(err);
+      /**
+       * @param {Error|null} error
+       * @param {Node} tree
+       * @param {VFile} file
+       * @returns {void}
+       */
+      function done(error, tree, file) {
+        tree = tree || node;
+        if (error) {
+          reject(error);
         } else if (resolve) {
-          resolve(file);
+          resolve(tree);
         } else {
-          cb(null, file);
+          // @ts-expect-error: `callback` is defined if `resolve` is not.
+          callback(null, tree, file);
         }
       }
     }
   }
 
-  // Process the given document (in string or vfile representation), sync.
-  function processSync(doc) {
-    var complete = false;
-    var file;
+  /** @type {Processor['runSync']} */
+  function runSync(node, file) {
+    /** @type {Node|undefined} */
+    let result;
+    /** @type {boolean|undefined} */
+    let complete;
 
-    freeze();
+    processor.run(node, file, done);
+
+    assertDone('runSync', 'run', complete);
+
+    // @ts-expect-error: we either bailed on an error or have a tree.
+    return result
+
+    /**
+     * @param {Error|null} [error]
+     * @param {Node} [tree]
+     * @returns {void}
+     */
+    function done(error, tree) {
+      bail(error);
+      result = tree;
+      complete = true;
+    }
+  }
+
+  /**
+   * @param {VFileCompatible} doc
+   * @param {ProcessCallback} [callback]
+   * @returns {Promise<VFile>|undefined}
+   */
+  function process(doc, callback) {
+    processor.freeze();
+    assertParser('process', processor.Parser);
+    assertCompiler('process', processor.Compiler);
+
+    if (!callback) {
+      return new Promise(executor)
+    }
+
+    executor(null, callback);
+
+    /**
+     * @param {null|((file: VFile) => void)} resolve
+     * @param {(error?: Error|null|undefined) => void} reject
+     * @returns {void}
+     */
+    function executor(resolve, reject) {
+      const file = vfile(doc);
+
+      processor.run(processor.parse(file), file, (error, tree, file) => {
+        if (error || !tree || !file) {
+          done(error);
+        } else {
+          /** @type {unknown} */
+          const result = processor.stringify(tree, file);
+
+          if (result === undefined || result === null) ; else if (looksLikeAVFileValue(result)) {
+            file.value = result;
+          } else {
+            file.result = result;
+          }
+
+          done(error, file);
+        }
+      });
+
+      /**
+       * @param {Error|null|undefined} [error]
+       * @param {VFile|undefined} [file]
+       * @returns {void}
+       */
+      function done(error, file) {
+        if (error || !file) {
+          reject(error);
+        } else if (resolve) {
+          resolve(file);
+        } else {
+          // @ts-expect-error: `callback` is defined if `resolve` is not.
+          callback(null, file);
+        }
+      }
+    }
+  }
+
+  /** @type {Processor['processSync']} */
+  function processSync(doc) {
+    /** @type {boolean|undefined} */
+    let complete;
+
+    processor.freeze();
     assertParser('processSync', processor.Parser);
     assertCompiler('processSync', processor.Compiler);
-    file = vfile(doc);
 
-    process(file, done);
+    const file = vfile(doc);
+
+    processor.process(file, done);
 
     assertDone('processSync', 'process', complete);
 
     return file
 
-    function done(err) {
+    /**
+     * @param {Error|null|undefined} [error]
+     * @returns {void}
+     */
+    function done(error) {
       complete = true;
-      bail_1(err);
+      bail(error);
     }
   }
 }
 
-// Check if `value` is a constructor.
+/**
+ * Check if `value` is a constructor.
+ *
+ * @param {unknown} value
+ * @param {string} name
+ * @returns {boolean}
+ */
 function newable(value, name) {
   return (
     typeof value === 'function' &&
+    // Prototypes do exist.
+    // type-coverage:ignore-next-line
     value.prototype &&
     // A function with keys in its prototype is probably a constructor.
     // Classes’ prototype methods are not enumerable, so we check if some value
     // exists in the prototype.
+    // type-coverage:ignore-next-line
     (keys(value.prototype) || name in value.prototype)
   )
 }
 
-// Check if `value` is an object with keys.
+/**
+ * Check if `value` is an object with keys.
+ *
+ * @param {Record<string, unknown>} value
+ * @returns {boolean}
+ */
 function keys(value) {
-  var key;
+  /** @type {string} */
+  let key;
+
   for (key in value) {
-    return true
+    if (own$1.call(value, key)) {
+      return true
+    }
   }
 
   return false
 }
 
-// Assert a parser is available.
-function assertParser(name, Parser) {
-  if (typeof Parser !== 'function') {
-    throw new Error('Cannot `' + name + '` without `Parser`')
+/**
+ * Assert a parser is available.
+ *
+ * @param {string} name
+ * @param {unknown} value
+ * @returns {asserts value is Parser}
+ */
+function assertParser(name, value) {
+  if (typeof value !== 'function') {
+    throw new TypeError('Cannot `' + name + '` without `Parser`')
   }
 }
 
-// Assert a compiler is available.
-function assertCompiler(name, Compiler) {
-  if (typeof Compiler !== 'function') {
-    throw new Error('Cannot `' + name + '` without `Compiler`')
+/**
+ * Assert a compiler is available.
+ *
+ * @param {string} name
+ * @param {unknown} value
+ * @returns {asserts value is Compiler}
+ */
+function assertCompiler(name, value) {
+  if (typeof value !== 'function') {
+    throw new TypeError('Cannot `' + name + '` without `Compiler`')
   }
 }
 
-// Assert the processor is not frozen.
+/**
+ * Assert the processor is not frozen.
+ *
+ * @param {string} name
+ * @param {unknown} frozen
+ * @returns {asserts frozen is false}
+ */
 function assertUnfrozen(name, frozen) {
   if (frozen) {
     throw new Error(
-      'Cannot invoke `' +
+      'Cannot call `' +
         name +
-        '` on a frozen processor.\nCreate a new processor first, by invoking it: use `processor()` instead of `processor`.'
+        '` on a frozen processor.\nCreate a new processor first, by calling it: use `processor()` instead of `processor`.'
     )
   }
 }
 
-// Assert `node` is a unist node.
+/**
+ * Assert `node` is a unist node.
+ *
+ * @param {unknown} node
+ * @returns {asserts node is Node}
+ */
 function assertNode(node) {
-  if (!node || typeof node.type !== 'string') {
-    throw new Error('Expected node, got `' + node + '`')
+  // `isPlainObj` unfortunately uses `any` instead of `unknown`.
+  // type-coverage:ignore-next-line
+  if (!isPlainObject$1(node) || typeof node.type !== 'string') {
+    throw new TypeError('Expected node, got `' + node + '`')
+    // Fine.
   }
 }
 
-// Assert that `complete` is `true`.
+/**
+ * Assert that `complete` is `true`.
+ *
+ * @param {string} name
+ * @param {string} asyncName
+ * @param {unknown} complete
+ * @returns {asserts complete is true}
+ */
 function assertDone(name, asyncName, complete) {
   if (!complete) {
     throw new Error(
@@ -1485,124 +1965,472 @@ function assertDone(name, asyncName, complete) {
   }
 }
 
-var mdastUtilToString = toString$1;
+/**
+ * @param {VFileCompatible} [value]
+ * @returns {VFile}
+ */
+function vfile(value) {
+  return looksLikeAVFile(value) ? value : new VFile(value)
+}
 
-// Get the text content of a node.
-// Prefer the node’s plain-text fields, otherwise serialize its children,
-// and if the given value is an array, serialize the nodes in it.
-function toString$1(node) {
+/**
+ * @param {VFileCompatible} [value]
+ * @returns {value is VFile}
+ */
+function looksLikeAVFile(value) {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'message' in value &&
+      'messages' in value
+  )
+}
+
+/**
+ * @param {unknown} [value]
+ * @returns {value is VFileValue}
+ */
+function looksLikeAVFileValue(value) {
+  return typeof value === 'string' || isBuffer(value)
+}
+
+/**
+ * @typedef Options
+ * @property {boolean} [includeImageAlt=true]
+ */
+
+/**
+ * Get the text content of a node.
+ * Prefer the node’s plain-text fields, otherwise serialize its children,
+ * and if the given value is an array, serialize the nodes in it.
+ *
+ * @param {unknown} node
+ * @param {Options} [options]
+ * @returns {string}
+ */
+function toString(node, options) {
+  var {includeImageAlt = true} = options || {};
+  return one(node, includeImageAlt)
+}
+
+/**
+ * @param {unknown} node
+ * @param {boolean} includeImageAlt
+ * @returns {string}
+ */
+function one(node, includeImageAlt) {
   return (
     (node &&
+      typeof node === 'object' &&
+      // @ts-ignore looks like a literal.
       (node.value ||
-        node.alt ||
-        node.title ||
-        ('children' in node && all(node.children)) ||
-        ('length' in node && all(node)))) ||
+        // @ts-ignore looks like an image.
+        (includeImageAlt ? node.alt : '') ||
+        // @ts-ignore looks like a parent.
+        ('children' in node && all(node.children, includeImageAlt)) ||
+        (Array.isArray(node) && all(node, includeImageAlt)))) ||
     ''
   )
 }
 
-function all(values) {
+/**
+ * @param {Array.<unknown>} values
+ * @param {boolean} includeImageAlt
+ * @returns {string}
+ */
+function all(values, includeImageAlt) {
+  /** @type {Array.<string>} */
   var result = [];
   var index = -1;
 
   while (++index < values.length) {
-    result[index] = toString$1(values[index]);
+    result[index] = one(values[index], includeImageAlt);
   }
 
   return result.join('')
 }
 
-var assign = Object.assign;
+/**
+ * Like `Array#splice`, but smarter for giant arrays.
+ *
+ * `Array#splice` takes all items to be inserted as individual argument which
+ * causes a stack overflow in V8 when trying to insert 100k items for instance.
+ *
+ * Otherwise, this does not return the removed items, and takes `items` as an
+ * array instead of rest parameters.
+ *
+ * @template {unknown} T
+ * @param {T[]} list
+ * @param {number} start
+ * @param {number} remove
+ * @param {T[]} items
+ * @returns {void}
+ */
+function splice(list, start, remove, items) {
+  const end = list.length;
+  let chunkStart = 0;
+  /** @type {unknown[]} */
 
-var assign_1 = assign;
+  let parameters; // Make start between zero and `end` (included).
 
-var own$3 = {}.hasOwnProperty;
-
-var hasOwnProperty_1 = own$3;
-
-function normalizeIdentifier(value) {
-  return (
-    value // Collapse Markdown whitespace.
-      .replace(/[\t\n\r ]+/g, ' ') // Trim.
-      .replace(/^ | $/g, '') // Some characters are considered “uppercase”, but if their lowercase
-      // counterpart is uppercased will result in a different uppercase
-      // character.
-      // Hence, to get that form, we perform both lower- and uppercase.
-      // Upper case makes sure keys will not interact with default prototypal
-      // methods: no object method is uppercase.
-      .toLowerCase()
-      .toUpperCase()
-  )
-}
-
-var normalizeIdentifier_1 = normalizeIdentifier;
-
-var fromCharCode = String.fromCharCode;
-
-var fromCharCode_1 = fromCharCode;
-
-function safeFromInt(value, base) {
-  var code = parseInt(value, base);
-
-  if (
-    // C0 except for HT, LF, FF, CR, space
-    code < 9 ||
-    code === 11 ||
-    (code > 13 && code < 32) || // Control character (DEL) of the basic block and C1 controls.
-    (code > 126 && code < 160) || // Lone high surrogates and low surrogates.
-    (code > 55295 && code < 57344) || // Noncharacters.
-    (code > 64975 && code < 65008) ||
-    (code & 65535) === 65535 ||
-    (code & 65535) === 65534 || // Out of range
-    code > 1114111
-  ) {
-    return '\uFFFD'
+  if (start < 0) {
+    start = -start > end ? 0 : end + start;
+  } else {
+    start = start > end ? end : start;
   }
 
-  return fromCharCode_1(code)
+  remove = remove > 0 ? remove : 0; // No need to chunk the items if there’s only a couple (10k) items.
+
+  if (items.length < 10000) {
+    parameters = Array.from(items);
+    parameters.unshift(start, remove) // @ts-expect-error Hush, it’s fine.
+    ;[].splice.apply(list, parameters);
+  } else {
+    // Delete `remove` items starting from `start`
+    if (remove) [].splice.apply(list, [start, remove]); // Insert the items in chunks to not cause stack overflows.
+
+    while (chunkStart < items.length) {
+      parameters = items.slice(chunkStart, chunkStart + 10000);
+      parameters.unshift(start, 0) // @ts-expect-error Hush, it’s fine.
+      ;[].splice.apply(list, parameters);
+      chunkStart += 10000;
+      start += 10000;
+    }
+  }
+}
+/**
+ * Append `items` (an array) at the end of `list` (another array).
+ * When `list` was empty, returns `items` instead.
+ *
+ * This prevents a potentially expensive operation when `list` is empty,
+ * and adds items in batches to prevent V8 from hanging.
+ *
+ * @template {unknown} T
+ * @param {T[]} list
+ * @param {T[]} items
+ * @returns {T[]}
+ */
+
+function push(list, items) {
+  if (list.length > 0) {
+    splice(list, list.length, 0, items);
+    return list
+  }
+
+  return items
 }
 
-var safeFromInt_1 = safeFromInt;
+/**
+ * @typedef {import('micromark-util-types').NormalizedExtension} NormalizedExtension
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ */
 
-function miniflat(value) {
-  return value === null || value === undefined
-    ? []
-    : 'length' in value
-    ? value
-    : [value]
+const hasOwnProperty = {}.hasOwnProperty;
+
+/**
+ * Combine several syntax extensions into one.
+ *
+ * @param {Extension[]} extensions List of syntax extensions.
+ * @returns {NormalizedExtension} A single combined extension.
+ */
+function combineExtensions(extensions) {
+  /** @type {NormalizedExtension} */
+  const all = {};
+  let index = -1;
+
+  while (++index < extensions.length) {
+    syntaxExtension(all, extensions[index]);
+  }
+
+  return all
 }
 
-var miniflat_1 = miniflat;
+/**
+ * Merge `extension` into `all`.
+ *
+ * @param {NormalizedExtension} all Extension to merge into.
+ * @param {Extension} extension Extension to merge.
+ * @returns {void}
+ */
+function syntaxExtension(all, extension) {
+  /** @type {string} */
+  let hook;
+
+  for (hook in extension) {
+    const maybe = hasOwnProperty.call(all, hook) ? all[hook] : undefined;
+    const left = maybe || (all[hook] = {});
+    const right = extension[hook];
+    /** @type {string} */
+    let code;
+
+    for (code in right) {
+      if (!hasOwnProperty.call(left, code)) left[code] = [];
+      const value = right[code];
+      constructs(
+        // @ts-expect-error Looks like a list.
+        left[code],
+        Array.isArray(value) ? value : value ? [value] : []
+      );
+    }
+  }
+}
+
+/**
+ * Merge `list` into `existing` (both lists of constructs).
+ * Mutates `existing`.
+ *
+ * @param {unknown[]} existing
+ * @param {unknown[]} list
+ * @returns {void}
+ */
+function constructs(existing, list) {
+  let index = -1;
+  /** @type {unknown[]} */
+  const before = [];
+
+  while (++index < list.length) {
+(list[index].add === 'after' ? existing : before).push(list[index]);
+  }
+
+  splice(existing, 0, 0, before);
+}
+
+// This module is generated by `script/`.
+//
+// CommonMark handles attention (emphasis, strong) markers based on what comes
+// before or after them.
+// One such difference is if those characters are Unicode punctuation.
+// This script is generated from the Unicode data.
+const unicodePunctuationRegex =
+  /[!-/:-@[-`{-~\u00A1\u00A7\u00AB\u00B6\u00B7\u00BB\u00BF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u09FD\u0A76\u0AF0\u0C77\u0C84\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E4F\u2E52\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]/;
+
+/**
+ * @typedef {import('micromark-util-types').Code} Code
+ */
+/**
+ * Check whether the character code represents an ASCII alpha (`a` through `z`,
+ * case insensitive).
+ *
+ * An **ASCII alpha** is an ASCII upper alpha or ASCII lower alpha.
+ *
+ * An **ASCII upper alpha** is a character in the inclusive range U+0041 (`A`)
+ * to U+005A (`Z`).
+ *
+ * An **ASCII lower alpha** is a character in the inclusive range U+0061 (`a`)
+ * to U+007A (`z`).
+ */
+
+const asciiAlpha = regexCheck(/[A-Za-z]/);
+/**
+ * Check whether the character code represents an ASCII digit (`0` through `9`).
+ *
+ * An **ASCII digit** is a character in the inclusive range U+0030 (`0`) to
+ * U+0039 (`9`).
+ */
+
+const asciiDigit = regexCheck(/\d/);
+/**
+ * Check whether the character code represents an ASCII hex digit (`a` through
+ * `f`, case insensitive, or `0` through `9`).
+ *
+ * An **ASCII hex digit** is an ASCII digit (see `asciiDigit`), ASCII upper hex
+ * digit, or an ASCII lower hex digit.
+ *
+ * An **ASCII upper hex digit** is a character in the inclusive range U+0041
+ * (`A`) to U+0046 (`F`).
+ *
+ * An **ASCII lower hex digit** is a character in the inclusive range U+0061
+ * (`a`) to U+0066 (`f`).
+ */
+
+const asciiHexDigit = regexCheck(/[\dA-Fa-f]/);
+/**
+ * Check whether the character code represents an ASCII alphanumeric (`a`
+ * through `z`, case insensitive, or `0` through `9`).
+ *
+ * An **ASCII alphanumeric** is an ASCII digit (see `asciiDigit`) or ASCII alpha
+ * (see `asciiAlpha`).
+ */
+
+const asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
+/**
+ * Check whether the character code represents ASCII punctuation.
+ *
+ * An **ASCII punctuation** is a character in the inclusive ranges U+0021
+ * EXCLAMATION MARK (`!`) to U+002F SLASH (`/`), U+003A COLON (`:`) to U+0040 AT
+ * SIGN (`@`), U+005B LEFT SQUARE BRACKET (`[`) to U+0060 GRAVE ACCENT
+ * (`` ` ``), or U+007B LEFT CURLY BRACE (`{`) to U+007E TILDE (`~`).
+ */
+
+const asciiPunctuation = regexCheck(/[!-/:-@[-`{-~]/);
+/**
+ * Check whether the character code represents an ASCII atext.
+ *
+ * atext is an ASCII alphanumeric (see `asciiAlphanumeric`), or a character in
+ * the inclusive ranges U+0023 NUMBER SIGN (`#`) to U+0027 APOSTROPHE (`'`),
+ * U+002A ASTERISK (`*`), U+002B PLUS SIGN (`+`), U+002D DASH (`-`), U+002F
+ * SLASH (`/`), U+003D EQUALS TO (`=`), U+003F QUESTION MARK (`?`), U+005E
+ * CARET (`^`) to U+0060 GRAVE ACCENT (`` ` ``), or U+007B LEFT CURLY BRACE
+ * (`{`) to U+007E TILDE (`~`).
+ *
+ * See:
+ * **\[RFC5322]**:
+ * [Internet Message Format](https://tools.ietf.org/html/rfc5322).
+ * P. Resnick.
+ * IETF.
+ */
+
+const asciiAtext = regexCheck(/[#-'*+\--9=?A-Z^-~]/);
+/**
+ * Check whether a character code is an ASCII control character.
+ *
+ * An **ASCII control** is a character in the inclusive range U+0000 NULL (NUL)
+ * to U+001F (US), or U+007F (DEL).
+ *
+ * @param {Code} code
+ * @returns {code is number}
+ */
+
+function asciiControl(code) {
+  return (
+    // Special whitespace codes (which have negative values), C0 and Control
+    // character DEL
+    code !== null && (code < 32 || code === 127)
+  )
+}
+/**
+ * Check whether a character code is a markdown line ending (see
+ * `markdownLineEnding`) or markdown space (see `markdownSpace`).
+ *
+ * @param {Code} code
+ * @returns {code is number}
+ */
+
+function markdownLineEndingOrSpace(code) {
+  return code !== null && (code < 0 || code === 32)
+}
+/**
+ * Check whether a character code is a markdown line ending.
+ *
+ * A **markdown line ending** is the virtual characters M-0003 CARRIAGE RETURN
+ * LINE FEED (CRLF), M-0004 LINE FEED (LF) and M-0005 CARRIAGE RETURN (CR).
+ *
+ * In micromark, the actual character U+000A LINE FEED (LF) and U+000D CARRIAGE
+ * RETURN (CR) are replaced by these virtual characters depending on whether
+ * they occurred together.
+ *
+ * @param {Code} code
+ * @returns {code is number}
+ */
 
 function markdownLineEnding(code) {
-  return code < -2
+  return code !== null && code < -2
 }
-
-var markdownLineEnding_1 = markdownLineEnding;
+/**
+ * Check whether a character code is a markdown space.
+ *
+ * A **markdown space** is the concrete character U+0020 SPACE (SP) and the
+ * virtual characters M-0001 VIRTUAL SPACE (VS) and M-0002 HORIZONTAL TAB (HT).
+ *
+ * In micromark, the actual character U+0009 CHARACTER TABULATION (HT) is
+ * replaced by one M-0002 HORIZONTAL TAB (HT) and between 0 and 3 M-0001 VIRTUAL
+ * SPACE (VS) characters, depending on the column at which the tab occurred.
+ *
+ * @param {Code} code
+ * @returns {code is number}
+ */
 
 function markdownSpace(code) {
   return code === -2 || code === -1 || code === 32
 }
+/**
+ * Check whether the character code represents Unicode whitespace.
+ *
+ * Note that this does handle micromark specific markdown whitespace characters.
+ * See `markdownLineEndingOrSpace` to check that.
+ *
+ * A **Unicode whitespace** is a character in the Unicode `Zs` (Separator,
+ * Space) category, or U+0009 CHARACTER TABULATION (HT), U+000A LINE FEED (LF),
+ * U+000C (FF), or U+000D CARRIAGE RETURN (CR) (**\[UNICODE]**).
+ *
+ * See:
+ * **\[UNICODE]**:
+ * [The Unicode Standard](https://www.unicode.org/versions/).
+ * Unicode Consortium.
+ */
 
-var markdownSpace_1 = markdownSpace;
+const unicodeWhitespace = regexCheck(/\s/);
+/**
+ * Check whether the character code represents Unicode punctuation.
+ *
+ * A **Unicode punctuation** is a character in the Unicode `Pc` (Punctuation,
+ * Connector), `Pd` (Punctuation, Dash), `Pe` (Punctuation, Close), `Pf`
+ * (Punctuation, Final quote), `Pi` (Punctuation, Initial quote), `Po`
+ * (Punctuation, Other), or `Ps` (Punctuation, Open) categories, or an ASCII
+ * punctuation (see `asciiPunctuation`).
+ *
+ * See:
+ * **\[UNICODE]**:
+ * [The Unicode Standard](https://www.unicode.org/versions/).
+ * Unicode Consortium.
+ */
+// Size note: removing ASCII from the regex and using `asciiPunctuation` here
+// In fact adds to the bundle size.
 
-function spaceFactory(effects, ok, type, max) {
-  var limit = max ? max - 1 : Infinity;
-  var size = 0;
+const unicodePunctuation = regexCheck(unicodePunctuationRegex);
+/**
+ * Create a code check from a regex.
+ *
+ * @param {RegExp} regex
+ * @returns {(code: Code) => code is number}
+ */
+
+function regexCheck(regex) {
+  return check
+  /**
+   * Check whether a code matches the bound regex.
+   *
+   * @param {Code} code Character code
+   * @returns {code is number} Whether the character code matches the bound regex
+   */
+
+  function check(code) {
+    return code !== null && regex.test(String.fromCharCode(code))
+  }
+}
+
+/**
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').State} State
+ */
+/**
+ * @param {Effects} effects
+ * @param {State} ok
+ * @param {string} type
+ * @param {number} [max=Infinity]
+ * @returns {State}
+ */
+
+function factorySpace(effects, ok, type, max) {
+  const limit = max ? max - 1 : Number.POSITIVE_INFINITY;
+  let size = 0;
   return start
+  /** @type {State} */
 
   function start(code) {
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.enter(type);
       return prefix(code)
     }
 
     return ok(code)
   }
+  /** @type {State} */
 
   function prefix(code) {
-    if (markdownSpace_1(code) && size++ < limit) {
+    if (markdownSpace(code) && size++ < limit) {
       effects.consume(code);
       return prefix
     }
@@ -1612,25 +2440,30 @@ function spaceFactory(effects, ok, type, max) {
   }
 }
 
-var factorySpace = spaceFactory;
+/**
+ * @typedef {import('micromark-util-types').InitialConstruct} InitialConstruct
+ * @typedef {import('micromark-util-types').Initializer} Initializer
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var content = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, '__esModule', {value: true});
-
-
-
-
-var tokenize = initializeContent;
+/** @type {InitialConstruct} */
+const content = {
+  tokenize: initializeContent
+};
+/** @type {Initializer} */
 
 function initializeContent(effects) {
-  var contentStart = effects.attempt(
+  const contentStart = effects.attempt(
     this.parser.constructs.contentInitial,
     afterContentStartConstruct,
     paragraphInitial
   );
-  var previous;
+  /** @type {Token} */
+
+  let previous;
   return contentStart
+  /** @type {State} */
 
   function afterContentStartConstruct(code) {
     if (code === null) {
@@ -1643,16 +2476,18 @@ function initializeContent(effects) {
     effects.exit('lineEnding');
     return factorySpace(effects, contentStart, 'linePrefix')
   }
+  /** @type {State} */
 
   function paragraphInitial(code) {
     effects.enter('paragraph');
     return lineStart(code)
   }
+  /** @type {State} */
 
   function lineStart(code) {
-    var token = effects.enter('chunkText', {
+    const token = effects.enter('chunkText', {
       contentType: 'text',
-      previous: previous
+      previous
     });
 
     if (previous) {
@@ -1662,6 +2497,7 @@ function initializeContent(effects) {
     previous = token;
     return data(code)
   }
+  /** @type {State} */
 
   function data(code) {
     if (code === null) {
@@ -1671,7 +2507,7 @@ function initializeContent(effects) {
       return
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       effects.consume(code);
       effects.exit('chunkText');
       return lineStart
@@ -1682,82 +2518,174 @@ function initializeContent(effects) {
   }
 }
 
-exports.tokenize = tokenize;
-});
+/**
+ * @typedef {import('micromark-util-types').InitialConstruct} InitialConstruct
+ * @typedef {import('micromark-util-types').Initializer} Initializer
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Point} Point
+ */
+/** @type {InitialConstruct} */
 
-var partialBlankLine = {
-  tokenize: tokenizePartialBlankLine,
-  partial: true
+const document$1 = {
+  tokenize: initializeDocument
 };
+/** @type {Construct} */
 
-function tokenizePartialBlankLine(effects, ok, nok) {
-  return factorySpace(effects, afterWhitespace, 'linePrefix')
-
-  function afterWhitespace(code) {
-    return code === null || markdownLineEnding_1(code) ? ok(code) : nok(code)
-  }
-}
-
-var partialBlankLine_1 = partialBlankLine;
-
-var document$1 = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, '__esModule', {value: true});
-
-
-
-
-
-var tokenize = initializeDocument;
-var containerConstruct = {
+const containerConstruct = {
   tokenize: tokenizeContainer
 };
-var lazyFlowConstruct = {
-  tokenize: tokenizeLazyFlow
-};
+/** @type {Initializer} */
 
 function initializeDocument(effects) {
-  var self = this;
-  var stack = [];
-  var continued = 0;
-  var inspectConstruct = {
-    tokenize: tokenizeInspect,
-    partial: true
-  };
-  var inspectResult;
-  var childFlow;
-  var childToken;
+  const self = this;
+  /** @type {StackItem[]} */
+
+  const stack = [];
+  let continued = 0;
+  /** @type {TokenizeContext|undefined} */
+
+  let childFlow;
+  /** @type {Token|undefined} */
+
+  let childToken;
+  /** @type {number} */
+
+  let lineStartOffset;
   return start
+  /** @type {State} */
 
   function start(code) {
+    // First we iterate through the open blocks, starting with the root
+    // document, and descending through last children down to the last open
+    // block.
+    // Each block imposes a condition that the line must satisfy if the block is
+    // to remain open.
+    // For example, a block quote requires a `>` character.
+    // A paragraph requires a non-blank line.
+    // In this phase we may match all or just some of the open blocks.
+    // But we cannot close unmatched blocks yet, because we may have a lazy
+    // continuation line.
     if (continued < stack.length) {
-      self.containerState = stack[continued][1];
+      const item = stack[continued];
+      self.containerState = item[1];
       return effects.attempt(
-        stack[continued][0].continuation,
+        item[0].continuation,
         documentContinue,
-        documentContinued
+        checkNewContainers
       )(code)
-    }
+    } // Done.
 
-    return documentContinued(code)
+    return checkNewContainers(code)
   }
+  /** @type {State} */
 
   function documentContinue(code) {
-    continued++;
-    return start(code)
-  }
+    continued++; // Note: this field is called `_closeFlow` but it also closes containers.
+    // Perhaps a good idea to rename it but it’s already used in the wild by
+    // extensions.
 
-  function documentContinued(code) {
-    // If we’re in a concrete construct (such as when expecting another line of
-    // HTML, or we resulted in lazy content), we can immediately start flow.
-    if (inspectResult && inspectResult.flowContinue) {
-      return flowStart(code)
+    if (self.containerState._closeFlow) {
+      self.containerState._closeFlow = undefined;
+
+      if (childFlow) {
+        closeFlow();
+      } // Note: this algorithm for moving events around is similar to the
+      // algorithm when dealing with lazy lines in `writeToChild`.
+
+      const indexBeforeExits = self.events.length;
+      let indexBeforeFlow = indexBeforeExits;
+      /** @type {Point|undefined} */
+
+      let point; // Find the flow chunk.
+
+      while (indexBeforeFlow--) {
+        if (
+          self.events[indexBeforeFlow][0] === 'exit' &&
+          self.events[indexBeforeFlow][1].type === 'chunkFlow'
+        ) {
+          point = self.events[indexBeforeFlow][1].end;
+          break
+        }
+      }
+
+      exitContainers(continued); // Fix positions.
+
+      let index = indexBeforeExits;
+
+      while (index < self.events.length) {
+        self.events[index][1].end = Object.assign({}, point);
+        index++;
+      } // Inject the exits earlier (they’re still also at the end).
+
+      splice(
+        self.events,
+        indexBeforeFlow + 1,
+        0,
+        self.events.slice(indexBeforeExits)
+      ); // Discard the duplicate exits.
+
+      self.events.length = index;
+      return checkNewContainers(code)
     }
 
-    self.interrupt =
-      childFlow &&
-      childFlow.currentConstruct &&
-      childFlow.currentConstruct.interruptible;
+    return start(code)
+  }
+  /** @type {State} */
+
+  function checkNewContainers(code) {
+    // Next, after consuming the continuation markers for existing blocks, we
+    // look for new block starts (e.g. `>` for a block quote).
+    // If we encounter a new block start, we close any blocks unmatched in
+    // step 1 before creating the new block as a child of the last matched
+    // block.
+    if (continued === stack.length) {
+      // No need to `check` whether there’s a container, of `exitContainers`
+      // would be moot.
+      // We can instead immediately `attempt` to parse one.
+      if (!childFlow) {
+        return documentContinued(code)
+      } // If we have concrete content, such as block HTML or fenced code,
+      // we can’t have containers “pierce” into them, so we can immediately
+      // start.
+
+      if (childFlow.currentConstruct && childFlow.currentConstruct.concrete) {
+        return flowStart(code)
+      } // If we do have flow, it could still be a blank line,
+      // but we’d be interrupting it w/ a new container if there’s a current
+      // construct.
+
+      self.interrupt = Boolean(childFlow.currentConstruct);
+    } // Check if there is a new container.
+
+    self.containerState = {};
+    return effects.check(
+      containerConstruct,
+      thereIsANewContainer,
+      thereIsNoNewContainer
+    )(code)
+  }
+  /** @type {State} */
+
+  function thereIsANewContainer(code) {
+    if (childFlow) closeFlow();
+    exitContainers(continued);
+    return documentContinued(code)
+  }
+  /** @type {State} */
+
+  function thereIsNoNewContainer(code) {
+    self.parser.lazy[self.now().line] = continued !== stack.length;
+    lineStartOffset = self.now().offset;
+    return flowStart(code)
+  }
+  /** @type {State} */
+
+  function documentContinued(code) {
+    // Try new containers.
     self.containerState = {};
     return effects.attempt(
       containerConstruct,
@@ -1765,16 +2693,20 @@ function initializeDocument(effects) {
       flowStart
     )(code)
   }
+  /** @type {State} */
 
   function containerContinue(code) {
-    stack.push([self.currentConstruct, self.containerState]);
-    self.containerState = undefined;
+    continued++;
+    stack.push([self.currentConstruct, self.containerState]); // Try another.
+
     return documentContinued(code)
   }
+  /** @type {State} */
 
   function flowStart(code) {
     if (code === null) {
-      exitContainers(0, true);
+      if (childFlow) closeFlow();
+      exitContainers(0);
       effects.consume(code);
       return
     }
@@ -1787,842 +2719,222 @@ function initializeDocument(effects) {
     });
     return flowContinue(code)
   }
+  /** @type {State} */
 
   function flowContinue(code) {
     if (code === null) {
-      continueFlow(effects.exit('chunkFlow'));
-      return flowStart(code)
+      writeToChild(effects.exit('chunkFlow'), true);
+      exitContainers(0);
+      effects.consume(code);
+      return
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       effects.consume(code);
-      continueFlow(effects.exit('chunkFlow'));
-      return effects.check(inspectConstruct, documentAfterPeek)
+      writeToChild(effects.exit('chunkFlow')); // Get ready for the next line.
+
+      continued = 0;
+      self.interrupt = undefined;
+      return start
     }
 
     effects.consume(code);
     return flowContinue
   }
+  /**
+   * @param {Token} token
+   * @param {boolean} [eof]
+   * @returns {void}
+   */
 
-  function documentAfterPeek(code) {
-    exitContainers(
-      inspectResult.continued,
-      inspectResult && inspectResult.flowEnd
-    );
-    continued = 0;
-    return start(code)
-  }
-
-  function continueFlow(token) {
+  function writeToChild(token, eof) {
+    const stream = self.sliceStream(token);
+    if (eof) stream.push(null);
+    token.previous = childToken;
     if (childToken) childToken.next = token;
     childToken = token;
-    childFlow.lazy = inspectResult && inspectResult.lazy;
     childFlow.defineSkip(token.start);
-    childFlow.write(self.sliceStream(token));
+    childFlow.write(stream); // Alright, so we just added a lazy line:
+    //
+    // ```markdown
+    // > a
+    // b.
+    //
+    // Or:
+    //
+    // > ~~~c
+    // d
+    //
+    // Or:
+    //
+    // > | e |
+    // f
+    // ```
+    //
+    // The construct in the second example (fenced code) does not accept lazy
+    // lines, so it marked itself as done at the end of its first line, and
+    // then the content construct parses `d`.
+    // Most constructs in markdown match on the first line: if the first line
+    // forms a construct, a non-lazy line can’t “unmake” it.
+    //
+    // The construct in the third example is potentially a GFM table, and
+    // those are *weird*.
+    // It *could* be a table, from the first line, if the following line
+    // matches a condition.
+    // In this case, that second line is lazy, which “unmakes” the first line
+    // and turns the whole into one content block.
+    //
+    // We’ve now parsed the non-lazy and the lazy line, and can figure out
+    // whether the lazy line started a new flow block.
+    // If it did, we exit the current containers between the two flow blocks.
+
+    if (self.parser.lazy[token.start.line]) {
+      let index = childFlow.events.length;
+
+      while (index--) {
+        if (
+          // The token starts before the line ending…
+          childFlow.events[index][1].start.offset < lineStartOffset &&
+          (!childFlow.events[index][1].end || // …or ends after it.
+            childFlow.events[index][1].end.offset > lineStartOffset)
+        ) {
+          // Exit: there’s still something open, which means it’s a lazy line
+          // part of something.
+          return
+        }
+      } // Note: this algorithm for moving events around is similar to the
+      // algorithm when closing flow in `documentContinue`.
+
+      const indexBeforeExits = self.events.length;
+      let indexBeforeFlow = indexBeforeExits;
+      /** @type {boolean|undefined} */
+
+      let seen;
+      /** @type {Point|undefined} */
+
+      let point; // Find the previous chunk (the one before the lazy line).
+
+      while (indexBeforeFlow--) {
+        if (
+          self.events[indexBeforeFlow][0] === 'exit' &&
+          self.events[indexBeforeFlow][1].type === 'chunkFlow'
+        ) {
+          if (seen) {
+            point = self.events[indexBeforeFlow][1].end;
+            break
+          }
+
+          seen = true;
+        }
+      }
+
+      exitContainers(continued); // Fix positions.
+
+      index = indexBeforeExits;
+
+      while (index < self.events.length) {
+        self.events[index][1].end = Object.assign({}, point);
+        index++;
+      } // Inject the exits earlier (they’re still also at the end).
+
+      splice(
+        self.events,
+        indexBeforeFlow + 1,
+        0,
+        self.events.slice(indexBeforeExits)
+      ); // Discard the duplicate exits.
+
+      self.events.length = index;
+    }
   }
+  /**
+   * @param {number} size
+   * @returns {void}
+   */
 
-  function exitContainers(size, end) {
-    var index = stack.length; // Close the flow.
-
-    if (childFlow && end) {
-      childFlow.write([null]);
-      childToken = childFlow = undefined;
-    } // Exit open containers.
+  function exitContainers(size) {
+    let index = stack.length; // Exit open containers.
 
     while (index-- > size) {
-      self.containerState = stack[index][1];
-      stack[index][0].exit.call(self, effects);
+      const entry = stack[index];
+      self.containerState = entry[1];
+      entry[0].exit.call(self, effects);
     }
 
     stack.length = size;
   }
 
-  function tokenizeInspect(effects, ok) {
-    var subcontinued = 0;
-    inspectResult = {};
-    return inspectStart
-
-    function inspectStart(code) {
-      if (subcontinued < stack.length) {
-        self.containerState = stack[subcontinued][1];
-        return effects.attempt(
-          stack[subcontinued][0].continuation,
-          inspectContinue,
-          inspectLess
-        )(code)
-      } // If we’re continued but in a concrete flow, we can’t have more
-      // containers.
-
-      if (childFlow.currentConstruct && childFlow.currentConstruct.concrete) {
-        inspectResult.flowContinue = true;
-        return inspectDone(code)
-      }
-
-      self.interrupt =
-        childFlow.currentConstruct && childFlow.currentConstruct.interruptible;
-      self.containerState = {};
-      return effects.attempt(
-        containerConstruct,
-        inspectFlowEnd,
-        inspectDone
-      )(code)
-    }
-
-    function inspectContinue(code) {
-      subcontinued++;
-      return self.containerState._closeFlow
-        ? inspectFlowEnd(code)
-        : inspectStart(code)
-    }
-
-    function inspectLess(code) {
-      if (childFlow.currentConstruct && childFlow.currentConstruct.lazy) {
-        // Maybe another container?
-        self.containerState = {};
-        return effects.attempt(
-          containerConstruct,
-          inspectFlowEnd, // Maybe flow, or a blank line?
-          effects.attempt(
-            lazyFlowConstruct,
-            inspectFlowEnd,
-            effects.check(partialBlankLine_1, inspectFlowEnd, inspectLazy)
-          )
-        )(code)
-      } // Otherwise we’re interrupting.
-
-      return inspectFlowEnd(code)
-    }
-
-    function inspectLazy(code) {
-      // Act as if all containers are continued.
-      subcontinued = stack.length;
-      inspectResult.lazy = true;
-      inspectResult.flowContinue = true;
-      return inspectDone(code)
-    } // We’re done with flow if we have more containers, or an interruption.
-
-    function inspectFlowEnd(code) {
-      inspectResult.flowEnd = true;
-      return inspectDone(code)
-    }
-
-    function inspectDone(code) {
-      inspectResult.continued = subcontinued;
-      self.interrupt = self.containerState = undefined;
-      return ok(code)
-    }
+  function closeFlow() {
+    childFlow.write([null]);
+    childToken = undefined;
+    childFlow = undefined;
+    self.containerState._closeFlow = undefined;
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeContainer(effects, ok, nok) {
   return factorySpace(
     effects,
     effects.attempt(this.parser.constructs.document, ok, nok),
     'linePrefix',
-    this.parser.constructs.disable.null.indexOf('codeIndented') > -1
-      ? undefined
-      : 4
+    this.parser.constructs.disable.null.includes('codeIndented') ? undefined : 4
   )
 }
 
-function tokenizeLazyFlow(effects, ok, nok) {
-  return factorySpace(
-    effects,
-    effects.lazy(this.parser.constructs.flow, ok, nok),
-    'linePrefix',
-    this.parser.constructs.disable.null.indexOf('codeIndented') > -1
-      ? undefined
-      : 4
-  )
-}
+/**
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-exports.tokenize = tokenize;
-});
-
-// Counts tabs based on their expanded size, and CR+LF as one character.
-
-function sizeChunks(chunks) {
-  var index = -1;
-  var size = 0;
-
-  while (++index < chunks.length) {
-    size += typeof chunks[index] === 'string' ? chunks[index].length : 1;
+/**
+ * Classify whether a character code represents whitespace, punctuation, or
+ * something else.
+ *
+ * Used for attention (emphasis, strong), whose sequences can open or close
+ * based on the class of surrounding characters.
+ *
+ * Note that eof (`null`) is seen as whitespace.
+ *
+ * @param {Code} code
+ * @returns {number|undefined}
+ */
+function classifyCharacter(code) {
+  if (
+    code === null ||
+    markdownLineEndingOrSpace(code) ||
+    unicodeWhitespace(code)
+  ) {
+    return 1
   }
 
-  return size
-}
-
-var sizeChunks_1 = sizeChunks;
-
-function prefixSize(events, type) {
-  var tail = events[events.length - 1];
-  if (!tail || tail[1].type !== type) return 0
-  return sizeChunks_1(tail[2].sliceStream(tail[1]))
-}
-
-var prefixSize_1 = prefixSize;
-
-var splice = [].splice;
-
-var splice_1 = splice;
-
-// causes a stack overflow in V8 when trying to insert 100k items for instance.
-
-function chunkedSplice(list, start, remove, items) {
-  var end = list.length;
-  var chunkStart = 0;
-  var parameters; // Make start between zero and `end` (included).
-
-  if (start < 0) {
-    start = -start > end ? 0 : end + start;
-  } else {
-    start = start > end ? end : start;
-  }
-
-  remove = remove > 0 ? remove : 0; // No need to chunk the items if there’s only a couple (10k) items.
-
-  if (items.length < 10000) {
-    parameters = Array.from(items);
-    parameters.unshift(start, remove);
-    splice_1.apply(list, parameters);
-  } else {
-    // Delete `remove` items starting from `start`
-    if (remove) splice_1.apply(list, [start, remove]); // Insert the items in chunks to not cause stack overflows.
-
-    while (chunkStart < items.length) {
-      parameters = items.slice(chunkStart, chunkStart + 10000);
-      parameters.unshift(start, 0);
-      splice_1.apply(list, parameters);
-      chunkStart += 10000;
-      start += 10000;
-    }
+  if (unicodePunctuation(code)) {
+    return 2
   }
 }
 
-var chunkedSplice_1 = chunkedSplice;
-
-function shallow(object) {
-  return assign_1({}, object)
-}
-
-var shallow_1 = shallow;
-
-function subtokenize(events) {
-  var jumps = {};
-  var index = -1;
-  var event;
-  var lineIndex;
-  var otherIndex;
-  var otherEvent;
-  var parameters;
-  var subevents;
-  var more;
-
-  while (++index < events.length) {
-    while (index in jumps) {
-      index = jumps[index];
-    }
-
-    event = events[index]; // Add a hook for the GFM tasklist extension, which needs to know if text
-    // is in the first content of a list item.
-
-    if (
-      index &&
-      event[1].type === 'chunkFlow' &&
-      events[index - 1][1].type === 'listItemPrefix'
-    ) {
-      subevents = event[1]._tokenizer.events;
-      otherIndex = 0;
-
-      if (
-        otherIndex < subevents.length &&
-        subevents[otherIndex][1].type === 'lineEndingBlank'
-      ) {
-        otherIndex += 2;
-      }
-
-      if (
-        otherIndex < subevents.length &&
-        subevents[otherIndex][1].type === 'content'
-      ) {
-        while (++otherIndex < subevents.length) {
-          if (subevents[otherIndex][1].type === 'content') {
-            break
-          }
-
-          if (subevents[otherIndex][1].type === 'chunkText') {
-            subevents[otherIndex][1].isInFirstContentOfListItem = true;
-            otherIndex++;
-          }
-        }
-      }
-    } // Enter.
-
-    if (event[0] === 'enter') {
-      if (event[1].contentType) {
-        assign_1(jumps, subcontent(events, index));
-        index = jumps[index];
-        more = true;
-      }
-    } // Exit.
-    else if (event[1]._container || event[1]._movePreviousLineEndings) {
-      otherIndex = index;
-      lineIndex = undefined;
-
-      while (otherIndex--) {
-        otherEvent = events[otherIndex];
-
-        if (
-          otherEvent[1].type === 'lineEnding' ||
-          otherEvent[1].type === 'lineEndingBlank'
-        ) {
-          if (otherEvent[0] === 'enter') {
-            if (lineIndex) {
-              events[lineIndex][1].type = 'lineEndingBlank';
-            }
-
-            otherEvent[1].type = 'lineEnding';
-            lineIndex = otherIndex;
-          }
-        } else {
-          break
-        }
-      }
-
-      if (lineIndex) {
-        // Fix position.
-        event[1].end = shallow_1(events[lineIndex][1].start); // Switch container exit w/ line endings.
-
-        parameters = events.slice(lineIndex, index);
-        parameters.unshift(event);
-        chunkedSplice_1(events, lineIndex, index - lineIndex + 1, parameters);
-      }
-    }
-  }
-
-  return !more
-}
-
-function subcontent(events, eventIndex) {
-  var token = events[eventIndex][1];
-  var context = events[eventIndex][2];
-  var startPosition = eventIndex - 1;
-  var startPositions = [];
-  var tokenizer =
-    token._tokenizer || context.parser[token.contentType](token.start);
-  var childEvents = tokenizer.events;
-  var jumps = [];
-  var gaps = {};
-  var stream;
-  var previous;
-  var index;
-  var entered;
-  var end;
-  var adjust; // Loop forward through the linked tokens to pass them in order to the
-  // subtokenizer.
-
-  while (token) {
-    // Find the position of the event for this token.
-    while (events[++startPosition][1] !== token) {
-      // Empty.
-    }
-
-    startPositions.push(startPosition);
-
-    if (!token._tokenizer) {
-      stream = context.sliceStream(token);
-
-      if (!token.next) {
-        stream.push(null);
-      }
-
-      if (previous) {
-        tokenizer.defineSkip(token.start);
-      }
-
-      if (token.isInFirstContentOfListItem) {
-        tokenizer._gfmTasklistFirstContentOfListItem = true;
-      }
-
-      tokenizer.write(stream);
-
-      if (token.isInFirstContentOfListItem) {
-        tokenizer._gfmTasklistFirstContentOfListItem = undefined;
-      }
-    } // Unravel the next token.
-
-    previous = token;
-    token = token.next;
-  } // Now, loop back through all events (and linked tokens), to figure out which
-  // parts belong where.
-
-  token = previous;
-  index = childEvents.length;
-
-  while (index--) {
-    // Make sure we’ve at least seen something (final eol is part of the last
-    // token).
-    if (childEvents[index][0] === 'enter') {
-      entered = true;
-    } else if (
-      // Find a void token that includes a break.
-      entered &&
-      childEvents[index][1].type === childEvents[index - 1][1].type &&
-      childEvents[index][1].start.line !== childEvents[index][1].end.line
-    ) {
-      add(childEvents.slice(index + 1, end));
-      // Help GC.
-      token._tokenizer = token.next = undefined;
-      token = token.previous;
-      end = index + 1;
-    }
-  }
-
-  // Help GC.
-  tokenizer.events = token._tokenizer = token.next = undefined; // Do head:
-
-  add(childEvents.slice(0, end));
-  index = -1;
-  adjust = 0;
-
-  while (++index < jumps.length) {
-    gaps[adjust + jumps[index][0]] = adjust + jumps[index][1];
-    adjust += jumps[index][1] - jumps[index][0] - 1;
-  }
-
-  return gaps
-
-  function add(slice) {
-    var start = startPositions.pop();
-    jumps.unshift([start, start + slice.length - 1]);
-    chunkedSplice_1(events, start, 2, slice);
-  }
-}
-
-var subtokenize_1 = subtokenize;
-
-// No name because it must not be turned off.
-var content$1 = {
-  tokenize: tokenizeContent,
-  resolve: resolveContent,
-  interruptible: true,
-  lazy: true
-};
-var continuationConstruct = {
-  tokenize: tokenizeContinuation,
-  partial: true
-}; // Content is transparent: it’s parsed right now. That way, definitions are also
-// parsed right now: before text in paragraphs (specifically, media) are parsed.
-
-function resolveContent(events) {
-  subtokenize_1(events);
-  return events
-}
-
-function tokenizeContent(effects, ok) {
-  var previous;
-  return start
-
-  function start(code) {
-    effects.enter('content');
-    previous = effects.enter('chunkContent', {
-      contentType: 'content'
-    });
-    return data(code)
-  }
-
-  function data(code) {
-    if (code === null) {
-      return contentEnd(code)
-    }
-
-    if (markdownLineEnding_1(code)) {
-      return effects.check(
-        continuationConstruct,
-        contentContinue,
-        contentEnd
-      )(code)
-    } // Data.
-
-    effects.consume(code);
-    return data
-  }
-
-  function contentEnd(code) {
-    effects.exit('chunkContent');
-    effects.exit('content');
-    return ok(code)
-  }
-
-  function contentContinue(code) {
-    effects.consume(code);
-    effects.exit('chunkContent');
-    previous = previous.next = effects.enter('chunkContent', {
-      contentType: 'content',
-      previous: previous
-    });
-    return data
-  }
-}
-
-function tokenizeContinuation(effects, ok, nok) {
-  var self = this;
-  return startLookahead
-
-  function startLookahead(code) {
-    effects.enter('lineEnding');
-    effects.consume(code);
-    effects.exit('lineEnding');
-    return factorySpace(effects, prefixed, 'linePrefix')
-  }
-
-  function prefixed(code) {
-    if (code === null || markdownLineEnding_1(code)) {
-      return nok(code)
-    }
-
-    if (
-      self.parser.constructs.disable.null.indexOf('codeIndented') > -1 ||
-      prefixSize_1(self.events, 'linePrefix') < 4
-    ) {
-      return effects.interrupt(self.parser.constructs.flow, nok, ok)(code)
-    }
-
-    return ok(code)
-  }
-}
-
-var content_1 = content$1;
-
-var flow = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, '__esModule', {value: true});
-
-
-
-
-
-var tokenize = initializeFlow;
-
-function initializeFlow(effects) {
-  var self = this;
-  var initial = effects.attempt(
-    // Try to parse a blank line.
-    partialBlankLine_1,
-    atBlankEnding, // Try to parse initial flow (essentially, only code).
-    effects.attempt(
-      this.parser.constructs.flowInitial,
-      afterConstruct,
-      factorySpace(
-        effects,
-        effects.attempt(
-          this.parser.constructs.flow,
-          afterConstruct,
-          effects.attempt(content_1, afterConstruct)
-        ),
-        'linePrefix'
-      )
-    )
-  );
-  return initial
-
-  function atBlankEnding(code) {
-    if (code === null) {
-      effects.consume(code);
-      return
-    }
-
-    effects.enter('lineEndingBlank');
-    effects.consume(code);
-    effects.exit('lineEndingBlank');
-    self.currentConstruct = undefined;
-    return initial
-  }
-
-  function afterConstruct(code) {
-    if (code === null) {
-      effects.consume(code);
-      return
-    }
-
-    effects.enter('lineEnding');
-    effects.consume(code);
-    effects.exit('lineEnding');
-    self.currentConstruct = undefined;
-    return initial
-  }
-}
-
-exports.tokenize = tokenize;
-});
-
-var text_1 = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, '__esModule', {value: true});
-
-
-
-
-var text = initializeFactory('text');
-var string = initializeFactory('string');
-var resolver = {
-  resolveAll: createResolver()
-};
-
-function initializeFactory(field) {
-  return {
-    tokenize: initializeText,
-    resolveAll: createResolver(
-      field === 'text' ? resolveAllLineSuffixes : undefined
-    )
-  }
-
-  function initializeText(effects) {
-    var self = this;
-    var constructs = this.parser.constructs[field];
-    var text = effects.attempt(constructs, start, notText);
-    return start
-
-    function start(code) {
-      return atBreak(code) ? text(code) : notText(code)
-    }
-
-    function notText(code) {
-      if (code === null) {
-        effects.consume(code);
-        return
-      }
-
-      effects.enter('data');
-      effects.consume(code);
-      return data
-    }
-
-    function data(code) {
-      if (atBreak(code)) {
-        effects.exit('data');
-        return text(code)
-      } // Data.
-
-      effects.consume(code);
-      return data
-    }
-
-    function atBreak(code) {
-      var list = constructs[code];
-      var index = -1;
-
-      if (code === null) {
-        return true
-      }
-
-      if (list) {
-        while (++index < list.length) {
-          if (
-            !list[index].previous ||
-            list[index].previous.call(self, self.previous)
-          ) {
-            return true
-          }
-        }
-      }
-    }
-  }
-}
-
-function createResolver(extraResolver) {
-  return resolveAllText
-
-  function resolveAllText(events, context) {
-    var index = -1;
-    var enter; // A rather boring computation (to merge adjacent `data` events) which
-    // improves mm performance by 29%.
-
-    while (++index <= events.length) {
-      if (enter === undefined) {
-        if (events[index] && events[index][1].type === 'data') {
-          enter = index;
-          index++;
-        }
-      } else if (!events[index] || events[index][1].type !== 'data') {
-        // Don’t do anything if there is one data token.
-        if (index !== enter + 2) {
-          events[enter][1].end = events[index - 1][1].end;
-          events.splice(enter + 2, index - enter - 2);
-          index = enter + 2;
-        }
-
-        enter = undefined;
-      }
-    }
-
-    return extraResolver ? extraResolver(events, context) : events
-  }
-} // A rather ugly set of instructions which again looks at chunks in the input
-// stream.
-// The reason to do this here is that it is *much* faster to parse in reverse.
-// And that we can’t hook into `null` to split the line suffix before an EOF.
-// To do: figure out if we can make this into a clean utility, or even in core.
-// As it will be useful for GFMs literal autolink extension (and maybe even
-// tables?)
-
-function resolveAllLineSuffixes(events, context) {
-  var eventIndex = -1;
-  var chunks;
-  var data;
-  var chunk;
-  var index;
-  var bufferIndex;
-  var size;
-  var tabs;
-  var token;
-
-  while (++eventIndex <= events.length) {
-    if (
-      (eventIndex === events.length ||
-        events[eventIndex][1].type === 'lineEnding') &&
-      events[eventIndex - 1][1].type === 'data'
-    ) {
-      data = events[eventIndex - 1][1];
-      chunks = context.sliceStream(data);
-      index = chunks.length;
-      bufferIndex = -1;
-      size = 0;
-      tabs = undefined;
-
-      while (index--) {
-        chunk = chunks[index];
-
-        if (typeof chunk === 'string') {
-          bufferIndex = chunk.length;
-
-          while (chunk.charCodeAt(bufferIndex - 1) === 32) {
-            size++;
-            bufferIndex--;
-          }
-
-          if (bufferIndex) break
-          bufferIndex = -1;
-        } // Number
-        else if (chunk === -2) {
-          tabs = true;
-          size++;
-        } else if (chunk === -1);
-        else {
-          // Replacement character, exit.
-          index++;
-          break
-        }
-      }
-
-      if (size) {
-        token = {
-          type:
-            eventIndex === events.length || tabs || size < 2
-              ? 'lineSuffix'
-              : 'hardBreakTrailing',
-          start: {
-            line: data.end.line,
-            column: data.end.column - size,
-            offset: data.end.offset - size,
-            _index: data.start._index + index,
-            _bufferIndex: index
-              ? bufferIndex
-              : data.start._bufferIndex + bufferIndex
-          },
-          end: shallow_1(data.end)
-        };
-        data.end = shallow_1(token.start);
-
-        if (data.start.offset === data.end.offset) {
-          assign_1(data, token);
-        } else {
-          events.splice(
-            eventIndex,
-            0,
-            ['enter', token, context],
-            ['exit', token, context]
-          );
-          eventIndex += 2;
-        }
-      }
-
-      eventIndex++;
-    }
-  }
-
-  return events
-}
-
-exports.resolver = resolver;
-exports.string = string;
-exports.text = text;
-});
-
-function combineExtensions(extensions) {
-  var all = {};
-  var index = -1;
-
-  while (++index < extensions.length) {
-    extension(all, extensions[index]);
-  }
-
-  return all
-}
-
-function extension(all, extension) {
-  var hook;
-  var left;
-  var right;
-  var code;
-
-  for (hook in extension) {
-    left = hasOwnProperty_1.call(all, hook) ? all[hook] : (all[hook] = {});
-    right = extension[hook];
-
-    for (code in right) {
-      left[code] = constructs(
-        miniflat_1(right[code]),
-        hasOwnProperty_1.call(left, code) ? left[code] : []
-      );
-    }
-  }
-}
-
-function constructs(list, existing) {
-  var index = -1;
-  var before = [];
-
-  while (++index < list.length) {
-(list[index].add === 'after' ? existing : before).push(list[index]);
-  }
-
-  chunkedSplice_1(existing, 0, 0, before);
-  return existing
-}
-
-var combineExtensions_1 = combineExtensions;
-
-function chunkedPush(list, items) {
-  if (list.length) {
-    chunkedSplice_1(list, list.length, 0, items);
-    return list
-  }
-
-  return items
-}
-
-var chunkedPush_1 = chunkedPush;
-
+/**
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Event} Event
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ */
+
+/**
+ * Call all `resolveAll`s.
+ *
+ * @param {{resolveAll?: Resolver}[]} constructs
+ * @param {Event[]} events
+ * @param {TokenizeContext} context
+ * @returns {Event[]}
+ */
 function resolveAll(constructs, events, context) {
-  var called = [];
-  var index = -1;
-  var resolve;
+  /** @type {Resolver[]} */
+  const called = [];
+  let index = -1;
 
   while (++index < constructs.length) {
-    resolve = constructs[index].resolveAll;
+    const resolve = constructs[index].resolveAll;
 
-    if (resolve && called.indexOf(resolve) < 0) {
+    if (resolve && !called.includes(resolve)) {
       events = resolve(events, context);
       called.push(resolve);
     }
@@ -2631,459 +2943,55 @@ function resolveAll(constructs, events, context) {
   return events
 }
 
-var resolveAll_1 = resolveAll;
-
-function serializeChunks(chunks) {
-  var index = -1;
-  var result = [];
-  var chunk;
-  var value;
-  var atTab;
-
-  while (++index < chunks.length) {
-    chunk = chunks[index];
-
-    if (typeof chunk === 'string') {
-      value = chunk;
-    } else if (chunk === -5) {
-      value = '\r';
-    } else if (chunk === -4) {
-      value = '\n';
-    } else if (chunk === -3) {
-      value = '\r' + '\n';
-    } else if (chunk === -2) {
-      value = '\t';
-    } else if (chunk === -1) {
-      if (atTab) continue
-      value = ' ';
-    } else {
-      // Currently only replacement character.
-      value = fromCharCode_1(chunk);
-    }
-
-    atTab = chunk === -2;
-    result.push(value);
-  }
-
-  return result.join('')
-}
-
-var serializeChunks_1 = serializeChunks;
-
-function sliceChunks(chunks, token) {
-  var startIndex = token.start._index;
-  var startBufferIndex = token.start._bufferIndex;
-  var endIndex = token.end._index;
-  var endBufferIndex = token.end._bufferIndex;
-  var view;
-
-  if (startIndex === endIndex) {
-    view = [chunks[startIndex].slice(startBufferIndex, endBufferIndex)];
-  } else {
-    view = chunks.slice(startIndex, endIndex);
-
-    if (startBufferIndex > -1) {
-      view[0] = view[0].slice(startBufferIndex);
-    }
-
-    if (endBufferIndex > 0) {
-      view.push(chunks[endIndex].slice(0, endBufferIndex));
-    }
-  }
-
-  return view
-}
-
-var sliceChunks_1 = sliceChunks;
-
-// Create a tokenizer.
-// Tokenizers deal with one type of data (e.g., containers, flow, text).
-// The parser is the object dealing with it all.
-// `initialize` works like other constructs, except that only its `tokenize`
-// function is used, in which case it doesn’t receive an `ok` or `nok`.
-// `from` can be given to set the point before the first character, although
-// when further lines are indented, they must be set with `defineSkip`.
-function createTokenizer(parser, initialize, from) {
-  var point = from
-    ? shallow_1(from)
-    : {
-        line: 1,
-        column: 1,
-        offset: 0
-      };
-  var columnStart = {};
-  var resolveAllConstructs = [];
-  var chunks = [];
-  var stack = [];
-
-  var effects = {
-    consume: consume,
-    enter: enter,
-    exit: exit,
-    attempt: constructFactory(onsuccessfulconstruct),
-    check: constructFactory(onsuccessfulcheck),
-    interrupt: constructFactory(onsuccessfulcheck, {
-      interrupt: true
-    }),
-    lazy: constructFactory(onsuccessfulcheck, {
-      lazy: true
-    })
-  }; // State and tools for resolving and serializing.
-
-  var context = {
-    previous: null,
-    events: [],
-    parser: parser,
-    sliceStream: sliceStream,
-    sliceSerialize: sliceSerialize,
-    now: now,
-    defineSkip: skip,
-    write: write
-  }; // The state function.
-
-  var state = initialize.tokenize.call(context, effects); // Track which character we expect to be consumed, to catch bugs.
-
-  if (initialize.resolveAll) {
-    resolveAllConstructs.push(initialize);
-  } // Store where we are in the input stream.
-
-  point._index = 0;
-  point._bufferIndex = -1;
-  return context
-
-  function write(slice) {
-    chunks = chunkedPush_1(chunks, slice);
-    main(); // Exit if we’re not done, resolve might change stuff.
-
-    if (chunks[chunks.length - 1] !== null) {
-      return []
-    }
-
-    addResult(initialize, 0); // Otherwise, resolve, and exit.
-
-    context.events = resolveAll_1(resolveAllConstructs, context.events, context);
-    return context.events
-  } //
-  // Tools.
-  //
-
-  function sliceSerialize(token) {
-    return serializeChunks_1(sliceStream(token))
-  }
-
-  function sliceStream(token) {
-    return sliceChunks_1(chunks, token)
-  }
-
-  function now() {
-    return shallow_1(point)
-  }
-
-  function skip(value) {
-    columnStart[value.line] = value.column;
-    accountForPotentialSkip();
-  } //
-  // State management.
-  //
-  // Main loop (note that `_index` and `_bufferIndex` in `point` are modified by
-  // `consume`).
-  // Here is where we walk through the chunks, which either include strings of
-  // several characters, or numerical character codes.
-  // The reason to do this in a loop instead of a call is so the stack can
-  // drain.
-
-  function main() {
-    var chunkIndex;
-    var chunk;
-
-    while (point._index < chunks.length) {
-      chunk = chunks[point._index]; // If we’re in a buffer chunk, loop through it.
-
-      if (typeof chunk === 'string') {
-        chunkIndex = point._index;
-
-        if (point._bufferIndex < 0) {
-          point._bufferIndex = 0;
-        }
-
-        while (
-          point._index === chunkIndex &&
-          point._bufferIndex < chunk.length
-        ) {
-          go(chunk.charCodeAt(point._bufferIndex));
-        }
-      } else {
-        go(chunk);
-      }
-    }
-  } // Deal with one code.
-
-  function go(code) {
-    state = state(code);
-  } // Move a character forward.
-
-  function consume(code) {
-    if (markdownLineEnding_1(code)) {
-      point.line++;
-      point.column = 1;
-      point.offset += code === -3 ? 2 : 1;
-      accountForPotentialSkip();
-    } else if (code !== -1) {
-      point.column++;
-      point.offset++;
-    } // Not in a string chunk.
-
-    if (point._bufferIndex < 0) {
-      point._index++;
-    } else {
-      point._bufferIndex++; // At end of string chunk.
-
-      if (point._bufferIndex === chunks[point._index].length) {
-        point._bufferIndex = -1;
-        point._index++;
-      }
-    } // Expose the previous character.
-
-    context.previous = code; // Mark as consumed.
-  } // Start a token.
-
-  function enter(type, fields) {
-    var token = fields || {};
-    token.type = type;
-    token.start = now();
-    context.events.push(['enter', token, context]);
-    stack.push(token);
-    return token
-  } // Stop a token.
-
-  function exit(type) {
-    var token = stack.pop();
-    token.end = now();
-    context.events.push(['exit', token, context]);
-    return token
-  } // Use results.
-
-  function onsuccessfulconstruct(construct, info) {
-    addResult(construct, info.from);
-  } // Discard results.
-
-  function onsuccessfulcheck(construct, info) {
-    info.restore();
-  } // Factory to attempt/check/interrupt.
-
-  function constructFactory(onreturn, fields) {
-    return hook // Handle either an object mapping codes to constructs, a list of
-    // constructs, or a single construct.
-
-    function hook(constructs, returnState, bogusState) {
-      var listOfConstructs;
-      var constructIndex;
-      var currentConstruct;
-      var info;
-      return constructs.tokenize || 'length' in constructs
-        ? handleListOfConstructs(miniflat_1(constructs))
-        : handleMapOfConstructs
-
-      function handleMapOfConstructs(code) {
-        if (code in constructs || null in constructs) {
-          return handleListOfConstructs(
-            constructs.null
-              ? /* c8 ignore next */
-                miniflat_1(constructs[code]).concat(miniflat_1(constructs.null))
-              : constructs[code]
-          )(code)
-        }
-
-        return bogusState(code)
-      }
-
-      function handleListOfConstructs(list) {
-        listOfConstructs = list;
-        constructIndex = 0;
-        return handleConstruct(list[constructIndex])
-      }
-
-      function handleConstruct(construct) {
-        return start
-
-        function start(code) {
-          // To do: not nede to store if there is no bogus state, probably?
-          // Currently doesn’t work because `inspect` in document does a check
-          // w/o a bogus, which doesn’t make sense. But it does seem to help perf
-          // by not storing.
-          info = store();
-          currentConstruct = construct;
-
-          if (!construct.partial) {
-            context.currentConstruct = construct;
-          }
-
-          if (
-            construct.name &&
-            context.parser.constructs.disable.null.indexOf(construct.name) > -1
-          ) {
-            return nok()
-          }
-
-          return construct.tokenize.call(
-            fields ? assign_1({}, context, fields) : context,
-            effects,
-            ok,
-            nok
-          )(code)
-        }
-      }
-
-      function ok(code) {
-        onreturn(currentConstruct, info);
-        return returnState
-      }
-
-      function nok(code) {
-        info.restore();
-
-        if (++constructIndex < listOfConstructs.length) {
-          return handleConstruct(listOfConstructs[constructIndex])
-        }
-
-        return bogusState
-      }
-    }
-  }
-
-  function addResult(construct, from) {
-    if (construct.resolveAll && resolveAllConstructs.indexOf(construct) < 0) {
-      resolveAllConstructs.push(construct);
-    }
-
-    if (construct.resolve) {
-      chunkedSplice_1(
-        context.events,
-        from,
-        context.events.length - from,
-        construct.resolve(context.events.slice(from), context)
-      );
-    }
-
-    if (construct.resolveTo) {
-      context.events = construct.resolveTo(context.events, context);
-    }
-  }
-
-  function store() {
-    var startPoint = now();
-    var startPrevious = context.previous;
-    var startCurrentConstruct = context.currentConstruct;
-    var startEventsIndex = context.events.length;
-    var startStack = Array.from(stack);
-    return {
-      restore: restore,
-      from: startEventsIndex
-    }
-
-    function restore() {
-      point = startPoint;
-      context.previous = startPrevious;
-      context.currentConstruct = startCurrentConstruct;
-      context.events.length = startEventsIndex;
-      stack = startStack;
-      accountForPotentialSkip();
-    }
-  }
-
-  function accountForPotentialSkip() {
-    if (point.line in columnStart && point.column < 2) {
-      point.column = columnStart[point.line];
-      point.offset += columnStart[point.line] - 1;
-    }
-  }
-}
-
-var createTokenizer_1 = createTokenizer;
-
-function markdownLineEndingOrSpace(code) {
-  return code < 0 || code === 32
-}
-
-var markdownLineEndingOrSpace_1 = markdownLineEndingOrSpace;
-
-function regexCheck(regex) {
-  return check
-
-  function check(code) {
-    return regex.test(fromCharCode_1(code))
-  }
-}
-
-var regexCheck_1 = regexCheck;
-
-// This module is generated by `script/`.
-//
-// CommonMark handles attention (emphasis, strong) markers based on what comes
-// before or after them.
-// One such difference is if those characters are Unicode punctuation.
-// This script is generated from the Unicode data.
-var unicodePunctuation = /[!-\/:-@\[-`\{-~\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u09FD\u0A76\u0AF0\u0C77\u0C84\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E4F\u2E52\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]/;
-
-var unicodePunctuationRegex = unicodePunctuation;
-
-// In fact adds to the bundle size.
-
-var unicodePunctuation$1 = regexCheck_1(unicodePunctuationRegex);
-
-var unicodePunctuation_1 = unicodePunctuation$1;
-
-var unicodeWhitespace = regexCheck_1(/\s/);
-
-var unicodeWhitespace_1 = unicodeWhitespace;
-
-// Classify whether a character is unicode whitespace, unicode punctuation, or
-// anything else.
-// Used for attention (emphasis, strong), whose sequences can open or close
-// based on the class of surrounding characters.
-function classifyCharacter(code) {
-  if (
-    code === null ||
-    markdownLineEndingOrSpace_1(code) ||
-    unicodeWhitespace_1(code)
-  ) {
-    return 1
-  }
-
-  if (unicodePunctuation_1(code)) {
-    return 2
-  }
-}
-
-var classifyCharacter_1 = classifyCharacter;
-
-// chunks (replacement characters, tabs, or line endings).
-
-function movePoint(point, offset) {
-  point.column += offset;
-  point.offset += offset;
-  point._bufferIndex += offset;
-  return point
-}
-
-var movePoint_1 = movePoint;
-
-var attention = {
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').Event} Event
+ * @typedef {import('micromark-util-types').Code} Code
+ * @typedef {import('micromark-util-types').Point} Point
+ */
+
+/** @type {Construct} */
+const attention = {
   name: 'attention',
   tokenize: tokenizeAttention,
   resolveAll: resolveAllAttention
 };
+/**
+ * Take all events and resolve attention to emphasis or strong.
+ *
+ * @type {Resolver}
+ */
 
 function resolveAllAttention(events, context) {
-  var index = -1;
-  var open;
-  var group;
-  var text;
-  var openingSequence;
-  var closingSequence;
-  var use;
-  var nextEvents;
-  var offset; // Walk through all events.
+  let index = -1;
+  /** @type {number} */
+
+  let open;
+  /** @type {Token} */
+
+  let group;
+  /** @type {Token} */
+
+  let text;
+  /** @type {Token} */
+
+  let openingSequence;
+  /** @type {Token} */
+
+  let closingSequence;
+  /** @type {number} */
+
+  let use;
+  /** @type {Event[]} */
+
+  let nextEvents;
+  /** @type {number} */
+
+  let offset; // Walk through all events.
   //
   // Note: performance of this is fine on an mb of normal markdown, but it’s
   // a bottleneck for malicious stuff.
@@ -3129,54 +3037,58 @@ function resolveAllAttention(events, context) {
             events[index][1].end.offset - events[index][1].start.offset > 1
               ? 2
               : 1;
+          const start = Object.assign({}, events[open][1].end);
+          const end = Object.assign({}, events[index][1].start);
+          movePoint(start, -use);
+          movePoint(end, use);
           openingSequence = {
             type: use > 1 ? 'strongSequence' : 'emphasisSequence',
-            start: movePoint_1(shallow_1(events[open][1].end), -use),
-            end: shallow_1(events[open][1].end)
+            start,
+            end: Object.assign({}, events[open][1].end)
           };
           closingSequence = {
             type: use > 1 ? 'strongSequence' : 'emphasisSequence',
-            start: shallow_1(events[index][1].start),
-            end: movePoint_1(shallow_1(events[index][1].start), use)
+            start: Object.assign({}, events[index][1].start),
+            end
           };
           text = {
             type: use > 1 ? 'strongText' : 'emphasisText',
-            start: shallow_1(events[open][1].end),
-            end: shallow_1(events[index][1].start)
+            start: Object.assign({}, events[open][1].end),
+            end: Object.assign({}, events[index][1].start)
           };
           group = {
             type: use > 1 ? 'strong' : 'emphasis',
-            start: shallow_1(openingSequence.start),
-            end: shallow_1(closingSequence.end)
+            start: Object.assign({}, openingSequence.start),
+            end: Object.assign({}, closingSequence.end)
           };
-          events[open][1].end = shallow_1(openingSequence.start);
-          events[index][1].start = shallow_1(closingSequence.end);
+          events[open][1].end = Object.assign({}, openingSequence.start);
+          events[index][1].start = Object.assign({}, closingSequence.end);
           nextEvents = []; // If there are more markers in the opening, add them before.
 
           if (events[open][1].end.offset - events[open][1].start.offset) {
-            nextEvents = chunkedPush_1(nextEvents, [
+            nextEvents = push(nextEvents, [
               ['enter', events[open][1], context],
               ['exit', events[open][1], context]
             ]);
           } // Opening.
 
-          nextEvents = chunkedPush_1(nextEvents, [
+          nextEvents = push(nextEvents, [
             ['enter', group, context],
             ['enter', openingSequence, context],
             ['exit', openingSequence, context],
             ['enter', text, context]
           ]); // Between.
 
-          nextEvents = chunkedPush_1(
+          nextEvents = push(
             nextEvents,
-            resolveAll_1(
+            resolveAll(
               context.parser.constructs.insideSpan.null,
               events.slice(open + 1, index),
               context
             )
           ); // Closing.
 
-          nextEvents = chunkedPush_1(nextEvents, [
+          nextEvents = push(nextEvents, [
             ['exit', text, context],
             ['enter', closingSequence, context],
             ['exit', closingSequence, context],
@@ -3185,7 +3097,7 @@ function resolveAllAttention(events, context) {
 
           if (events[index][1].end.offset - events[index][1].start.offset) {
             offset = 2;
-            nextEvents = chunkedPush_1(nextEvents, [
+            nextEvents = push(nextEvents, [
               ['enter', events[index][1], context],
               ['exit', events[index][1], context]
             ]);
@@ -3193,7 +3105,7 @@ function resolveAllAttention(events, context) {
             offset = 0;
           }
 
-          chunkedSplice_1(events, open - 1, index - open + 3, nextEvents);
+          splice(events, open - 1, index - open + 3, nextEvents);
           index = open + nextEvents.length - offset - 2;
           break
         }
@@ -3211,72 +3123,76 @@ function resolveAllAttention(events, context) {
 
   return events
 }
+/** @type {Tokenizer} */
 
 function tokenizeAttention(effects, ok) {
-  var before = classifyCharacter_1(this.previous);
-  var marker;
+  const attentionMarkers = this.parser.constructs.attentionMarkers.null;
+  const previous = this.previous;
+  const before = classifyCharacter(previous);
+  /** @type {NonNullable<Code>} */
+
+  let marker;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('attentionSequence');
     marker = code;
     return sequence(code)
   }
+  /** @type {State} */
 
   function sequence(code) {
-    var token;
-    var after;
-    var open;
-    var close;
-
     if (code === marker) {
       effects.consume(code);
       return sequence
     }
 
-    token = effects.exit('attentionSequence');
-    after = classifyCharacter_1(code);
-    open = !after || (after === 2 && before);
-    close = !before || (before === 2 && after);
-    token._open = marker === 42 ? open : open && (before || !close);
-    token._close = marker === 42 ? close : close && (after || !open);
+    const token = effects.exit('attentionSequence');
+    const after = classifyCharacter(code);
+    const open =
+      !after || (after === 2 && before) || attentionMarkers.includes(code);
+    const close =
+      !before || (before === 2 && after) || attentionMarkers.includes(previous);
+    token._open = Boolean(marker === 42 ? open : open && (before || !close));
+    token._close = Boolean(marker === 42 ? close : close && (after || !open));
     return ok(code)
   }
 }
+/**
+ * Move a point a bit.
+ *
+ * Note: `move` only works inside lines! It’s not possible to move past other
+ * chunks (replacement characters, tabs, or line endings).
+ *
+ * @param {Point} point
+ * @param {number} offset
+ * @returns {void}
+ */
 
-var attention_1 = attention;
-
-var asciiAlphanumeric = regexCheck_1(/[\dA-Za-z]/);
-
-var asciiAlphanumeric_1 = asciiAlphanumeric;
-
-var asciiAlpha = regexCheck_1(/[A-Za-z]/);
-
-var asciiAlpha_1 = asciiAlpha;
-
-var asciiAtext = regexCheck_1(/[#-'*+\--9=?A-Z^-~]/);
-
-var asciiAtext_1 = asciiAtext;
-
-// Note: EOF is seen as ASCII control here, because `null < 32 == true`.
-function asciiControl(code) {
-  return (
-    // Special whitespace codes (which have negative values), C0 and Control
-    // character DEL
-    code < 32 || code === 127
-  )
+function movePoint(point, offset) {
+  point.column += offset;
+  point.offset += offset;
+  point._bufferIndex += offset;
 }
 
-var asciiControl_1 = asciiControl;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var autolink = {
+/** @type {Construct} */
+const autolink = {
   name: 'autolink',
   tokenize: tokenizeAutolink
 };
+/** @type {Tokenizer} */
 
 function tokenizeAutolink(effects, ok, nok) {
-  var size = 1;
+  let size = 1;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('autolink');
@@ -3286,21 +3202,24 @@ function tokenizeAutolink(effects, ok, nok) {
     effects.enter('autolinkProtocol');
     return open
   }
+  /** @type {State} */
 
   function open(code) {
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
       return schemeOrEmailAtext
     }
 
-    return asciiAtext_1(code) ? emailAtext(code) : nok(code)
+    return asciiAtext(code) ? emailAtext(code) : nok(code)
   }
+  /** @type {State} */
 
   function schemeOrEmailAtext(code) {
-    return code === 43 || code === 45 || code === 46 || asciiAlphanumeric_1(code)
+    return code === 43 || code === 45 || code === 46 || asciiAlphanumeric(code)
       ? schemeInsideOrEmailAtext(code)
       : emailAtext(code)
   }
+  /** @type {State} */
 
   function schemeInsideOrEmailAtext(code) {
     if (code === 58) {
@@ -3309,7 +3228,7 @@ function tokenizeAutolink(effects, ok, nok) {
     }
 
     if (
-      (code === 43 || code === 45 || code === 46 || asciiAlphanumeric_1(code)) &&
+      (code === 43 || code === 45 || code === 46 || asciiAlphanumeric(code)) &&
       size++ < 32
     ) {
       effects.consume(code);
@@ -3318,6 +3237,7 @@ function tokenizeAutolink(effects, ok, nok) {
 
     return emailAtext(code)
   }
+  /** @type {State} */
 
   function urlInside(code) {
     if (code === 62) {
@@ -3325,13 +3245,14 @@ function tokenizeAutolink(effects, ok, nok) {
       return end(code)
     }
 
-    if (code === 32 || code === 60 || asciiControl_1(code)) {
+    if (code === null || code === 32 || code === 60 || asciiControl(code)) {
       return nok(code)
     }
 
     effects.consume(code);
     return urlInside
   }
+  /** @type {State} */
 
   function emailAtext(code) {
     if (code === 64) {
@@ -3340,17 +3261,19 @@ function tokenizeAutolink(effects, ok, nok) {
       return emailAtSignOrDot
     }
 
-    if (asciiAtext_1(code)) {
+    if (asciiAtext(code)) {
       effects.consume(code);
       return emailAtext
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function emailAtSignOrDot(code) {
-    return asciiAlphanumeric_1(code) ? emailLabel(code) : nok(code)
+    return asciiAlphanumeric(code) ? emailLabel(code) : nok(code)
   }
+  /** @type {State} */
 
   function emailLabel(code) {
     if (code === 46) {
@@ -3367,15 +3290,17 @@ function tokenizeAutolink(effects, ok, nok) {
 
     return emailValue(code)
   }
+  /** @type {State} */
 
   function emailValue(code) {
-    if ((code === 45 || asciiAlphanumeric_1(code)) && size++ < 63) {
+    if ((code === 45 || asciiAlphanumeric(code)) && size++ < 63) {
       effects.consume(code);
       return code === 45 ? emailValue : emailLabel
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function end(code) {
     effects.enter('autolinkMarker');
@@ -3386,28 +3311,60 @@ function tokenizeAutolink(effects, ok, nok) {
   }
 }
 
-var autolink_1 = autolink;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var blockQuote = {
+/** @type {Construct} */
+const blankLine = {
+  tokenize: tokenizeBlankLine,
+  partial: true
+};
+/** @type {Tokenizer} */
+
+function tokenizeBlankLine(effects, ok, nok) {
+  return factorySpace(effects, afterWhitespace, 'linePrefix')
+  /** @type {State} */
+
+  function afterWhitespace(code) {
+    return code === null || markdownLineEnding(code) ? ok(code) : nok(code)
+  }
+}
+
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Exiter} Exiter
+ * @typedef {import('micromark-util-types').State} State
+ */
+
+/** @type {Construct} */
+const blockQuote = {
   name: 'blockQuote',
   tokenize: tokenizeBlockQuoteStart,
   continuation: {
     tokenize: tokenizeBlockQuoteContinuation
   },
-  exit: exit
+  exit
 };
+/** @type {Tokenizer} */
 
 function tokenizeBlockQuoteStart(effects, ok, nok) {
-  var self = this;
+  const self = this;
   return start
+  /** @type {State} */
 
   function start(code) {
     if (code === 62) {
-      if (!self.containerState.open) {
+      const state = self.containerState;
+
+      if (!state.open) {
         effects.enter('blockQuote', {
           _container: true
         });
-        self.containerState.open = true;
+        state.open = true;
       }
 
       effects.enter('blockQuotePrefix');
@@ -3419,9 +3376,10 @@ function tokenizeBlockQuoteStart(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function after(code) {
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.enter('blockQuotePrefixWhitespace');
       effects.consume(code);
       effects.exit('blockQuotePrefixWhitespace');
@@ -3433,35 +3391,38 @@ function tokenizeBlockQuoteStart(effects, ok, nok) {
     return ok(code)
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeBlockQuoteContinuation(effects, ok, nok) {
   return factorySpace(
     effects,
     effects.attempt(blockQuote, ok, nok),
     'linePrefix',
-    this.parser.constructs.disable.null.indexOf('codeIndented') > -1
-      ? undefined
-      : 4
+    this.parser.constructs.disable.null.includes('codeIndented') ? undefined : 4
   )
 }
+/** @type {Exiter} */
 
 function exit(effects) {
   effects.exit('blockQuote');
 }
 
-var blockQuote_1 = blockQuote;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var asciiPunctuation = regexCheck_1(/[!-/:-@[-`{-~]/);
-
-var asciiPunctuation_1 = asciiPunctuation;
-
-var characterEscape = {
+/** @type {Construct} */
+const characterEscape = {
   name: 'characterEscape',
   tokenize: tokenizeCharacterEscape
 };
+/** @type {Tokenizer} */
 
 function tokenizeCharacterEscape(effects, ok, nok) {
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('characterEscape');
@@ -3470,9 +3431,10 @@ function tokenizeCharacterEscape(effects, ok, nok) {
     effects.exit('escapeMarker');
     return open
   }
+  /** @type {State} */
 
   function open(code) {
-    if (asciiPunctuation_1(code)) {
+    if (asciiPunctuation(code)) {
       effects.enter('characterEscapeValue');
       effects.consume(code);
       effects.exit('characterEscapeValue');
@@ -3484,29 +3446,31 @@ function tokenizeCharacterEscape(effects, ok, nok) {
   }
 }
 
-var characterEscape_1 = characterEscape;
-
 /* eslint-env browser */
 
-var el;
+var semicolon = 59; // `;`
+/** @type {HTMLElement} */
+var element;
 
-var semicolon = 59; //  ';'
-
-var decodeEntity_browser = decodeEntity;
-
+/**
+ * @param {string} characters
+ * @returns {string|false}
+ */
 function decodeEntity(characters) {
   var entity = '&' + characters + ';';
+  /** @type {string} */
   var char;
 
-  el = el || document.createElement('i');
-  el.innerHTML = entity;
-  char = el.textContent;
+  element = element || document.createElement('i');
+  element.innerHTML = entity;
+  char = element.textContent;
 
   // Some entities do not require the closing semicolon (`&not` - for instance),
-  // which leads to situations where parsing the assumed entity of &notit; will
-  // result in the string `¬it;`.  When we encounter a trailing semicolon after
-  // parsing and the entity to decode was not a semicolon (`&semi;`), we can
-  // assume that the matching was incomplete
+  // which leads to situations where parsing the assumed entity of `&notit;`
+  // will result in the string `¬it;`.
+  // When we encounter a trailing semicolon after parsing and the entity to
+  // decode was not a semicolon (`&semi;`), we can assume that the matching was
+  // incomplete
   if (char.charCodeAt(char.length - 1) === semicolon && characters !== 'semi') {
     return false
   }
@@ -3515,31 +3479,32 @@ function decodeEntity(characters) {
   return char === entity ? false : char
 }
 
-var asciiDigit = regexCheck_1(/\d/);
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-var asciiDigit_1 = asciiDigit;
-
-var asciiHexDigit = regexCheck_1(/[\dA-Fa-f]/);
-
-var asciiHexDigit_1 = asciiHexDigit;
-
-function _interopDefaultLegacy(e) {
-  return e && typeof e === 'object' && 'default' in e ? e : {default: e}
-}
-
-var decodeEntity__default = /*#__PURE__*/ _interopDefaultLegacy(decodeEntity_browser);
-
-var characterReference = {
+/** @type {Construct} */
+const characterReference = {
   name: 'characterReference',
   tokenize: tokenizeCharacterReference
 };
+/** @type {Tokenizer} */
 
 function tokenizeCharacterReference(effects, ok, nok) {
-  var self = this;
-  var size = 0;
-  var max;
-  var test;
+  const self = this;
+  let size = 0;
+  /** @type {number} */
+
+  let max;
+  /** @type {(code: Code) => code is number} */
+
+  let test;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('characterReference');
@@ -3548,6 +3513,7 @@ function tokenizeCharacterReference(effects, ok, nok) {
     effects.exit('characterReferenceMarker');
     return open
   }
+  /** @type {State} */
 
   function open(code) {
     if (code === 35) {
@@ -3559,9 +3525,10 @@ function tokenizeCharacterReference(effects, ok, nok) {
 
     effects.enter('characterReferenceValue');
     max = 31;
-    test = asciiAlphanumeric_1;
+    test = asciiAlphanumeric;
     return value(code)
   }
+  /** @type {State} */
 
   function numeric(code) {
     if (code === 88 || code === 120) {
@@ -3570,25 +3537,27 @@ function tokenizeCharacterReference(effects, ok, nok) {
       effects.exit('characterReferenceMarkerHexadecimal');
       effects.enter('characterReferenceValue');
       max = 6;
-      test = asciiHexDigit_1;
+      test = asciiHexDigit;
       return value
     }
 
     effects.enter('characterReferenceValue');
     max = 7;
-    test = asciiDigit_1;
+    test = asciiDigit;
     return value(code)
   }
+  /** @type {State} */
 
   function value(code) {
-    var token;
+    /** @type {Token} */
+    let token;
 
     if (code === 59 && size) {
       token = effects.exit('characterReferenceValue');
 
       if (
-        test === asciiAlphanumeric_1 &&
-        !decodeEntity__default['default'](self.sliceSerialize(token))
+        test === asciiAlphanumeric &&
+        !decodeEntity(self.sliceSerialize(token))
       ) {
         return nok(code)
       }
@@ -3609,24 +3578,46 @@ function tokenizeCharacterReference(effects, ok, nok) {
   }
 }
 
-var characterReference_1 = characterReference;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-var codeFenced = {
+/** @type {Construct} */
+const codeFenced = {
   name: 'codeFenced',
   tokenize: tokenizeCodeFenced,
   concrete: true
 };
+/** @type {Tokenizer} */
 
 function tokenizeCodeFenced(effects, ok, nok) {
-  var self = this;
-  var closingFenceConstruct = {
+  const self = this;
+  /** @type {Construct} */
+
+  const closingFenceConstruct = {
     tokenize: tokenizeClosingFence,
     partial: true
   };
-  var initialPrefix = prefixSize_1(this.events, 'linePrefix');
-  var sizeOpen = 0;
-  var marker;
+  /** @type {Construct} */
+
+  const nonLazyLine = {
+    tokenize: tokenizeNonLazyLine,
+    partial: true
+  };
+  const tail = this.events[this.events.length - 1];
+  const initialPrefix =
+    tail && tail[1].type === 'linePrefix'
+      ? tail[2].sliceSerialize(tail[1], true).length
+      : 0;
+  let sizeOpen = 0;
+  /** @type {NonNullable<Code>} */
+
+  let marker;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('codeFenced');
@@ -3635,6 +3626,7 @@ function tokenizeCodeFenced(effects, ok, nok) {
     marker = code;
     return sequenceOpen(code)
   }
+  /** @type {State} */
 
   function sequenceOpen(code) {
     if (code === marker) {
@@ -3648,9 +3640,10 @@ function tokenizeCodeFenced(effects, ok, nok) {
       ? nok(code)
       : factorySpace(effects, infoOpen, 'whitespace')(code)
   }
+  /** @type {State} */
 
   function infoOpen(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       return openAfter(code)
     }
 
@@ -3660,9 +3653,10 @@ function tokenizeCodeFenced(effects, ok, nok) {
     });
     return info(code)
   }
+  /** @type {State} */
 
   function info(code) {
-    if (code === null || markdownLineEndingOrSpace_1(code)) {
+    if (code === null || markdownLineEndingOrSpace(code)) {
       effects.exit('chunkString');
       effects.exit('codeFencedFenceInfo');
       return factorySpace(effects, infoAfter, 'whitespace')(code)
@@ -3672,9 +3666,10 @@ function tokenizeCodeFenced(effects, ok, nok) {
     effects.consume(code);
     return info
   }
+  /** @type {State} */
 
   function infoAfter(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       return openAfter(code)
     }
 
@@ -3684,9 +3679,10 @@ function tokenizeCodeFenced(effects, ok, nok) {
     });
     return meta(code)
   }
+  /** @type {State} */
 
   function meta(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('chunkString');
       effects.exit('codeFencedFenceMeta');
       return openAfter(code)
@@ -3696,65 +3692,97 @@ function tokenizeCodeFenced(effects, ok, nok) {
     effects.consume(code);
     return meta
   }
+  /** @type {State} */
 
   function openAfter(code) {
     effects.exit('codeFencedFence');
-    return self.interrupt ? ok(code) : content(code)
+    return self.interrupt ? ok(code) : contentStart(code)
   }
+  /** @type {State} */
 
-  function content(code) {
+  function contentStart(code) {
     if (code === null) {
       return after(code)
     }
 
-    if (markdownLineEnding_1(code)) {
-      effects.enter('lineEnding');
-      effects.consume(code);
-      effects.exit('lineEnding');
+    if (markdownLineEnding(code)) {
       return effects.attempt(
-        closingFenceConstruct,
-        after,
-        initialPrefix
-          ? factorySpace(effects, content, 'linePrefix', initialPrefix + 1)
-          : content
-      )
+        nonLazyLine,
+        effects.attempt(
+          closingFenceConstruct,
+          after,
+          initialPrefix
+            ? factorySpace(
+                effects,
+                contentStart,
+                'linePrefix',
+                initialPrefix + 1
+              )
+            : contentStart
+        ),
+        after
+      )(code)
     }
 
     effects.enter('codeFlowValue');
     return contentContinue(code)
   }
+  /** @type {State} */
 
   function contentContinue(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('codeFlowValue');
-      return content(code)
+      return contentStart(code)
     }
 
     effects.consume(code);
     return contentContinue
   }
+  /** @type {State} */
 
   function after(code) {
     effects.exit('codeFenced');
     return ok(code)
   }
+  /** @type {Tokenizer} */
+
+  function tokenizeNonLazyLine(effects, ok, nok) {
+    const self = this;
+    return start
+    /** @type {State} */
+
+    function start(code) {
+      effects.enter('lineEnding');
+      effects.consume(code);
+      effects.exit('lineEnding');
+      return lineStart
+    }
+    /** @type {State} */
+
+    function lineStart(code) {
+      return self.parser.lazy[self.now().line] ? nok(code) : ok(code)
+    }
+  }
+  /** @type {Tokenizer} */
 
   function tokenizeClosingFence(effects, ok, nok) {
-    var size = 0;
+    let size = 0;
     return factorySpace(
       effects,
       closingSequenceStart,
       'linePrefix',
-      this.parser.constructs.disable.null.indexOf('codeIndented') > -1
+      this.parser.constructs.disable.null.includes('codeIndented')
         ? undefined
         : 4
     )
+    /** @type {State} */
 
     function closingSequenceStart(code) {
       effects.enter('codeFencedFence');
       effects.enter('codeFencedFenceSequence');
       return closingSequence(code)
     }
+    /** @type {State} */
 
     function closingSequence(code) {
       if (code === marker) {
@@ -3767,9 +3795,10 @@ function tokenizeCodeFenced(effects, ok, nok) {
       effects.exit('codeFencedFenceSequence');
       return factorySpace(effects, closingSequenceEnd, 'whitespace')(code)
     }
+    /** @type {State} */
 
     function closingSequenceEnd(code) {
-      if (code === null || markdownLineEnding_1(code)) {
+      if (code === null || markdownLineEnding(code)) {
         effects.exit('codeFencedFence');
         return ok(code)
       }
@@ -3779,47 +3808,64 @@ function tokenizeCodeFenced(effects, ok, nok) {
   }
 }
 
-var codeFenced_1 = codeFenced;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var codeIndented = {
+/** @type {Construct} */
+const codeIndented = {
   name: 'codeIndented',
-  tokenize: tokenizeCodeIndented,
-  resolve: resolveCodeIndented
+  tokenize: tokenizeCodeIndented
 };
-var indentedContentConstruct = {
+/** @type {Construct} */
+
+const indentedContent = {
   tokenize: tokenizeIndentedContent,
   partial: true
 };
-
-function resolveCodeIndented(events, context) {
-  var code = {
-    type: 'codeIndented',
-    start: events[0][1].start,
-    end: events[events.length - 1][1].end
-  };
-  chunkedSplice_1(events, 0, 0, [['enter', code, context]]);
-  chunkedSplice_1(events, events.length, 0, [['exit', code, context]]);
-  return events
-}
+/** @type {Tokenizer} */
 
 function tokenizeCodeIndented(effects, ok, nok) {
-  return effects.attempt(indentedContentConstruct, afterPrefix, nok)
+  const self = this;
+  return start
+  /** @type {State} */
+
+  function start(code) {
+    effects.enter('codeIndented');
+    return factorySpace(effects, afterStartPrefix, 'linePrefix', 4 + 1)(code)
+  }
+  /** @type {State} */
+
+  function afterStartPrefix(code) {
+    const tail = self.events[self.events.length - 1];
+    return tail &&
+      tail[1].type === 'linePrefix' &&
+      tail[2].sliceSerialize(tail[1], true).length >= 4
+      ? afterPrefix(code)
+      : nok(code)
+  }
+  /** @type {State} */
 
   function afterPrefix(code) {
     if (code === null) {
-      return ok(code)
+      return after(code)
     }
 
-    if (markdownLineEnding_1(code)) {
-      return effects.attempt(indentedContentConstruct, afterPrefix, ok)(code)
+    if (markdownLineEnding(code)) {
+      return effects.attempt(indentedContent, afterPrefix, after)(code)
     }
 
     effects.enter('codeFlowValue');
     return content(code)
   }
+  /** @type {State} */
 
   function content(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('codeFlowValue');
       return afterPrefix(code)
     }
@@ -3827,38 +3873,76 @@ function tokenizeCodeIndented(effects, ok, nok) {
     effects.consume(code);
     return content
   }
+  /** @type {State} */
+
+  function after(code) {
+    effects.exit('codeIndented');
+    return ok(code)
+  }
 }
+/** @type {Tokenizer} */
 
 function tokenizeIndentedContent(effects, ok, nok) {
-  var self = this;
-  return factorySpace(effects, afterPrefix, 'linePrefix', 4 + 1)
+  const self = this;
+  return start
+  /** @type {State} */
 
-  function afterPrefix(code) {
-    if (markdownLineEnding_1(code)) {
+  function start(code) {
+    // If this is a lazy line, it can’t be code.
+    if (self.parser.lazy[self.now().line]) {
+      return nok(code)
+    }
+
+    if (markdownLineEnding(code)) {
       effects.enter('lineEnding');
       effects.consume(code);
       effects.exit('lineEnding');
-      return factorySpace(effects, afterPrefix, 'linePrefix', 4 + 1)
+      return start
     }
 
-    return prefixSize_1(self.events, 'linePrefix') < 4 ? nok(code) : ok(code)
+    return factorySpace(effects, afterPrefix, 'linePrefix', 4 + 1)(code)
+  }
+  /** @type {State} */
+
+  function afterPrefix(code) {
+    const tail = self.events[self.events.length - 1];
+    return tail &&
+      tail[1].type === 'linePrefix' &&
+      tail[2].sliceSerialize(tail[1], true).length >= 4
+      ? ok(code)
+      : markdownLineEnding(code)
+      ? start(code)
+      : nok(code)
   }
 }
 
-var codeIndented_1 = codeIndented;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Previous} Previous
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var codeText = {
+/** @type {Construct} */
+const codeText = {
   name: 'codeText',
   tokenize: tokenizeCodeText,
   resolve: resolveCodeText,
-  previous: previous
+  previous
 };
+/** @type {Resolver} */
 
 function resolveCodeText(events) {
-  var tailExitIndex = events.length - 4;
-  var headEnterIndex = 3;
-  var index;
-  var enter; // If we start and end with an EOL or a space.
+  let tailExitIndex = events.length - 4;
+  let headEnterIndex = 3;
+  /** @type {number} */
+
+  let index;
+  /** @type {number|undefined} */
+
+  let enter; // If we start and end with an EOL or a space.
 
   if (
     (events[headEnterIndex][1].type === 'lineEnding' ||
@@ -3871,8 +3955,8 @@ function resolveCodeText(events) {
     while (++index < tailExitIndex) {
       if (events[index][1].type === 'codeTextData') {
         // Then we have padding.
-        events[tailExitIndex][1].type = events[headEnterIndex][1].type =
-          'codeTextPadding';
+        events[headEnterIndex][1].type = 'codeTextPadding';
+        events[tailExitIndex][1].type = 'codeTextPadding';
         headEnterIndex += 2;
         tailExitIndex -= 2;
         break
@@ -3907,6 +3991,7 @@ function resolveCodeText(events) {
 
   return events
 }
+/** @type {Previous} */
 
 function previous(code) {
   // If there is a previous code, there will always be a tail.
@@ -3915,18 +4000,25 @@ function previous(code) {
     this.events[this.events.length - 1][1].type === 'characterEscape'
   )
 }
+/** @type {Tokenizer} */
 
 function tokenizeCodeText(effects, ok, nok) {
-  var sizeOpen = 0;
-  var size;
-  var token;
+  let sizeOpen = 0;
+  /** @type {number} */
+
+  let size;
+  /** @type {Token} */
+
+  let token;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('codeText');
     effects.enter('codeTextSequence');
     return openingSequence(code)
   }
+  /** @type {State} */
 
   function openingSequence(code) {
     if (code === 96) {
@@ -3938,6 +4030,7 @@ function tokenizeCodeText(effects, ok, nok) {
     effects.exit('codeTextSequence');
     return gap(code)
   }
+  /** @type {State} */
 
   function gap(code) {
     // EOF.
@@ -3959,7 +4052,7 @@ function tokenizeCodeText(effects, ok, nok) {
       return gap
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       effects.enter('lineEnding');
       effects.consume(code);
       effects.exit('lineEnding');
@@ -3970,12 +4063,14 @@ function tokenizeCodeText(effects, ok, nok) {
     return data(code)
   } // In code.
 
+  /** @type {State} */
+
   function data(code) {
     if (
       code === null ||
       code === 32 ||
       code === 96 ||
-      markdownLineEnding_1(code)
+      markdownLineEnding(code)
     ) {
       effects.exit('codeTextData');
       return gap(code)
@@ -3984,6 +4079,8 @@ function tokenizeCodeText(effects, ok, nok) {
     effects.consume(code);
     return data
   } // Closing fence.
+
+  /** @type {State} */
 
   function closingSequence(code) {
     // More.
@@ -4004,10 +4101,394 @@ function tokenizeCodeText(effects, ok, nok) {
   }
 }
 
-var codeText_1 = codeText;
+/**
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').Chunk} Chunk
+ * @typedef {import('micromark-util-types').Event} Event
+ */
 
+/**
+ * Tokenize subcontent.
+ *
+ * @param {Event[]} events
+ * @returns {boolean}
+ */
+function subtokenize(events) {
+  /** @type {Record<string, number>} */
+  const jumps = {};
+  let index = -1;
+  /** @type {Event} */
+
+  let event;
+  /** @type {number|undefined} */
+
+  let lineIndex;
+  /** @type {number} */
+
+  let otherIndex;
+  /** @type {Event} */
+
+  let otherEvent;
+  /** @type {Event[]} */
+
+  let parameters;
+  /** @type {Event[]} */
+
+  let subevents;
+  /** @type {boolean|undefined} */
+
+  let more;
+
+  while (++index < events.length) {
+    while (index in jumps) {
+      index = jumps[index];
+    }
+
+    event = events[index]; // Add a hook for the GFM tasklist extension, which needs to know if text
+    // is in the first content of a list item.
+
+    if (
+      index &&
+      event[1].type === 'chunkFlow' &&
+      events[index - 1][1].type === 'listItemPrefix'
+    ) {
+      subevents = event[1]._tokenizer.events;
+      otherIndex = 0;
+
+      if (
+        otherIndex < subevents.length &&
+        subevents[otherIndex][1].type === 'lineEndingBlank'
+      ) {
+        otherIndex += 2;
+      }
+
+      if (
+        otherIndex < subevents.length &&
+        subevents[otherIndex][1].type === 'content'
+      ) {
+        while (++otherIndex < subevents.length) {
+          if (subevents[otherIndex][1].type === 'content') {
+            break
+          }
+
+          if (subevents[otherIndex][1].type === 'chunkText') {
+            subevents[otherIndex][1]._isInFirstContentOfListItem = true;
+            otherIndex++;
+          }
+        }
+      }
+    } // Enter.
+
+    if (event[0] === 'enter') {
+      if (event[1].contentType) {
+        Object.assign(jumps, subcontent(events, index));
+        index = jumps[index];
+        more = true;
+      }
+    } // Exit.
+    else if (event[1]._container) {
+      otherIndex = index;
+      lineIndex = undefined;
+
+      while (otherIndex--) {
+        otherEvent = events[otherIndex];
+
+        if (
+          otherEvent[1].type === 'lineEnding' ||
+          otherEvent[1].type === 'lineEndingBlank'
+        ) {
+          if (otherEvent[0] === 'enter') {
+            if (lineIndex) {
+              events[lineIndex][1].type = 'lineEndingBlank';
+            }
+
+            otherEvent[1].type = 'lineEnding';
+            lineIndex = otherIndex;
+          }
+        } else {
+          break
+        }
+      }
+
+      if (lineIndex) {
+        // Fix position.
+        event[1].end = Object.assign({}, events[lineIndex][1].start); // Switch container exit w/ line endings.
+
+        parameters = events.slice(lineIndex, index);
+        parameters.unshift(event);
+        splice(events, lineIndex, index - lineIndex + 1, parameters);
+      }
+    }
+  }
+
+  return !more
+}
+/**
+ * Tokenize embedded tokens.
+ *
+ * @param {Event[]} events
+ * @param {number} eventIndex
+ * @returns {Record<string, number>}
+ */
+
+function subcontent(events, eventIndex) {
+  const token = events[eventIndex][1];
+  const context = events[eventIndex][2];
+  let startPosition = eventIndex - 1;
+  /** @type {number[]} */
+
+  const startPositions = [];
+  const tokenizer =
+    token._tokenizer || context.parser[token.contentType](token.start);
+  const childEvents = tokenizer.events;
+  /** @type {[number, number][]} */
+
+  const jumps = [];
+  /** @type {Record<string, number>} */
+
+  const gaps = {};
+  /** @type {Chunk[]} */
+
+  let stream;
+  /** @type {Token|undefined} */
+
+  let previous;
+  let index = -1;
+  /** @type {Token|undefined} */
+
+  let current = token;
+  let adjust = 0;
+  let start = 0;
+  const breaks = [start]; // Loop forward through the linked tokens to pass them in order to the
+  // subtokenizer.
+
+  while (current) {
+    // Find the position of the event for this token.
+    while (events[++startPosition][1] !== current) {
+      // Empty.
+    }
+
+    startPositions.push(startPosition);
+
+    if (!current._tokenizer) {
+      stream = context.sliceStream(current);
+
+      if (!current.next) {
+        stream.push(null);
+      }
+
+      if (previous) {
+        tokenizer.defineSkip(current.start);
+      }
+
+      if (current._isInFirstContentOfListItem) {
+        tokenizer._gfmTasklistFirstContentOfListItem = true;
+      }
+
+      tokenizer.write(stream);
+
+      if (current._isInFirstContentOfListItem) {
+        tokenizer._gfmTasklistFirstContentOfListItem = undefined;
+      }
+    } // Unravel the next token.
+
+    previous = current;
+    current = current.next;
+  } // Now, loop back through all events (and linked tokens), to figure out which
+  // parts belong where.
+
+  current = token;
+
+  while (++index < childEvents.length) {
+    if (
+      // Find a void token that includes a break.
+      childEvents[index][0] === 'exit' &&
+      childEvents[index - 1][0] === 'enter' &&
+      childEvents[index][1].type === childEvents[index - 1][1].type &&
+      childEvents[index][1].start.line !== childEvents[index][1].end.line
+    ) {
+      start = index + 1;
+      breaks.push(start); // Help GC.
+
+      current._tokenizer = undefined;
+      current.previous = undefined;
+      current = current.next;
+    }
+  } // Help GC.
+
+  tokenizer.events = []; // If there’s one more token (which is the cases for lines that end in an
+  // EOF), that’s perfect: the last point we found starts it.
+  // If there isn’t then make sure any remaining content is added to it.
+
+  if (current) {
+    // Help GC.
+    current._tokenizer = undefined;
+    current.previous = undefined;
+  } else {
+    breaks.pop();
+  } // Now splice the events from the subtokenizer into the current events,
+  // moving back to front so that splice indices aren’t affected.
+
+  index = breaks.length;
+
+  while (index--) {
+    const slice = childEvents.slice(breaks[index], breaks[index + 1]);
+    const start = startPositions.pop();
+    jumps.unshift([start, start + slice.length - 1]);
+    splice(events, start, 2, slice);
+  }
+
+  index = -1;
+
+  while (++index < jumps.length) {
+    gaps[adjust + jumps[index][0]] = adjust + jumps[index][1];
+    adjust += jumps[index][1] - jumps[index][0] - 1;
+  }
+
+  return gaps
+}
+
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ */
+
+/**
+ * No name because it must not be turned off.
+ * @type {Construct}
+ */
+const content$1 = {
+  tokenize: tokenizeContent,
+  resolve: resolveContent
+};
+/** @type {Construct} */
+
+const continuationConstruct = {
+  tokenize: tokenizeContinuation,
+  partial: true
+};
+/**
+ * Content is transparent: it’s parsed right now. That way, definitions are also
+ * parsed right now: before text in paragraphs (specifically, media) are parsed.
+ *
+ * @type {Resolver}
+ */
+
+function resolveContent(events) {
+  subtokenize(events);
+  return events
+}
+/** @type {Tokenizer} */
+
+function tokenizeContent(effects, ok) {
+  /** @type {Token} */
+  let previous;
+  return start
+  /** @type {State} */
+
+  function start(code) {
+    effects.enter('content');
+    previous = effects.enter('chunkContent', {
+      contentType: 'content'
+    });
+    return data(code)
+  }
+  /** @type {State} */
+
+  function data(code) {
+    if (code === null) {
+      return contentEnd(code)
+    }
+
+    if (markdownLineEnding(code)) {
+      return effects.check(
+        continuationConstruct,
+        contentContinue,
+        contentEnd
+      )(code)
+    } // Data.
+
+    effects.consume(code);
+    return data
+  }
+  /** @type {State} */
+
+  function contentEnd(code) {
+    effects.exit('chunkContent');
+    effects.exit('content');
+    return ok(code)
+  }
+  /** @type {State} */
+
+  function contentContinue(code) {
+    effects.consume(code);
+    effects.exit('chunkContent');
+    previous.next = effects.enter('chunkContent', {
+      contentType: 'content',
+      previous
+    });
+    previous = previous.next;
+    return data
+  }
+}
+/** @type {Tokenizer} */
+
+function tokenizeContinuation(effects, ok, nok) {
+  const self = this;
+  return startLookahead
+  /** @type {State} */
+
+  function startLookahead(code) {
+    effects.exit('chunkContent');
+    effects.enter('lineEnding');
+    effects.consume(code);
+    effects.exit('lineEnding');
+    return factorySpace(effects, prefixed, 'linePrefix')
+  }
+  /** @type {State} */
+
+  function prefixed(code) {
+    if (code === null || markdownLineEnding(code)) {
+      return nok(code)
+    }
+
+    const tail = self.events[self.events.length - 1];
+
+    if (
+      !self.parser.constructs.disable.null.includes('codeIndented') &&
+      tail &&
+      tail[1].type === 'linePrefix' &&
+      tail[2].sliceSerialize(tail[1], true).length >= 4
+    ) {
+      return ok(code)
+    }
+
+    return effects.interrupt(self.parser.constructs.flow, nok, ok)(code)
+  }
+}
+
+/**
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').State} State
+ */
+
+/**
+ * @param {Effects} effects
+ * @param {State} ok
+ * @param {State} nok
+ * @param {string} type
+ * @param {string} literalType
+ * @param {string} literalMarkerType
+ * @param {string} rawType
+ * @param {string} stringType
+ * @param {number} [max=Infinity]
+ * @returns {State}
+ */
 // eslint-disable-next-line max-params
-function destinationFactory(
+function factoryDestination(
   effects,
   ok,
   nok,
@@ -4018,9 +4499,10 @@ function destinationFactory(
   stringType,
   max
 ) {
-  var limit = max || Infinity;
-  var balance = 0;
+  const limit = max || Number.POSITIVE_INFINITY;
+  let balance = 0;
   return start
+  /** @type {State} */
 
   function start(code) {
     if (code === 60) {
@@ -4032,7 +4514,7 @@ function destinationFactory(
       return destinationEnclosedBefore
     }
 
-    if (asciiControl_1(code)) {
+    if (code === null || code === 41 || asciiControl(code)) {
       return nok(code)
     }
 
@@ -4044,6 +4526,7 @@ function destinationFactory(
     });
     return destinationRaw(code)
   }
+  /** @type {State} */
 
   function destinationEnclosedBefore(code) {
     if (code === 62) {
@@ -4061,6 +4544,7 @@ function destinationFactory(
     });
     return destinationEnclosed(code)
   }
+  /** @type {State} */
 
   function destinationEnclosed(code) {
     if (code === 62) {
@@ -4069,13 +4553,14 @@ function destinationFactory(
       return destinationEnclosedBefore(code)
     }
 
-    if (code === null || code === 60 || markdownLineEnding_1(code)) {
+    if (code === null || code === 60 || markdownLineEnding(code)) {
       return nok(code)
     }
 
     effects.consume(code);
     return code === 92 ? destinationEnclosedEscape : destinationEnclosed
   }
+  /** @type {State} */
 
   function destinationEnclosedEscape(code) {
     if (code === 60 || code === 62 || code === 92) {
@@ -4085,6 +4570,7 @@ function destinationFactory(
 
     return destinationEnclosed(code)
   }
+  /** @type {State} */
 
   function destinationRaw(code) {
     if (code === 40) {
@@ -4106,7 +4592,7 @@ function destinationFactory(
       return destinationRaw
     }
 
-    if (code === null || markdownLineEndingOrSpace_1(code)) {
+    if (code === null || markdownLineEndingOrSpace(code)) {
       if (balance) return nok(code)
       effects.exit('chunkString');
       effects.exit(stringType);
@@ -4115,10 +4601,11 @@ function destinationFactory(
       return ok(code)
     }
 
-    if (asciiControl_1(code)) return nok(code)
+    if (asciiControl(code)) return nok(code)
     effects.consume(code);
     return code === 92 ? destinationRawEscape : destinationRaw
   }
+  /** @type {State} */
 
   function destinationRawEscape(code) {
     if (code === 40 || code === 41 || code === 92) {
@@ -4130,14 +4617,31 @@ function destinationFactory(
   }
 }
 
-var factoryDestination = destinationFactory;
+/**
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').State} State
+ */
 
+/**
+ * @this {TokenizeContext}
+ * @param {Effects} effects
+ * @param {State} ok
+ * @param {State} nok
+ * @param {string} type
+ * @param {string} markerType
+ * @param {string} stringType
+ * @returns {State}
+ */
 // eslint-disable-next-line max-params
-function labelFactory(effects, ok, nok, type, markerType, stringType) {
-  var self = this;
-  var size = 0;
-  var data;
+function factoryLabel(effects, ok, nok, type, markerType, stringType) {
+  const self = this;
+  let size = 0;
+  /** @type {boolean} */
+
+  let data;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter(type);
@@ -4147,17 +4651,18 @@ function labelFactory(effects, ok, nok, type, markerType, stringType) {
     effects.enter(stringType);
     return atBreak
   }
+  /** @type {State} */
 
   function atBreak(code) {
     if (
       code === null ||
       code === 91 ||
       (code === 93 && !data) ||
-      /* c8 ignore next */
+      /* Hidden footnotes hook */
+
+      /* c8 ignore next 3 */
       (code === 94 &&
-        /* c8 ignore next */
         !size &&
-        /* c8 ignore next */
         '_hiddenFootnoteSupport' in self.parser.constructs) ||
       size > 999
     ) {
@@ -4173,7 +4678,7 @@ function labelFactory(effects, ok, nok, type, markerType, stringType) {
       return ok
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       effects.enter('lineEnding');
       effects.consume(code);
       effects.exit('lineEnding');
@@ -4185,13 +4690,14 @@ function labelFactory(effects, ok, nok, type, markerType, stringType) {
     });
     return label(code)
   }
+  /** @type {State} */
 
   function label(code) {
     if (
       code === null ||
       code === 91 ||
       code === 93 ||
-      markdownLineEnding_1(code) ||
+      markdownLineEnding(code) ||
       size++ > 999
     ) {
       effects.exit('chunkString');
@@ -4199,9 +4705,10 @@ function labelFactory(effects, ok, nok, type, markerType, stringType) {
     }
 
     effects.consume(code);
-    data = data || !markdownSpace_1(code);
+    data = data || !markdownSpace(code);
     return code === 92 ? labelEscape : label
   }
+  /** @type {State} */
 
   function labelEscape(code) {
     if (code === 91 || code === 92 || code === 93) {
@@ -4214,38 +4721,27 @@ function labelFactory(effects, ok, nok, type, markerType, stringType) {
   }
 }
 
-var factoryLabel = labelFactory;
+/**
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-function whitespaceFactory(effects, ok) {
-  var seen;
+/**
+ * @param {Effects} effects
+ * @param {State} ok
+ * @param {State} nok
+ * @param {string} type
+ * @param {string} markerType
+ * @param {string} stringType
+ * @returns {State}
+ */
+// eslint-disable-next-line max-params
+function factoryTitle(effects, ok, nok, type, markerType, stringType) {
+  /** @type {NonNullable<Code>} */
+  let marker;
   return start
-
-  function start(code) {
-    if (markdownLineEnding_1(code)) {
-      effects.enter('lineEnding');
-      effects.consume(code);
-      effects.exit('lineEnding');
-      seen = true;
-      return start
-    }
-
-    if (markdownSpace_1(code)) {
-      return factorySpace(
-        effects,
-        start,
-        seen ? 'linePrefix' : 'lineSuffix'
-      )(code)
-    }
-
-    return ok(code)
-  }
-}
-
-var factoryWhitespace = whitespaceFactory;
-
-function titleFactory(effects, ok, nok, type, markerType, stringType) {
-  var marker;
-  return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter(type);
@@ -4255,6 +4751,7 @@ function titleFactory(effects, ok, nok, type, markerType, stringType) {
     marker = code === 40 ? 41 : code;
     return atFirstTitleBreak
   }
+  /** @type {State} */
 
   function atFirstTitleBreak(code) {
     if (code === marker) {
@@ -4268,6 +4765,7 @@ function titleFactory(effects, ok, nok, type, markerType, stringType) {
     effects.enter(stringType);
     return atTitleBreak(code)
   }
+  /** @type {State} */
 
   function atTitleBreak(code) {
     if (code === marker) {
@@ -4279,7 +4777,7 @@ function titleFactory(effects, ok, nok, type, markerType, stringType) {
       return nok(code)
     } // Note: blank lines can’t exist in content.
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       effects.enter('lineEnding');
       effects.consume(code);
       effects.exit('lineEnding');
@@ -4291,9 +4789,10 @@ function titleFactory(effects, ok, nok, type, markerType, stringType) {
     });
     return title(code)
   }
+  /** @type {State} */
 
   function title(code) {
-    if (code === marker || code === null || markdownLineEnding_1(code)) {
+    if (code === marker || code === null || markdownLineEnding(code)) {
       effects.exit('chunkString');
       return atTitleBreak(code)
     }
@@ -4301,6 +4800,7 @@ function titleFactory(effects, ok, nok, type, markerType, stringType) {
     effects.consume(code);
     return code === 92 ? titleEscape : title
   }
+  /** @type {State} */
 
   function titleEscape(code) {
     if (code === marker || code === 92) {
@@ -4312,21 +4812,89 @@ function titleFactory(effects, ok, nok, type, markerType, stringType) {
   }
 }
 
-var factoryTitle = titleFactory;
+/**
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var definition = {
+/**
+ * @param {Effects} effects
+ * @param {State} ok
+ */
+function factoryWhitespace(effects, ok) {
+  /** @type {boolean} */
+  let seen;
+  return start
+  /** @type {State} */
+
+  function start(code) {
+    if (markdownLineEnding(code)) {
+      effects.enter('lineEnding');
+      effects.consume(code);
+      effects.exit('lineEnding');
+      seen = true;
+      return start
+    }
+
+    if (markdownSpace(code)) {
+      return factorySpace(
+        effects,
+        start,
+        seen ? 'linePrefix' : 'lineSuffix'
+      )(code)
+    }
+
+    return ok(code)
+  }
+}
+
+/**
+ * Normalize an identifier (such as used in definitions).
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function normalizeIdentifier(value) {
+  return (
+    value // Collapse Markdown whitespace.
+      .replace(/[\t\n\r ]+/g, ' ') // Trim.
+      .replace(/^ | $/g, '') // Some characters are considered “uppercase”, but if their lowercase
+      // counterpart is uppercased will result in a different uppercase
+      // character.
+      // Hence, to get that form, we perform both lower- and uppercase.
+      // Upper case makes sure keys will not interact with default prototypal
+      // methods: no method is uppercase.
+      .toLowerCase()
+      .toUpperCase()
+  )
+}
+
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
+
+/** @type {Construct} */
+const definition = {
   name: 'definition',
   tokenize: tokenizeDefinition
 };
-var titleConstruct = {
+/** @type {Construct} */
+
+const titleConstruct = {
   tokenize: tokenizeTitle,
   partial: true
 };
+/** @type {Tokenizer} */
 
 function tokenizeDefinition(effects, ok, nok) {
-  var self = this;
-  var identifier;
+  const self = this;
+  /** @type {string} */
+
+  let identifier;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('definition');
@@ -4340,9 +4908,10 @@ function tokenizeDefinition(effects, ok, nok) {
       'definitionLabelString'
     )(code)
   }
+  /** @type {State} */
 
   function labelAfter(code) {
-    identifier = normalizeIdentifier_1(
+    identifier = normalizeIdentifier(
       self.sliceSerialize(self.events[self.events.length - 1][1]).slice(1, -1)
     );
 
@@ -4372,12 +4941,13 @@ function tokenizeDefinition(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function after(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('definition');
 
-      if (self.parser.defined.indexOf(identifier) < 0) {
+      if (!self.parser.defined.includes(identifier)) {
         self.parser.defined.push(identifier);
       }
 
@@ -4387,15 +4957,18 @@ function tokenizeDefinition(effects, ok, nok) {
     return nok(code)
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeTitle(effects, ok, nok) {
   return start
+  /** @type {State} */
 
   function start(code) {
-    return markdownLineEndingOrSpace_1(code)
+    return markdownLineEndingOrSpace(code)
       ? factoryWhitespace(effects, before)(code)
       : nok(code)
   }
+  /** @type {State} */
 
   function before(code) {
     if (code === 34 || code === 39 || code === 40) {
@@ -4411,21 +4984,29 @@ function tokenizeTitle(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function after(code) {
-    return code === null || markdownLineEnding_1(code) ? ok(code) : nok(code)
+    return code === null || markdownLineEnding(code) ? ok(code) : nok(code)
   }
 }
 
-var definition_1 = definition;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var hardBreakEscape = {
+/** @type {Construct} */
+const hardBreakEscape = {
   name: 'hardBreakEscape',
   tokenize: tokenizeHardBreakEscape
 };
+/** @type {Tokenizer} */
 
 function tokenizeHardBreakEscape(effects, ok, nok) {
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('hardBreakEscape');
@@ -4433,9 +5014,10 @@ function tokenizeHardBreakEscape(effects, ok, nok) {
     effects.consume(code);
     return open
   }
+  /** @type {State} */
 
   function open(code) {
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       effects.exit('escapeMarker');
       effects.exit('hardBreakEscape');
       return ok(code)
@@ -4445,19 +5027,31 @@ function tokenizeHardBreakEscape(effects, ok, nok) {
   }
 }
 
-var hardBreakEscape_1 = hardBreakEscape;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var headingAtx = {
+/** @type {Construct} */
+const headingAtx = {
   name: 'headingAtx',
   tokenize: tokenizeHeadingAtx,
   resolve: resolveHeadingAtx
 };
+/** @type {Resolver} */
 
 function resolveHeadingAtx(events, context) {
-  var contentEnd = events.length - 2;
-  var contentStart = 3;
-  var content;
-  var text; // Prefix whitespace, part of the opening.
+  let contentEnd = events.length - 2;
+  let contentStart = 3;
+  /** @type {Token} */
+
+  let content;
+  /** @type {Token} */
+
+  let text; // Prefix whitespace, part of the opening.
 
   if (events[contentStart][1].type === 'whitespace') {
     contentStart += 2;
@@ -4489,9 +5083,10 @@ function resolveHeadingAtx(events, context) {
       type: 'chunkText',
       start: events[contentStart][1].start,
       end: events[contentEnd][1].end,
+      // @ts-expect-error Constants are fine to assign.
       contentType: 'text'
     };
-    chunkedSplice_1(events, contentStart, contentEnd - contentStart + 1, [
+    splice(events, contentStart, contentEnd - contentStart + 1, [
       ['enter', content, context],
       ['enter', text, context],
       ['exit', text, context],
@@ -4501,17 +5096,20 @@ function resolveHeadingAtx(events, context) {
 
   return events
 }
+/** @type {Tokenizer} */
 
 function tokenizeHeadingAtx(effects, ok, nok) {
-  var self = this;
-  var size = 0;
+  const self = this;
+  let size = 0;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('atxHeading');
     effects.enter('atxHeadingSequence');
     return fenceOpenInside(code)
   }
+  /** @type {State} */
 
   function fenceOpenInside(code) {
     if (code === 35 && size++ < 6) {
@@ -4519,13 +5117,14 @@ function tokenizeHeadingAtx(effects, ok, nok) {
       return fenceOpenInside
     }
 
-    if (code === null || markdownLineEndingOrSpace_1(code)) {
+    if (code === null || markdownLineEndingOrSpace(code)) {
       effects.exit('atxHeadingSequence');
       return self.interrupt ? ok(code) : headingBreak(code)
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function headingBreak(code) {
     if (code === 35) {
@@ -4533,18 +5132,19 @@ function tokenizeHeadingAtx(effects, ok, nok) {
       return sequence(code)
     }
 
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('atxHeading');
       return ok(code)
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       return factorySpace(effects, headingBreak, 'whitespace')(code)
     }
 
     effects.enter('atxHeadingText');
     return data(code)
   }
+  /** @type {State} */
 
   function sequence(code) {
     if (code === 35) {
@@ -4555,9 +5155,10 @@ function tokenizeHeadingAtx(effects, ok, nok) {
     effects.exit('atxHeadingSequence');
     return headingBreak(code)
   }
+  /** @type {State} */
 
   function data(code) {
-    if (code === null || code === 35 || markdownLineEndingOrSpace_1(code)) {
+    if (code === null || code === 35 || markdownLineEndingOrSpace(code)) {
       effects.exit('atxHeadingText');
       return headingBreak(code)
     }
@@ -4567,10 +5168,17 @@ function tokenizeHeadingAtx(effects, ok, nok) {
   }
 }
 
-var headingAtx_1 = headingAtx;
-
-// This module is copied from <https://spec.commonmark.org/0.29/#html-blocks>.
-var basics = [
+/**
+ * List of lowercase HTML tag names which when parsing HTML (flow), result
+ * in more relaxed rules (condition 6): because they are known blocks, the
+ * HTML-like syntax doesn’t have to be strictly parsed.
+ * For tag names not in this list, a more strict algorithm (condition 7) is used
+ * to detect whether the HTML-like syntax is seen as HTML (flow) or not.
+ *
+ * This is copied from:
+ * <https://spec.commonmark.org/0.29/#html-blocks>.
+ */
+const htmlBlockNames = [
   'address',
   'article',
   'aside',
@@ -4635,26 +5243,45 @@ var basics = [
   'ul'
 ];
 
-var htmlBlockNames = basics;
+/**
+ * List of lowercase HTML tag names which when parsing HTML (flow), result in
+ * HTML that can include lines w/o exiting, until a closing tag also in this
+ * list is found (condition 1).
+ *
+ * This module is copied from:
+ * <https://spec.commonmark.org/0.29/#html-blocks>.
+ *
+ * Note that `textarea` is not available in `CommonMark@0.29` but has been
+ * merged to the primary branch and is slated to be released in the next release
+ * of CommonMark.
+ */
+const htmlRawNames = ['pre', 'script', 'style', 'textarea'];
 
-// This module is copied from <https://spec.commonmark.org/0.29/#html-blocks>.
-var raws = ['pre', 'script', 'style', 'textarea'];
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
+/** @type {Construct} */
 
-var htmlRawNames = raws;
-
-var htmlFlow = {
+const htmlFlow = {
   name: 'htmlFlow',
   tokenize: tokenizeHtmlFlow,
   resolveTo: resolveToHtmlFlow,
   concrete: true
 };
-var nextBlankConstruct = {
+/** @type {Construct} */
+
+const nextBlankConstruct = {
   tokenize: tokenizeNextBlank,
   partial: true
 };
+/** @type {Resolver} */
 
 function resolveToHtmlFlow(events) {
-  var index = events.length;
+  let index = events.length;
 
   while (index--) {
     if (events[index][0] === 'enter' && events[index][1].type === 'htmlFlow') {
@@ -4673,15 +5300,27 @@ function resolveToHtmlFlow(events) {
 
   return events
 }
+/** @type {Tokenizer} */
 
 function tokenizeHtmlFlow(effects, ok, nok) {
-  var self = this;
-  var kind;
-  var startTag;
-  var buffer;
-  var index;
-  var marker;
+  const self = this;
+  /** @type {number} */
+
+  let kind;
+  /** @type {boolean} */
+
+  let startTag;
+  /** @type {string} */
+
+  let buffer;
+  /** @type {number} */
+
+  let index;
+  /** @type {Code} */
+
+  let marker;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('htmlFlow');
@@ -4689,6 +5328,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
     effects.consume(code);
     return open
   }
+  /** @type {State} */
 
   function open(code) {
     if (code === 33) {
@@ -4709,15 +5349,16 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       return self.interrupt ? ok : continuationDeclarationInside
     }
 
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
-      buffer = fromCharCode_1(code);
+      buffer = String.fromCharCode(code);
       startTag = true;
       return tagName
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function declarationStart(code) {
     if (code === 45) {
@@ -4734,7 +5375,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       return cdataOpenInside
     }
 
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
       kind = 4;
       return self.interrupt ? ok : continuationDeclarationInside
@@ -4742,6 +5383,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function commentOpenInside(code) {
     if (code === 45) {
@@ -4751,6 +5393,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function cdataOpenInside(code) {
     if (code === buffer.charCodeAt(index++)) {
@@ -4764,34 +5407,36 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function tagCloseStart(code) {
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
-      buffer = fromCharCode_1(code);
+      buffer = String.fromCharCode(code);
       return tagName
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function tagName(code) {
     if (
       code === null ||
       code === 47 ||
       code === 62 ||
-      markdownLineEndingOrSpace_1(code)
+      markdownLineEndingOrSpace(code)
     ) {
       if (
         code !== 47 &&
         startTag &&
-        htmlRawNames.indexOf(buffer.toLowerCase()) > -1
+        htmlRawNames.includes(buffer.toLowerCase())
       ) {
         kind = 1;
         return self.interrupt ? ok(code) : continuation(code)
       }
 
-      if (htmlBlockNames.indexOf(buffer.toLowerCase()) > -1) {
+      if (htmlBlockNames.includes(buffer.toLowerCase())) {
         kind = 6;
 
         if (code === 47) {
@@ -4802,23 +5447,24 @@ function tokenizeHtmlFlow(effects, ok, nok) {
         return self.interrupt ? ok(code) : continuation(code)
       }
 
-      kind = 7; // Do not support complete HTML when interrupting.
+      kind = 7; // Do not support complete HTML when interrupting
 
-      return self.interrupt
+      return self.interrupt && !self.parser.lazy[self.now().line]
         ? nok(code)
         : startTag
         ? completeAttributeNameBefore(code)
         : completeClosingTagAfter(code)
     }
 
-    if (code === 45 || asciiAlphanumeric_1(code)) {
+    if (code === 45 || asciiAlphanumeric(code)) {
       effects.consume(code);
-      buffer += fromCharCode_1(code);
+      buffer += String.fromCharCode(code);
       return tagName
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function basicSelfClosing(code) {
     if (code === 62) {
@@ -4828,15 +5474,17 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function completeClosingTagAfter(code) {
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return completeClosingTagAfter
     }
 
     return completeEnd(code)
   }
+  /** @type {State} */
 
   function completeAttributeNameBefore(code) {
     if (code === 47) {
@@ -4844,18 +5492,19 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       return completeEnd
     }
 
-    if (code === 58 || code === 95 || asciiAlpha_1(code)) {
+    if (code === 58 || code === 95 || asciiAlpha(code)) {
       effects.consume(code);
       return completeAttributeName
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return completeAttributeNameBefore
     }
 
     return completeEnd(code)
   }
+  /** @type {State} */
 
   function completeAttributeName(code) {
     if (
@@ -4863,7 +5512,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       code === 46 ||
       code === 58 ||
       code === 95 ||
-      asciiAlphanumeric_1(code)
+      asciiAlphanumeric(code)
     ) {
       effects.consume(code);
       return completeAttributeName
@@ -4871,6 +5520,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return completeAttributeNameAfter(code)
   }
+  /** @type {State} */
 
   function completeAttributeNameAfter(code) {
     if (code === 61) {
@@ -4878,13 +5528,14 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       return completeAttributeValueBefore
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return completeAttributeNameAfter
     }
 
     return completeAttributeNameBefore(code)
   }
+  /** @type {State} */
 
   function completeAttributeValueBefore(code) {
     if (
@@ -4903,28 +5554,30 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       return completeAttributeValueQuoted
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return completeAttributeValueBefore
     }
 
-    marker = undefined;
+    marker = null;
     return completeAttributeValueUnquoted(code)
   }
+  /** @type {State} */
 
   function completeAttributeValueQuoted(code) {
+    if (code === null || markdownLineEnding(code)) {
+      return nok(code)
+    }
+
     if (code === marker) {
       effects.consume(code);
       return completeAttributeValueQuotedAfter
     }
 
-    if (code === null || markdownLineEnding_1(code)) {
-      return nok(code)
-    }
-
     effects.consume(code);
     return completeAttributeValueQuoted
   }
+  /** @type {State} */
 
   function completeAttributeValueUnquoted(code) {
     if (
@@ -4935,7 +5588,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       code === 61 ||
       code === 62 ||
       code === 96 ||
-      markdownLineEndingOrSpace_1(code)
+      markdownLineEndingOrSpace(code)
     ) {
       return completeAttributeNameAfter(code)
     }
@@ -4943,14 +5596,16 @@ function tokenizeHtmlFlow(effects, ok, nok) {
     effects.consume(code);
     return completeAttributeValueUnquoted
   }
+  /** @type {State} */
 
   function completeAttributeValueQuotedAfter(code) {
-    if (code === 47 || code === 62 || markdownSpace_1(code)) {
+    if (code === 47 || code === 62 || markdownSpace(code)) {
       return completeAttributeNameBefore(code)
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function completeEnd(code) {
     if (code === 62) {
@@ -4960,17 +5615,19 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function completeAfter(code) {
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return completeAfter
     }
 
-    return code === null || markdownLineEnding_1(code)
+    return code === null || markdownLineEnding(code)
       ? continuation(code)
       : nok(code)
   }
+  /** @type {State} */
 
   function continuation(code) {
     if (code === 45 && kind === 2) {
@@ -4998,7 +5655,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       return continuationCharacterDataInside
     }
 
-    if (markdownLineEnding_1(code) && (kind === 6 || kind === 7)) {
+    if (markdownLineEnding(code) && (kind === 6 || kind === 7)) {
       return effects.check(
         nextBlankConstruct,
         continuationClose,
@@ -5006,34 +5663,59 @@ function tokenizeHtmlFlow(effects, ok, nok) {
       )(code)
     }
 
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       return continuationAtLineEnding(code)
     }
 
     effects.consume(code);
     return continuation
   }
+  /** @type {State} */
 
   function continuationAtLineEnding(code) {
     effects.exit('htmlFlowData');
     return htmlContinueStart(code)
   }
+  /** @type {State} */
 
   function htmlContinueStart(code) {
     if (code === null) {
       return done(code)
     }
 
-    if (markdownLineEnding_1(code)) {
-      effects.enter('lineEnding');
-      effects.consume(code);
-      effects.exit('lineEnding');
-      return htmlContinueStart
+    if (markdownLineEnding(code)) {
+      return effects.attempt(
+        {
+          tokenize: htmlLineEnd,
+          partial: true
+        },
+        htmlContinueStart,
+        done
+      )(code)
     }
 
     effects.enter('htmlFlowData');
     return continuation(code)
   }
+  /** @type {Tokenizer} */
+
+  function htmlLineEnd(effects, ok, nok) {
+    return start
+    /** @type {State} */
+
+    function start(code) {
+      effects.enter('lineEnding');
+      effects.consume(code);
+      effects.exit('lineEnding');
+      return lineStart
+    }
+    /** @type {State} */
+
+    function lineStart(code) {
+      return self.parser.lazy[self.now().line] ? nok(code) : ok(code)
+    }
+  }
+  /** @type {State} */
 
   function continuationCommentInside(code) {
     if (code === 45) {
@@ -5043,6 +5725,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return continuation(code)
   }
+  /** @type {State} */
 
   function continuationRawTagOpen(code) {
     if (code === 47) {
@@ -5053,21 +5736,23 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return continuation(code)
   }
+  /** @type {State} */
 
   function continuationRawEndTag(code) {
-    if (code === 62 && htmlRawNames.indexOf(buffer.toLowerCase()) > -1) {
+    if (code === 62 && htmlRawNames.includes(buffer.toLowerCase())) {
       effects.consume(code);
       return continuationClose
     }
 
-    if (asciiAlpha_1(code) && buffer.length < 8) {
+    if (asciiAlpha(code) && buffer.length < 8) {
       effects.consume(code);
-      buffer += fromCharCode_1(code);
+      buffer += String.fromCharCode(code);
       return continuationRawEndTag
     }
 
     return continuation(code)
   }
+  /** @type {State} */
 
   function continuationCharacterDataInside(code) {
     if (code === 93) {
@@ -5077,6 +5762,7 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return continuation(code)
   }
+  /** @type {State} */
 
   function continuationDeclarationInside(code) {
     if (code === 62) {
@@ -5086,9 +5772,10 @@ function tokenizeHtmlFlow(effects, ok, nok) {
 
     return continuation(code)
   }
+  /** @type {State} */
 
   function continuationClose(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('htmlFlowData');
       return done(code)
     }
@@ -5096,39 +5783,58 @@ function tokenizeHtmlFlow(effects, ok, nok) {
     effects.consume(code);
     return continuationClose
   }
+  /** @type {State} */
 
   function done(code) {
     effects.exit('htmlFlow');
     return ok(code)
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeNextBlank(effects, ok, nok) {
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.exit('htmlFlowData');
     effects.enter('lineEndingBlank');
     effects.consume(code);
     effects.exit('lineEndingBlank');
-    return effects.attempt(partialBlankLine_1, ok, nok)
+    return effects.attempt(blankLine, ok, nok)
   }
 }
 
-var htmlFlow_1 = htmlFlow;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-var htmlText = {
+/** @type {Construct} */
+const htmlText = {
   name: 'htmlText',
   tokenize: tokenizeHtmlText
 };
+/** @type {Tokenizer} */
 
 function tokenizeHtmlText(effects, ok, nok) {
-  var self = this;
-  var marker;
-  var buffer;
-  var index;
-  var returnState;
+  const self = this;
+  /** @type {NonNullable<Code>|undefined} */
+
+  let marker;
+  /** @type {string} */
+
+  let buffer;
+  /** @type {number} */
+
+  let index;
+  /** @type {State} */
+
+  let returnState;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('htmlText');
@@ -5136,6 +5842,7 @@ function tokenizeHtmlText(effects, ok, nok) {
     effects.consume(code);
     return open
   }
+  /** @type {State} */
 
   function open(code) {
     if (code === 33) {
@@ -5153,13 +5860,14 @@ function tokenizeHtmlText(effects, ok, nok) {
       return instruction
     }
 
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
       return tagOpen
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function declarationOpen(code) {
     if (code === 45) {
@@ -5174,13 +5882,14 @@ function tokenizeHtmlText(effects, ok, nok) {
       return cdataOpen
     }
 
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
       return declaration
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function commentOpen(code) {
     if (code === 45) {
@@ -5190,6 +5899,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function commentStart(code) {
     if (code === null || code === 62) {
@@ -5203,6 +5913,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return comment(code)
   }
+  /** @type {State} */
 
   function commentStartDash(code) {
     if (code === null || code === 62) {
@@ -5211,6 +5922,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return comment(code)
   }
+  /** @type {State} */
 
   function comment(code) {
     if (code === null) {
@@ -5222,7 +5934,7 @@ function tokenizeHtmlText(effects, ok, nok) {
       return commentClose
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = comment;
       return atLineEnding(code)
     }
@@ -5230,6 +5942,7 @@ function tokenizeHtmlText(effects, ok, nok) {
     effects.consume(code);
     return comment
   }
+  /** @type {State} */
 
   function commentClose(code) {
     if (code === 45) {
@@ -5239,6 +5952,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return comment(code)
   }
+  /** @type {State} */
 
   function cdataOpen(code) {
     if (code === buffer.charCodeAt(index++)) {
@@ -5248,6 +5962,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function cdata(code) {
     if (code === null) {
@@ -5259,7 +5974,7 @@ function tokenizeHtmlText(effects, ok, nok) {
       return cdataClose
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = cdata;
       return atLineEnding(code)
     }
@@ -5267,6 +5982,7 @@ function tokenizeHtmlText(effects, ok, nok) {
     effects.consume(code);
     return cdata
   }
+  /** @type {State} */
 
   function cdataClose(code) {
     if (code === 93) {
@@ -5276,6 +5992,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return cdata(code)
   }
+  /** @type {State} */
 
   function cdataEnd(code) {
     if (code === 62) {
@@ -5289,13 +6006,14 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return cdata(code)
   }
+  /** @type {State} */
 
   function declaration(code) {
     if (code === null || code === 62) {
       return end(code)
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = declaration;
       return atLineEnding(code)
     }
@@ -5303,6 +6021,7 @@ function tokenizeHtmlText(effects, ok, nok) {
     effects.consume(code);
     return declaration
   }
+  /** @type {State} */
 
   function instruction(code) {
     if (code === null) {
@@ -5314,7 +6033,7 @@ function tokenizeHtmlText(effects, ok, nok) {
       return instructionClose
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = instruction;
       return atLineEnding(code)
     }
@@ -5322,55 +6041,61 @@ function tokenizeHtmlText(effects, ok, nok) {
     effects.consume(code);
     return instruction
   }
+  /** @type {State} */
 
   function instructionClose(code) {
     return code === 62 ? end(code) : instruction(code)
   }
+  /** @type {State} */
 
   function tagCloseStart(code) {
-    if (asciiAlpha_1(code)) {
+    if (asciiAlpha(code)) {
       effects.consume(code);
       return tagClose
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function tagClose(code) {
-    if (code === 45 || asciiAlphanumeric_1(code)) {
+    if (code === 45 || asciiAlphanumeric(code)) {
       effects.consume(code);
       return tagClose
     }
 
     return tagCloseBetween(code)
   }
+  /** @type {State} */
 
   function tagCloseBetween(code) {
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = tagCloseBetween;
       return atLineEnding(code)
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return tagCloseBetween
     }
 
     return end(code)
   }
+  /** @type {State} */
 
   function tagOpen(code) {
-    if (code === 45 || asciiAlphanumeric_1(code)) {
+    if (code === 45 || asciiAlphanumeric(code)) {
       effects.consume(code);
       return tagOpen
     }
 
-    if (code === 47 || code === 62 || markdownLineEndingOrSpace_1(code)) {
+    if (code === 47 || code === 62 || markdownLineEndingOrSpace(code)) {
       return tagOpenBetween(code)
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function tagOpenBetween(code) {
     if (code === 47) {
@@ -5378,23 +6103,24 @@ function tokenizeHtmlText(effects, ok, nok) {
       return end
     }
 
-    if (code === 58 || code === 95 || asciiAlpha_1(code)) {
+    if (code === 58 || code === 95 || asciiAlpha(code)) {
       effects.consume(code);
       return tagOpenAttributeName
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = tagOpenBetween;
       return atLineEnding(code)
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return tagOpenBetween
     }
 
     return end(code)
   }
+  /** @type {State} */
 
   function tagOpenAttributeName(code) {
     if (
@@ -5402,7 +6128,7 @@ function tokenizeHtmlText(effects, ok, nok) {
       code === 46 ||
       code === 58 ||
       code === 95 ||
-      asciiAlphanumeric_1(code)
+      asciiAlphanumeric(code)
     ) {
       effects.consume(code);
       return tagOpenAttributeName
@@ -5410,6 +6136,7 @@ function tokenizeHtmlText(effects, ok, nok) {
 
     return tagOpenAttributeNameAfter(code)
   }
+  /** @type {State} */
 
   function tagOpenAttributeNameAfter(code) {
     if (code === 61) {
@@ -5417,18 +6144,19 @@ function tokenizeHtmlText(effects, ok, nok) {
       return tagOpenAttributeValueBefore
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = tagOpenAttributeNameAfter;
       return atLineEnding(code)
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return tagOpenAttributeNameAfter
     }
 
     return tagOpenBetween(code)
   }
+  /** @type {State} */
 
   function tagOpenAttributeValueBefore(code) {
     if (
@@ -5447,12 +6175,12 @@ function tokenizeHtmlText(effects, ok, nok) {
       return tagOpenAttributeValueQuoted
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = tagOpenAttributeValueBefore;
       return atLineEnding(code)
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.consume(code);
       return tagOpenAttributeValueBefore
     }
@@ -5461,6 +6189,7 @@ function tokenizeHtmlText(effects, ok, nok) {
     marker = undefined;
     return tagOpenAttributeValueUnquoted
   }
+  /** @type {State} */
 
   function tagOpenAttributeValueQuoted(code) {
     if (code === marker) {
@@ -5472,7 +6201,7 @@ function tokenizeHtmlText(effects, ok, nok) {
       return nok(code)
     }
 
-    if (markdownLineEnding_1(code)) {
+    if (markdownLineEnding(code)) {
       returnState = tagOpenAttributeValueQuoted;
       return atLineEnding(code)
     }
@@ -5480,14 +6209,16 @@ function tokenizeHtmlText(effects, ok, nok) {
     effects.consume(code);
     return tagOpenAttributeValueQuoted
   }
+  /** @type {State} */
 
   function tagOpenAttributeValueQuotedAfter(code) {
-    if (code === 62 || code === 47 || markdownLineEndingOrSpace_1(code)) {
+    if (code === 62 || code === 47 || markdownLineEndingOrSpace(code)) {
       return tagOpenBetween(code)
     }
 
     return nok(code)
   }
+  /** @type {State} */
 
   function tagOpenAttributeValueUnquoted(code) {
     if (
@@ -5501,7 +6232,7 @@ function tokenizeHtmlText(effects, ok, nok) {
       return nok(code)
     }
 
-    if (code === 62 || markdownLineEndingOrSpace_1(code)) {
+    if (code === 62 || markdownLineEndingOrSpace(code)) {
       return tagOpenBetween(code)
     }
 
@@ -5509,6 +6240,8 @@ function tokenizeHtmlText(effects, ok, nok) {
     return tagOpenAttributeValueUnquoted
   } // We can’t have blank lines in content, so no need to worry about empty
   // tokens.
+
+  /** @type {State} */
 
   function atLineEnding(code) {
     effects.exit('htmlTextData');
@@ -5519,16 +6252,18 @@ function tokenizeHtmlText(effects, ok, nok) {
       effects,
       afterPrefix,
       'linePrefix',
-      self.parser.constructs.disable.null.indexOf('codeIndented') > -1
+      self.parser.constructs.disable.null.includes('codeIndented')
         ? undefined
         : 4
     )
   }
+  /** @type {State} */
 
   function afterPrefix(code) {
     effects.enter('htmlTextData');
     return returnState(code)
   }
+  /** @type {State} */
 
   function end(code) {
     if (code === 62) {
@@ -5542,36 +6277,53 @@ function tokenizeHtmlText(effects, ok, nok) {
   }
 }
 
-var htmlText_1 = htmlText;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Event} Event
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-var labelEnd = {
+/** @type {Construct} */
+const labelEnd = {
   name: 'labelEnd',
   tokenize: tokenizeLabelEnd,
   resolveTo: resolveToLabelEnd,
   resolveAll: resolveAllLabelEnd
 };
-var resourceConstruct = {
+/** @type {Construct} */
+
+const resourceConstruct = {
   tokenize: tokenizeResource
 };
-var fullReferenceConstruct = {
+/** @type {Construct} */
+
+const fullReferenceConstruct = {
   tokenize: tokenizeFullReference
 };
-var collapsedReferenceConstruct = {
+/** @type {Construct} */
+
+const collapsedReferenceConstruct = {
   tokenize: tokenizeCollapsedReference
 };
+/** @type {Resolver} */
 
 function resolveAllLabelEnd(events) {
-  var index = -1;
-  var token;
+  let index = -1;
+  /** @type {Token} */
+
+  let token;
 
   while (++index < events.length) {
     token = events[index][1];
 
     if (
-      !token._used &&
-      (token.type === 'labelImage' ||
-        token.type === 'labelLink' ||
-        token.type === 'labelEnd')
+      token.type === 'labelImage' ||
+      token.type === 'labelLink' ||
+      token.type === 'labelEnd'
     ) {
       // Remove the marker.
       events.splice(index + 1, token.type === 'labelImage' ? 4 : 2);
@@ -5582,17 +6334,23 @@ function resolveAllLabelEnd(events) {
 
   return events
 }
+/** @type {Resolver} */
 
 function resolveToLabelEnd(events, context) {
-  var index = events.length;
-  var offset = 0;
-  var group;
-  var label;
-  var text;
-  var token;
-  var open;
-  var close;
-  var media; // Find an opening.
+  let index = events.length;
+  let offset = 0;
+  /** @type {Token} */
+
+  let token;
+  /** @type {number|undefined} */
+
+  let open;
+  /** @type {number|undefined} */
+
+  let close;
+  /** @type {Event[]} */
+
+  let media; // Find an opening.
 
   while (index--) {
     token = events[index][1];
@@ -5628,58 +6386,63 @@ function resolveToLabelEnd(events, context) {
     }
   }
 
-  group = {
+  const group = {
     type: events[open][1].type === 'labelLink' ? 'link' : 'image',
-    start: shallow_1(events[open][1].start),
-    end: shallow_1(events[events.length - 1][1].end)
+    start: Object.assign({}, events[open][1].start),
+    end: Object.assign({}, events[events.length - 1][1].end)
   };
-  label = {
+  const label = {
     type: 'label',
-    start: shallow_1(events[open][1].start),
-    end: shallow_1(events[close][1].end)
+    start: Object.assign({}, events[open][1].start),
+    end: Object.assign({}, events[close][1].end)
   };
-  text = {
+  const text = {
     type: 'labelText',
-    start: shallow_1(events[open + offset + 2][1].end),
-    end: shallow_1(events[close - 2][1].start)
+    start: Object.assign({}, events[open + offset + 2][1].end),
+    end: Object.assign({}, events[close - 2][1].start)
   };
   media = [
     ['enter', group, context],
     ['enter', label, context]
   ]; // Opening marker.
 
-  media = chunkedPush_1(media, events.slice(open + 1, open + offset + 3)); // Text open.
+  media = push(media, events.slice(open + 1, open + offset + 3)); // Text open.
 
-  media = chunkedPush_1(media, [['enter', text, context]]); // Between.
+  media = push(media, [['enter', text, context]]); // Between.
 
-  media = chunkedPush_1(
+  media = push(
     media,
-    resolveAll_1(
+    resolveAll(
       context.parser.constructs.insideSpan.null,
       events.slice(open + offset + 4, close - 3),
       context
     )
   ); // Text close, marker close, label close.
 
-  media = chunkedPush_1(media, [
+  media = push(media, [
     ['exit', text, context],
     events[close - 2],
     events[close - 1],
     ['exit', label, context]
   ]); // Reference, resource, or so.
 
-  media = chunkedPush_1(media, events.slice(close + 1)); // Media close.
+  media = push(media, events.slice(close + 1)); // Media close.
 
-  media = chunkedPush_1(media, [['exit', group, context]]);
-  chunkedSplice_1(events, open, events.length, media);
+  media = push(media, [['exit', group, context]]);
+  splice(events, open, events.length, media);
   return events
 }
+/** @type {Tokenizer} */
 
 function tokenizeLabelEnd(effects, ok, nok) {
-  var self = this;
-  var index = self.events.length;
-  var labelStart;
-  var defined; // Find an opening.
+  const self = this;
+  let index = self.events.length;
+  /** @type {Token} */
+
+  let labelStart;
+  /** @type {boolean} */
+
+  let defined; // Find an opening.
 
   while (index--) {
     if (
@@ -5693,6 +6456,7 @@ function tokenizeLabelEnd(effects, ok, nok) {
   }
 
   return start
+  /** @type {State} */
 
   function start(code) {
     if (!labelStart) {
@@ -5700,15 +6464,14 @@ function tokenizeLabelEnd(effects, ok, nok) {
     } // It’s a balanced bracket, but contains a link.
 
     if (labelStart._inactive) return balanced(code)
-    defined =
-      self.parser.defined.indexOf(
-        normalizeIdentifier_1(
-          self.sliceSerialize({
-            start: labelStart.end,
-            end: self.now()
-          })
-        )
-      ) > -1;
+    defined = self.parser.defined.includes(
+      normalizeIdentifier(
+        self.sliceSerialize({
+          start: labelStart.end,
+          end: self.now()
+        })
+      )
+    );
     effects.enter('labelEnd');
     effects.enter('labelMarker');
     effects.consume(code);
@@ -5716,6 +6479,7 @@ function tokenizeLabelEnd(effects, ok, nok) {
     effects.exit('labelEnd');
     return afterLabelEnd
   }
+  /** @type {State} */
 
   function afterLabelEnd(code) {
     // Resource: `[asd](fgh)`.
@@ -5739,15 +6503,18 @@ function tokenizeLabelEnd(effects, ok, nok) {
 
     return defined ? ok(code) : balanced(code)
   }
+  /** @type {State} */
 
   function balanced(code) {
     labelStart._balanced = true;
     return nok(code)
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeResource(effects, ok, nok) {
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('resource');
@@ -5756,6 +6523,7 @@ function tokenizeResource(effects, ok, nok) {
     effects.exit('resourceMarker');
     return factoryWhitespace(effects, open)
   }
+  /** @type {State} */
 
   function open(code) {
     if (code === 41) {
@@ -5774,12 +6542,14 @@ function tokenizeResource(effects, ok, nok) {
       3
     )(code)
   }
+  /** @type {State} */
 
   function destinationAfter(code) {
-    return markdownLineEndingOrSpace_1(code)
+    return markdownLineEndingOrSpace(code)
       ? factoryWhitespace(effects, between)(code)
       : end(code)
   }
+  /** @type {State} */
 
   function between(code) {
     if (code === 34 || code === 39 || code === 40) {
@@ -5795,6 +6565,7 @@ function tokenizeResource(effects, ok, nok) {
 
     return end(code)
   }
+  /** @type {State} */
 
   function end(code) {
     if (code === 41) {
@@ -5808,10 +6579,12 @@ function tokenizeResource(effects, ok, nok) {
     return nok(code)
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeFullReference(effects, ok, nok) {
-  var self = this;
+  const self = this;
   return start
+  /** @type {State} */
 
   function start(code) {
     return factoryLabel.call(
@@ -5824,20 +6597,23 @@ function tokenizeFullReference(effects, ok, nok) {
       'referenceString'
     )(code)
   }
+  /** @type {State} */
 
   function afterLabel(code) {
-    return self.parser.defined.indexOf(
-      normalizeIdentifier_1(
+    return self.parser.defined.includes(
+      normalizeIdentifier(
         self.sliceSerialize(self.events[self.events.length - 1][1]).slice(1, -1)
       )
-    ) < 0
-      ? nok(code)
-      : ok(code)
+    )
+      ? ok(code)
+      : nok(code)
   }
 }
+/** @type {Tokenizer} */
 
 function tokenizeCollapsedReference(effects, ok, nok) {
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('reference');
@@ -5846,6 +6622,7 @@ function tokenizeCollapsedReference(effects, ok, nok) {
     effects.exit('referenceMarker');
     return open
   }
+  /** @type {State} */
 
   function open(code) {
     if (code === 93) {
@@ -5860,17 +6637,24 @@ function tokenizeCollapsedReference(effects, ok, nok) {
   }
 }
 
-var labelEnd_1 = labelEnd;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
+/** @type {Construct} */
 
-var labelStartImage = {
+const labelStartImage = {
   name: 'labelStartImage',
   tokenize: tokenizeLabelStartImage,
-  resolveAll: labelEnd_1.resolveAll
+  resolveAll: labelEnd.resolveAll
 };
+/** @type {Tokenizer} */
 
 function tokenizeLabelStartImage(effects, ok, nok) {
-  var self = this;
+  const self = this;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('labelImage');
@@ -5879,6 +6663,7 @@ function tokenizeLabelStartImage(effects, ok, nok) {
     effects.exit('labelImageMarker');
     return open
   }
+  /** @type {State} */
 
   function open(code) {
     if (code === 91) {
@@ -5891,29 +6676,36 @@ function tokenizeLabelStartImage(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function after(code) {
-    /* c8 ignore next */
-    return code === 94 &&
-      /* c8 ignore next */
-      '_hiddenFootnoteSupport' in self.parser.constructs
-      ? /* c8 ignore next */
-        nok(code)
+    /* Hidden footnotes hook */
+
+    /* c8 ignore next 3 */
+    return code === 94 && '_hiddenFootnoteSupport' in self.parser.constructs
+      ? nok(code)
       : ok(code)
   }
 }
 
-var labelStartImage_1 = labelStartImage;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
+/** @type {Construct} */
 
-var labelStartLink = {
+const labelStartLink = {
   name: 'labelStartLink',
   tokenize: tokenizeLabelStartLink,
-  resolveAll: labelEnd_1.resolveAll
+  resolveAll: labelEnd.resolveAll
 };
+/** @type {Tokenizer} */
 
 function tokenizeLabelStartLink(effects, ok, nok) {
-  var self = this;
+  const self = this;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('labelLink');
@@ -5923,27 +6715,34 @@ function tokenizeLabelStartLink(effects, ok, nok) {
     effects.exit('labelLink');
     return after
   }
+  /** @type {State} */
 
   function after(code) {
-    /* c8 ignore next */
-    return code === 94 &&
-      /* c8 ignore next */
-      '_hiddenFootnoteSupport' in self.parser.constructs
-      ? /* c8 ignore next */
-        nok(code)
+    /* Hidden footnotes hook. */
+
+    /* c8 ignore next 3 */
+    return code === 94 && '_hiddenFootnoteSupport' in self.parser.constructs
+      ? nok(code)
       : ok(code)
   }
 }
 
-var labelStartLink_1 = labelStartLink;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var lineEnding = {
+/** @type {Construct} */
+const lineEnding = {
   name: 'lineEnding',
   tokenize: tokenizeLineEnding
 };
+/** @type {Tokenizer} */
 
 function tokenizeLineEnding(effects, ok) {
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('lineEnding');
@@ -5953,23 +6752,34 @@ function tokenizeLineEnding(effects, ok) {
   }
 }
 
-var lineEnding_1 = lineEnding;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-var thematicBreak = {
+/** @type {Construct} */
+const thematicBreak = {
   name: 'thematicBreak',
   tokenize: tokenizeThematicBreak
 };
+/** @type {Tokenizer} */
 
 function tokenizeThematicBreak(effects, ok, nok) {
-  var size = 0;
-  var marker;
+  let size = 0;
+  /** @type {NonNullable<Code>} */
+
+  let marker;
   return start
+  /** @type {State} */
 
   function start(code) {
     effects.enter('thematicBreak');
     marker = code;
     return atBreak(code)
   }
+  /** @type {State} */
 
   function atBreak(code) {
     if (code === marker) {
@@ -5977,17 +6787,18 @@ function tokenizeThematicBreak(effects, ok, nok) {
       return sequence(code)
     }
 
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       return factorySpace(effects, atBreak, 'whitespace')(code)
     }
 
-    if (size < 3 || (code !== null && !markdownLineEnding_1(code))) {
+    if (size < 3 || (code !== null && !markdownLineEnding(code))) {
       return nok(code)
     }
 
     effects.exit('thematicBreak');
     return ok(code)
   }
+  /** @type {State} */
 
   function sequence(code) {
     if (code === marker) {
@@ -6001,9 +6812,17 @@ function tokenizeThematicBreak(effects, ok, nok) {
   }
 }
 
-var thematicBreak_1 = thematicBreak;
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Exiter} Exiter
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
+/** @type {Construct} */
 
-var list = {
+const list = {
   name: 'list',
   tokenize: tokenizeListStart,
   continuation: {
@@ -6011,23 +6830,36 @@ var list = {
   },
   exit: tokenizeListEnd
 };
-var listItemPrefixWhitespaceConstruct = {
+/** @type {Construct} */
+
+const listItemPrefixWhitespaceConstruct = {
   tokenize: tokenizeListItemPrefixWhitespace,
   partial: true
 };
-var indentConstruct = {
+/** @type {Construct} */
+
+const indentConstruct = {
   tokenize: tokenizeIndent,
   partial: true
 };
+/**
+ * @type {Tokenizer}
+ * @this {TokenizeContextWithState}
+ */
 
 function tokenizeListStart(effects, ok, nok) {
-  var self = this;
-  var initialSize = prefixSize_1(self.events, 'linePrefix');
-  var size = 0;
+  const self = this;
+  const tail = self.events[self.events.length - 1];
+  let initialSize =
+    tail && tail[1].type === 'linePrefix'
+      ? tail[2].sliceSerialize(tail[1], true).length
+      : 0;
+  let size = 0;
   return start
+  /** @type {State} */
 
   function start(code) {
-    var kind =
+    const kind =
       self.containerState.type ||
       (code === 42 || code === 43 || code === 45
         ? 'listUnordered'
@@ -6036,7 +6868,7 @@ function tokenizeListStart(effects, ok, nok) {
     if (
       kind === 'listUnordered'
         ? !self.containerState.marker || code === self.containerState.marker
-        : asciiDigit_1(code)
+        : asciiDigit(code)
     ) {
       if (!self.containerState.type) {
         self.containerState.type = kind;
@@ -6048,7 +6880,7 @@ function tokenizeListStart(effects, ok, nok) {
       if (kind === 'listUnordered') {
         effects.enter('listItemPrefix');
         return code === 42 || code === 45
-          ? effects.check(thematicBreak_1, nok, atMarker)(code)
+          ? effects.check(thematicBreak, nok, atMarker)(code)
           : atMarker(code)
       }
 
@@ -6061,9 +6893,10 @@ function tokenizeListStart(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function inside(code) {
-    if (asciiDigit_1(code) && ++size < 10) {
+    if (asciiDigit(code) && ++size < 10) {
       effects.consume(code);
       return inside
     }
@@ -6080,6 +6913,9 @@ function tokenizeListStart(effects, ok, nok) {
 
     return nok(code)
   }
+  /**
+   * @type {State}
+   **/
 
   function atMarker(code) {
     effects.enter('listItemMarker');
@@ -6087,7 +6923,7 @@ function tokenizeListStart(effects, ok, nok) {
     effects.exit('listItemMarker');
     self.containerState.marker = self.containerState.marker || code;
     return effects.check(
-      partialBlankLine_1, // Can’t be empty when interrupting.
+      blankLine, // Can’t be empty when interrupting.
       self.interrupt ? nok : onBlank,
       effects.attempt(
         listItemPrefixWhitespaceConstruct,
@@ -6096,15 +6932,17 @@ function tokenizeListStart(effects, ok, nok) {
       )
     )
   }
+  /** @type {State} */
 
   function onBlank(code) {
     self.containerState.initialBlankLine = true;
     initialSize++;
     return endOfPrefix(code)
   }
+  /** @type {State} */
 
   function otherPrefix(code) {
-    if (markdownSpace_1(code)) {
+    if (markdownSpace(code)) {
       effects.enter('listItemPrefixWhitespace');
       effects.consume(code);
       effects.exit('listItemPrefixWhitespace');
@@ -6113,35 +6951,53 @@ function tokenizeListStart(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function endOfPrefix(code) {
     self.containerState.size =
-      initialSize + sizeChunks_1(self.sliceStream(effects.exit('listItemPrefix')));
+      initialSize +
+      self.sliceSerialize(effects.exit('listItemPrefix'), true).length;
     return ok(code)
   }
 }
+/**
+ * @type {Tokenizer}
+ * @this {TokenizeContextWithState}
+ */
 
 function tokenizeListContinuation(effects, ok, nok) {
-  var self = this;
+  const self = this;
   self.containerState._closeFlow = undefined;
-  return effects.check(partialBlankLine_1, onBlank, notBlank)
+  return effects.check(blankLine, onBlank, notBlank)
+  /** @type {State} */
 
   function onBlank(code) {
     self.containerState.furtherBlankLines =
       self.containerState.furtherBlankLines ||
-      self.containerState.initialBlankLine;
-    return ok(code)
+      self.containerState.initialBlankLine; // We have a blank line.
+    // Still, try to consume at most the items size.
+
+    return factorySpace(
+      effects,
+      ok,
+      'listItemIndent',
+      self.containerState.size + 1
+    )(code)
   }
+  /** @type {State} */
 
   function notBlank(code) {
-    if (self.containerState.furtherBlankLines || !markdownSpace_1(code)) {
-      self.containerState.furtherBlankLines = self.containerState.initialBlankLine = undefined;
+    if (self.containerState.furtherBlankLines || !markdownSpace(code)) {
+      self.containerState.furtherBlankLines = undefined;
+      self.containerState.initialBlankLine = undefined;
       return notInCurrentItem(code)
     }
 
-    self.containerState.furtherBlankLines = self.containerState.initialBlankLine = undefined;
+    self.containerState.furtherBlankLines = undefined;
+    self.containerState.initialBlankLine = undefined;
     return effects.attempt(indentConstruct, ok, notInCurrentItem)(code)
   }
+  /** @type {State} */
 
   function notInCurrentItem(code) {
     // While we do continue, we signal that the flow should be closed.
@@ -6152,67 +7008,98 @@ function tokenizeListContinuation(effects, ok, nok) {
       effects,
       effects.attempt(list, ok, nok),
       'linePrefix',
-      self.parser.constructs.disable.null.indexOf('codeIndented') > -1
+      self.parser.constructs.disable.null.includes('codeIndented')
         ? undefined
         : 4
     )(code)
   }
 }
+/**
+ * @type {Tokenizer}
+ * @this {TokenizeContextWithState}
+ */
 
 function tokenizeIndent(effects, ok, nok) {
-  var self = this;
+  const self = this;
   return factorySpace(
     effects,
     afterPrefix,
     'listItemIndent',
     self.containerState.size + 1
   )
+  /** @type {State} */
 
   function afterPrefix(code) {
-    return prefixSize_1(self.events, 'listItemIndent') ===
-      self.containerState.size
+    const tail = self.events[self.events.length - 1];
+    return tail &&
+      tail[1].type === 'listItemIndent' &&
+      tail[2].sliceSerialize(tail[1], true).length === self.containerState.size
+      ? ok(code)
+      : nok(code)
+  }
+}
+/**
+ * @type {Exiter}
+ * @this {TokenizeContextWithState}
+ */
+
+function tokenizeListEnd(effects) {
+  effects.exit(this.containerState.type);
+}
+/**
+ * @type {Tokenizer}
+ * @this {TokenizeContextWithState}
+ */
+
+function tokenizeListItemPrefixWhitespace(effects, ok, nok) {
+  const self = this;
+  return factorySpace(
+    effects,
+    afterPrefix,
+    'listItemPrefixWhitespace',
+    self.parser.constructs.disable.null.includes('codeIndented')
+      ? undefined
+      : 4 + 1
+  )
+  /** @type {State} */
+
+  function afterPrefix(code) {
+    const tail = self.events[self.events.length - 1];
+    return !markdownSpace(code) &&
+      tail &&
+      tail[1].type === 'listItemPrefixWhitespace'
       ? ok(code)
       : nok(code)
   }
 }
 
-function tokenizeListEnd(effects) {
-  effects.exit(this.containerState.type);
-}
+/**
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-function tokenizeListItemPrefixWhitespace(effects, ok, nok) {
-  var self = this;
-  return factorySpace(
-    effects,
-    afterPrefix,
-    'listItemPrefixWhitespace',
-    self.parser.constructs.disable.null.indexOf('codeIndented') > -1
-      ? undefined
-      : 4 + 1
-  )
-
-  function afterPrefix(code) {
-    return markdownSpace_1(code) ||
-      !prefixSize_1(self.events, 'listItemPrefixWhitespace')
-      ? nok(code)
-      : ok(code)
-  }
-}
-
-var list_1 = list;
-
-var setextUnderline = {
+/** @type {Construct} */
+const setextUnderline = {
   name: 'setextUnderline',
   tokenize: tokenizeSetextUnderline,
   resolveTo: resolveToSetextUnderline
 };
+/** @type {Resolver} */
 
 function resolveToSetextUnderline(events, context) {
-  var index = events.length;
-  var content;
-  var text;
-  var definition;
-  var heading; // Find the opening of the content.
+  let index = events.length;
+  /** @type {number|undefined} */
+
+  let content;
+  /** @type {number|undefined} */
+
+  let text;
+  /** @type {number|undefined} */
+
+  let definition; // Find the opening of the content.
   // It’ll always exist: we don’t tokenize if it isn’t there.
 
   while (index--) {
@@ -6238,10 +7125,10 @@ function resolveToSetextUnderline(events, context) {
     }
   }
 
-  heading = {
+  const heading = {
     type: 'setextHeading',
-    start: shallow_1(events[text][1].start),
-    end: shallow_1(events[events.length - 1][1].end)
+    start: Object.assign({}, events[text][1].start),
+    end: Object.assign({}, events[events.length - 1][1].end)
   }; // Change the paragraph to setext heading text.
 
   events[text][1].type = 'setextHeadingText'; // If we have definitions in the content, we’ll keep on having content,
@@ -6250,7 +7137,7 @@ function resolveToSetextUnderline(events, context) {
   if (definition) {
     events.splice(text, 0, ['enter', heading, context]);
     events.splice(definition + 1, 0, ['exit', events[content][1], context]);
-    events[content][1].end = shallow_1(events[definition][1].end);
+    events[content][1].end = Object.assign({}, events[definition][1].end);
   } else {
     events[content][1] = heading;
   } // Add the heading exit at the end.
@@ -6258,12 +7145,17 @@ function resolveToSetextUnderline(events, context) {
   events.push(['exit', heading, context]);
   return events
 }
+/** @type {Tokenizer} */
 
 function tokenizeSetextUnderline(effects, ok, nok) {
-  var self = this;
-  var index = self.events.length;
-  var marker;
-  var paragraph; // Find an opening.
+  const self = this;
+  let index = self.events.length;
+  /** @type {NonNullable<Code>} */
+
+  let marker;
+  /** @type {boolean} */
+
+  let paragraph; // Find an opening.
 
   while (index--) {
     // Skip enter/exit of line ending, line prefix, and content.
@@ -6279,9 +7171,10 @@ function tokenizeSetextUnderline(effects, ok, nok) {
   }
 
   return start
+  /** @type {State} */
 
   function start(code) {
-    if (!self.lazy && (self.interrupt || paragraph)) {
+    if (!self.parser.lazy[self.now().line] && (self.interrupt || paragraph)) {
       effects.enter('setextHeadingLine');
       effects.enter('setextHeadingLineSequence');
       marker = code;
@@ -6290,6 +7183,7 @@ function tokenizeSetextUnderline(effects, ok, nok) {
 
     return nok(code)
   }
+  /** @type {State} */
 
   function closingSequence(code) {
     if (code === marker) {
@@ -6300,9 +7194,10 @@ function tokenizeSetextUnderline(effects, ok, nok) {
     effects.exit('setextHeadingLineSequence');
     return factorySpace(effects, closingSequenceEnd, 'lineSuffix')(code)
   }
+  /** @type {State} */
 
   function closingSequenceEnd(code) {
-    if (code === null || markdownLineEnding_1(code)) {
+    if (code === null || markdownLineEnding(code)) {
       effects.exit('setextHeadingLine');
       return ok(code)
     }
@@ -6311,179 +7206,1043 @@ function tokenizeSetextUnderline(effects, ok, nok) {
   }
 }
 
-var setextUnderline_1 = setextUnderline;
+/**
+ * @typedef {import('micromark-util-types').InitialConstruct} InitialConstruct
+ * @typedef {import('micromark-util-types').Initializer} Initializer
+ * @typedef {import('micromark-util-types').State} State
+ */
 
-var constructs$1 = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, '__esModule', {value: true});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var document = {
-  42: list_1,
-  // Asterisk
-  43: list_1,
-  // Plus sign
-  45: list_1,
-  // Dash
-  48: list_1,
-  // 0
-  49: list_1,
-  // 1
-  50: list_1,
-  // 2
-  51: list_1,
-  // 3
-  52: list_1,
-  // 4
-  53: list_1,
-  // 5
-  54: list_1,
-  // 6
-  55: list_1,
-  // 7
-  56: list_1,
-  // 8
-  57: list_1,
-  // 9
-  62: blockQuote_1 // Greater than
+/** @type {InitialConstruct} */
+const flow = {
+  tokenize: initializeFlow
 };
-var contentInitial = {
-  91: definition_1 // Left square bracket
+/** @type {Initializer} */
+
+function initializeFlow(effects) {
+  const self = this;
+  const initial = effects.attempt(
+    // Try to parse a blank line.
+    blankLine,
+    atBlankEnding, // Try to parse initial flow (essentially, only code).
+    effects.attempt(
+      this.parser.constructs.flowInitial,
+      afterConstruct,
+      factorySpace(
+        effects,
+        effects.attempt(
+          this.parser.constructs.flow,
+          afterConstruct,
+          effects.attempt(content$1, afterConstruct)
+        ),
+        'linePrefix'
+      )
+    )
+  );
+  return initial
+  /** @type {State} */
+
+  function atBlankEnding(code) {
+    if (code === null) {
+      effects.consume(code);
+      return
+    }
+
+    effects.enter('lineEndingBlank');
+    effects.consume(code);
+    effects.exit('lineEndingBlank');
+    self.currentConstruct = undefined;
+    return initial
+  }
+  /** @type {State} */
+
+  function afterConstruct(code) {
+    if (code === null) {
+      effects.consume(code);
+      return
+    }
+
+    effects.enter('lineEnding');
+    effects.consume(code);
+    effects.exit('lineEnding');
+    self.currentConstruct = undefined;
+    return initial
+  }
+}
+
+/**
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Initializer} Initializer
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').InitialConstruct} InitialConstruct
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Code} Code
+ */
+const resolver = {
+  resolveAll: createResolver()
 };
-var flowInitial = {
-  '-2': codeIndented_1,
-  // Horizontal tab
-  '-1': codeIndented_1,
-  // Virtual space
-  32: codeIndented_1 // Space
+const string = initializeFactory('string');
+const text = initializeFactory('text');
+/**
+ * @param {'string'|'text'} field
+ * @returns {InitialConstruct}
+ */
+
+function initializeFactory(field) {
+  return {
+    tokenize: initializeText,
+    resolveAll: createResolver(
+      field === 'text' ? resolveAllLineSuffixes : undefined
+    )
+  }
+  /** @type {Initializer} */
+
+  function initializeText(effects) {
+    const self = this;
+    const constructs = this.parser.constructs[field];
+    const text = effects.attempt(constructs, start, notText);
+    return start
+    /** @type {State} */
+
+    function start(code) {
+      return atBreak(code) ? text(code) : notText(code)
+    }
+    /** @type {State} */
+
+    function notText(code) {
+      if (code === null) {
+        effects.consume(code);
+        return
+      }
+
+      effects.enter('data');
+      effects.consume(code);
+      return data
+    }
+    /** @type {State} */
+
+    function data(code) {
+      if (atBreak(code)) {
+        effects.exit('data');
+        return text(code)
+      } // Data.
+
+      effects.consume(code);
+      return data
+    }
+    /**
+     * @param {Code} code
+     * @returns {boolean}
+     */
+
+    function atBreak(code) {
+      if (code === null) {
+        return true
+      }
+
+      const list = constructs[code];
+      let index = -1;
+
+      if (list) {
+        while (++index < list.length) {
+          const item = list[index];
+
+          if (!item.previous || item.previous.call(self, self.previous)) {
+            return true
+          }
+        }
+      }
+
+      return false
+    }
+  }
+}
+/**
+ * @param {Resolver} [extraResolver]
+ * @returns {Resolver}
+ */
+
+function createResolver(extraResolver) {
+  return resolveAllText
+  /** @type {Resolver} */
+
+  function resolveAllText(events, context) {
+    let index = -1;
+    /** @type {number|undefined} */
+
+    let enter; // A rather boring computation (to merge adjacent `data` events) which
+    // improves mm performance by 29%.
+
+    while (++index <= events.length) {
+      if (enter === undefined) {
+        if (events[index] && events[index][1].type === 'data') {
+          enter = index;
+          index++;
+        }
+      } else if (!events[index] || events[index][1].type !== 'data') {
+        // Don’t do anything if there is one data token.
+        if (index !== enter + 2) {
+          events[enter][1].end = events[index - 1][1].end;
+          events.splice(enter + 2, index - enter - 2);
+          index = enter + 2;
+        }
+
+        enter = undefined;
+      }
+    }
+
+    return extraResolver ? extraResolver(events, context) : events
+  }
+}
+/**
+ * A rather ugly set of instructions which again looks at chunks in the input
+ * stream.
+ * The reason to do this here is that it is *much* faster to parse in reverse.
+ * And that we can’t hook into `null` to split the line suffix before an EOF.
+ * To do: figure out if we can make this into a clean utility, or even in core.
+ * As it will be useful for GFMs literal autolink extension (and maybe even
+ * tables?)
+ *
+ * @type {Resolver}
+ */
+
+function resolveAllLineSuffixes(events, context) {
+  let eventIndex = -1;
+
+  while (++eventIndex <= events.length) {
+    if (
+      (eventIndex === events.length ||
+        events[eventIndex][1].type === 'lineEnding') &&
+      events[eventIndex - 1][1].type === 'data'
+    ) {
+      const data = events[eventIndex - 1][1];
+      const chunks = context.sliceStream(data);
+      let index = chunks.length;
+      let bufferIndex = -1;
+      let size = 0;
+      /** @type {boolean|undefined} */
+
+      let tabs;
+
+      while (index--) {
+        const chunk = chunks[index];
+
+        if (typeof chunk === 'string') {
+          bufferIndex = chunk.length;
+
+          while (chunk.charCodeAt(bufferIndex - 1) === 32) {
+            size++;
+            bufferIndex--;
+          }
+
+          if (bufferIndex) break
+          bufferIndex = -1;
+        } // Number
+        else if (chunk === -2) {
+          tabs = true;
+          size++;
+        } else if (chunk === -1) ; else {
+          // Replacement character, exit.
+          index++;
+          break
+        }
+      }
+
+      if (size) {
+        const token = {
+          type:
+            eventIndex === events.length || tabs || size < 2
+              ? 'lineSuffix'
+              : 'hardBreakTrailing',
+          start: {
+            line: data.end.line,
+            column: data.end.column - size,
+            offset: data.end.offset - size,
+            _index: data.start._index + index,
+            _bufferIndex: index
+              ? bufferIndex
+              : data.start._bufferIndex + bufferIndex
+          },
+          end: Object.assign({}, data.end)
+        };
+        data.end = Object.assign({}, token.start);
+
+        if (data.start.offset === data.end.offset) {
+          Object.assign(data, token);
+        } else {
+          events.splice(
+            eventIndex,
+            0,
+            ['enter', token, context],
+            ['exit', token, context]
+          );
+          eventIndex += 2;
+        }
+      }
+
+      eventIndex++;
+    }
+  }
+
+  return events
+}
+
+/**
+ * @typedef {import('micromark-util-types').Code} Code
+ * @typedef {import('micromark-util-types').Chunk} Chunk
+ * @typedef {import('micromark-util-types').Point} Point
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').Construct} Construct
+ * @typedef {import('micromark-util-types').InitialConstruct} InitialConstruct
+ * @typedef {import('micromark-util-types').ConstructRecord} ConstructRecord
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').ParseContext} ParseContext
+ */
+
+/**
+ * Create a tokenizer.
+ * Tokenizers deal with one type of data (e.g., containers, flow, text).
+ * The parser is the object dealing with it all.
+ * `initialize` works like other constructs, except that only its `tokenize`
+ * function is used, in which case it doesn’t receive an `ok` or `nok`.
+ * `from` can be given to set the point before the first character, although
+ * when further lines are indented, they must be set with `defineSkip`.
+ *
+ * @param {ParseContext} parser
+ * @param {InitialConstruct} initialize
+ * @param {Omit<Point, '_index'|'_bufferIndex'>} [from]
+ * @returns {TokenizeContext}
+ */
+function createTokenizer(parser, initialize, from) {
+  /** @type {Point} */
+  let point = Object.assign(
+    from
+      ? Object.assign({}, from)
+      : {
+          line: 1,
+          column: 1,
+          offset: 0
+        },
+    {
+      _index: 0,
+      _bufferIndex: -1
+    }
+  );
+  /** @type {Record<string, number>} */
+
+  const columnStart = {};
+  /** @type {Construct[]} */
+
+  const resolveAllConstructs = [];
+  /** @type {Chunk[]} */
+
+  let chunks = [];
+  /** @type {Token[]} */
+
+  let stack = [];
+  /**
+   * Tools used for tokenizing.
+   *
+   * @type {Effects}
+   */
+
+  const effects = {
+    consume,
+    enter,
+    exit,
+    attempt: constructFactory(onsuccessfulconstruct),
+    check: constructFactory(onsuccessfulcheck),
+    interrupt: constructFactory(onsuccessfulcheck, {
+      interrupt: true
+    })
+  };
+  /**
+   * State and tools for resolving and serializing.
+   *
+   * @type {TokenizeContext}
+   */
+
+  const context = {
+    previous: null,
+    code: null,
+    containerState: {},
+    events: [],
+    parser,
+    sliceStream,
+    sliceSerialize,
+    now,
+    defineSkip,
+    write
+  };
+  /**
+   * The state function.
+   *
+   * @type {State|void}
+   */
+
+  let state = initialize.tokenize.call(context, effects);
+
+  if (initialize.resolveAll) {
+    resolveAllConstructs.push(initialize);
+  }
+
+  return context
+  /** @type {TokenizeContext['write']} */
+
+  function write(slice) {
+    chunks = push(chunks, slice);
+    main(); // Exit if we’re not done, resolve might change stuff.
+
+    if (chunks[chunks.length - 1] !== null) {
+      return []
+    }
+
+    addResult(initialize, 0); // Otherwise, resolve, and exit.
+
+    context.events = resolveAll(resolveAllConstructs, context.events, context);
+    return context.events
+  } //
+  // Tools.
+  //
+
+  /** @type {TokenizeContext['sliceSerialize']} */
+
+  function sliceSerialize(token, expandTabs) {
+    return serializeChunks(sliceStream(token), expandTabs)
+  }
+  /** @type {TokenizeContext['sliceStream']} */
+
+  function sliceStream(token) {
+    return sliceChunks(chunks, token)
+  }
+  /** @type {TokenizeContext['now']} */
+
+  function now() {
+    return Object.assign({}, point)
+  }
+  /** @type {TokenizeContext['defineSkip']} */
+
+  function defineSkip(value) {
+    columnStart[value.line] = value.column;
+    accountForPotentialSkip();
+  } //
+  // State management.
+  //
+
+  /**
+   * Main loop (note that `_index` and `_bufferIndex` in `point` are modified by
+   * `consume`).
+   * Here is where we walk through the chunks, which either include strings of
+   * several characters, or numerical character codes.
+   * The reason to do this in a loop instead of a call is so the stack can
+   * drain.
+   *
+   * @returns {void}
+   */
+
+  function main() {
+    /** @type {number} */
+    let chunkIndex;
+
+    while (point._index < chunks.length) {
+      const chunk = chunks[point._index]; // If we’re in a buffer chunk, loop through it.
+
+      if (typeof chunk === 'string') {
+        chunkIndex = point._index;
+
+        if (point._bufferIndex < 0) {
+          point._bufferIndex = 0;
+        }
+
+        while (
+          point._index === chunkIndex &&
+          point._bufferIndex < chunk.length
+        ) {
+          go(chunk.charCodeAt(point._bufferIndex));
+        }
+      } else {
+        go(chunk);
+      }
+    }
+  }
+  /**
+   * Deal with one code.
+   *
+   * @param {Code} code
+   * @returns {void}
+   */
+
+  function go(code) {
+    state = state(code);
+  }
+  /** @type {Effects['consume']} */
+
+  function consume(code) {
+    if (markdownLineEnding(code)) {
+      point.line++;
+      point.column = 1;
+      point.offset += code === -3 ? 2 : 1;
+      accountForPotentialSkip();
+    } else if (code !== -1) {
+      point.column++;
+      point.offset++;
+    } // Not in a string chunk.
+
+    if (point._bufferIndex < 0) {
+      point._index++;
+    } else {
+      point._bufferIndex++; // At end of string chunk.
+      // @ts-expect-error Points w/ non-negative `_bufferIndex` reference
+      // strings.
+
+      if (point._bufferIndex === chunks[point._index].length) {
+        point._bufferIndex = -1;
+        point._index++;
+      }
+    } // Expose the previous character.
+
+    context.previous = code; // Mark as consumed.
+  }
+  /** @type {Effects['enter']} */
+
+  function enter(type, fields) {
+    /** @type {Token} */
+    // @ts-expect-error Patch instead of assign required fields to help GC.
+    const token = fields || {};
+    token.type = type;
+    token.start = now();
+    context.events.push(['enter', token, context]);
+    stack.push(token);
+    return token
+  }
+  /** @type {Effects['exit']} */
+
+  function exit(type) {
+    const token = stack.pop();
+    token.end = now();
+    context.events.push(['exit', token, context]);
+    return token
+  }
+  /**
+   * Use results.
+   *
+   * @type {ReturnHandle}
+   */
+
+  function onsuccessfulconstruct(construct, info) {
+    addResult(construct, info.from);
+  }
+  /**
+   * Discard results.
+   *
+   * @type {ReturnHandle}
+   */
+
+  function onsuccessfulcheck(_, info) {
+    info.restore();
+  }
+  /**
+   * Factory to attempt/check/interrupt.
+   *
+   * @param {ReturnHandle} onreturn
+   * @param {Record<string, unknown>} [fields]
+   */
+
+  function constructFactory(onreturn, fields) {
+    return hook
+    /**
+     * Handle either an object mapping codes to constructs, a list of
+     * constructs, or a single construct.
+     *
+     * @param {Construct|Construct[]|ConstructRecord} constructs
+     * @param {State} returnState
+     * @param {State} [bogusState]
+     * @returns {State}
+     */
+
+    function hook(constructs, returnState, bogusState) {
+      /** @type {Construct[]} */
+      let listOfConstructs;
+      /** @type {number} */
+
+      let constructIndex;
+      /** @type {Construct} */
+
+      let currentConstruct;
+      /** @type {Info} */
+
+      let info;
+      return Array.isArray(constructs)
+        ? /* c8 ignore next 1 */
+          handleListOfConstructs(constructs)
+        : 'tokenize' in constructs // @ts-expect-error Looks like a construct.
+        ? handleListOfConstructs([constructs])
+        : handleMapOfConstructs(constructs)
+      /**
+       * Handle a list of construct.
+       *
+       * @param {ConstructRecord} map
+       * @returns {State}
+       */
+
+      function handleMapOfConstructs(map) {
+        return start
+        /** @type {State} */
+
+        function start(code) {
+          const def = code !== null && map[code];
+          const all = code !== null && map.null;
+          const list = [
+            // To do: add more extension tests.
+
+            /* c8 ignore next 2 */
+            ...(Array.isArray(def) ? def : def ? [def] : []),
+            ...(Array.isArray(all) ? all : all ? [all] : [])
+          ];
+          return handleListOfConstructs(list)(code)
+        }
+      }
+      /**
+       * Handle a list of construct.
+       *
+       * @param {Construct[]} list
+       * @returns {State}
+       */
+
+      function handleListOfConstructs(list) {
+        listOfConstructs = list;
+        constructIndex = 0;
+
+        if (list.length === 0) {
+          return bogusState
+        }
+
+        return handleConstruct(list[constructIndex])
+      }
+      /**
+       * Handle a single construct.
+       *
+       * @param {Construct} construct
+       * @returns {State}
+       */
+
+      function handleConstruct(construct) {
+        return start
+        /** @type {State} */
+
+        function start(code) {
+          // To do: not needed to store if there is no bogus state, probably?
+          // Currently doesn’t work because `inspect` in document does a check
+          // w/o a bogus, which doesn’t make sense. But it does seem to help perf
+          // by not storing.
+          info = store();
+          currentConstruct = construct;
+
+          if (!construct.partial) {
+            context.currentConstruct = construct;
+          }
+
+          if (
+            construct.name &&
+            context.parser.constructs.disable.null.includes(construct.name)
+          ) {
+            return nok()
+          }
+
+          return construct.tokenize.call(
+            // If we do have fields, create an object w/ `context` as its
+            // prototype.
+            // This allows a “live binding”, which is needed for `interrupt`.
+            fields ? Object.assign(Object.create(context), fields) : context,
+            effects,
+            ok,
+            nok
+          )(code)
+        }
+      }
+      /** @type {State} */
+
+      function ok(code) {
+        onreturn(currentConstruct, info);
+        return returnState
+      }
+      /** @type {State} */
+
+      function nok(code) {
+        info.restore();
+
+        if (++constructIndex < listOfConstructs.length) {
+          return handleConstruct(listOfConstructs[constructIndex])
+        }
+
+        return bogusState
+      }
+    }
+  }
+  /**
+   * @param {Construct} construct
+   * @param {number} from
+   * @returns {void}
+   */
+
+  function addResult(construct, from) {
+    if (construct.resolveAll && !resolveAllConstructs.includes(construct)) {
+      resolveAllConstructs.push(construct);
+    }
+
+    if (construct.resolve) {
+      splice(
+        context.events,
+        from,
+        context.events.length - from,
+        construct.resolve(context.events.slice(from), context)
+      );
+    }
+
+    if (construct.resolveTo) {
+      context.events = construct.resolveTo(context.events, context);
+    }
+  }
+  /**
+   * Store state.
+   *
+   * @returns {Info}
+   */
+
+  function store() {
+    const startPoint = now();
+    const startPrevious = context.previous;
+    const startCurrentConstruct = context.currentConstruct;
+    const startEventsIndex = context.events.length;
+    const startStack = Array.from(stack);
+    return {
+      restore,
+      from: startEventsIndex
+    }
+    /**
+     * Restore state.
+     *
+     * @returns {void}
+     */
+
+    function restore() {
+      point = startPoint;
+      context.previous = startPrevious;
+      context.currentConstruct = startCurrentConstruct;
+      context.events.length = startEventsIndex;
+      stack = startStack;
+      accountForPotentialSkip();
+    }
+  }
+  /**
+   * Move the current point a bit forward in the line when it’s on a column
+   * skip.
+   *
+   * @returns {void}
+   */
+
+  function accountForPotentialSkip() {
+    if (point.line in columnStart && point.column < 2) {
+      point.column = columnStart[point.line];
+      point.offset += columnStart[point.line] - 1;
+    }
+  }
+}
+/**
+ * Get the chunks from a slice of chunks in the range of a token.
+ *
+ * @param {Chunk[]} chunks
+ * @param {Pick<Token, 'start'|'end'>} token
+ * @returns {Chunk[]}
+ */
+
+function sliceChunks(chunks, token) {
+  const startIndex = token.start._index;
+  const startBufferIndex = token.start._bufferIndex;
+  const endIndex = token.end._index;
+  const endBufferIndex = token.end._bufferIndex;
+  /** @type {Chunk[]} */
+
+  let view;
+
+  if (startIndex === endIndex) {
+    // @ts-expect-error `_bufferIndex` is used on string chunks.
+    view = [chunks[startIndex].slice(startBufferIndex, endBufferIndex)];
+  } else {
+    view = chunks.slice(startIndex, endIndex);
+
+    if (startBufferIndex > -1) {
+      // @ts-expect-error `_bufferIndex` is used on string chunks.
+      view[0] = view[0].slice(startBufferIndex);
+    }
+
+    if (endBufferIndex > 0) {
+      // @ts-expect-error `_bufferIndex` is used on string chunks.
+      view.push(chunks[endIndex].slice(0, endBufferIndex));
+    }
+  }
+
+  return view
+}
+/**
+ * Get the string value of a slice of chunks.
+ *
+ * @param {Chunk[]} chunks
+ * @param {boolean} [expandTabs=false]
+ * @returns {string}
+ */
+
+function serializeChunks(chunks, expandTabs) {
+  let index = -1;
+  /** @type {string[]} */
+
+  const result = [];
+  /** @type {boolean|undefined} */
+
+  let atTab;
+
+  while (++index < chunks.length) {
+    const chunk = chunks[index];
+    /** @type {string} */
+
+    let value;
+
+    if (typeof chunk === 'string') {
+      value = chunk;
+    } else
+      switch (chunk) {
+        case -5: {
+          value = '\r';
+          break
+        }
+
+        case -4: {
+          value = '\n';
+          break
+        }
+
+        case -3: {
+          value = '\r' + '\n';
+          break
+        }
+
+        case -2: {
+          value = expandTabs ? ' ' : '\t';
+          break
+        }
+
+        case -1: {
+          if (!expandTabs && atTab) continue
+          value = ' ';
+          break
+        }
+
+        default: {
+          // Currently only replacement character.
+          value = String.fromCharCode(chunk);
+        }
+      }
+
+    atTab = chunk === -2;
+    result.push(value);
+  }
+
+  return result.join('')
+}
+
+/**
+ * @typedef {import('micromark-util-types').Extension} Extension
+ */
+/** @type {Extension['document']} */
+
+const document$2 = {
+  [42]: list,
+  [43]: list,
+  [45]: list,
+  [48]: list,
+  [49]: list,
+  [50]: list,
+  [51]: list,
+  [52]: list,
+  [53]: list,
+  [54]: list,
+  [55]: list,
+  [56]: list,
+  [57]: list,
+  [62]: blockQuote
 };
-var flow = {
-  35: headingAtx_1,
-  // Number sign
-  42: thematicBreak_1,
-  // Asterisk
-  45: [setextUnderline_1, thematicBreak_1],
-  // Dash
-  60: htmlFlow_1,
-  // Less than
-  61: setextUnderline_1,
-  // Equals to
-  95: thematicBreak_1,
-  // Underscore
-  96: codeFenced_1,
-  // Grave accent
-  126: codeFenced_1 // Tilde
+/** @type {Extension['contentInitial']} */
+
+const contentInitial = {
+  [91]: definition
 };
-var string = {
-  38: characterReference_1,
-  // Ampersand
-  92: characterEscape_1 // Backslash
+/** @type {Extension['flowInitial']} */
+
+const flowInitial = {
+  [-2]: codeIndented,
+  [-1]: codeIndented,
+  [32]: codeIndented
 };
-var text = {
-  '-5': lineEnding_1,
-  // Carriage return
-  '-4': lineEnding_1,
-  // Line feed
-  '-3': lineEnding_1,
-  // Carriage return + line feed
-  33: labelStartImage_1,
-  // Exclamation mark
-  38: characterReference_1,
-  // Ampersand
-  42: attention_1,
-  // Asterisk
-  60: [autolink_1, htmlText_1],
-  // Less than
-  91: labelStartLink_1,
-  // Left square bracket
-  92: [hardBreakEscape_1, characterEscape_1],
-  // Backslash
-  93: labelEnd_1,
-  // Right square bracket
-  95: attention_1,
-  // Underscore
-  96: codeText_1 // Grave accent
+/** @type {Extension['flow']} */
+
+const flow$1 = {
+  [35]: headingAtx,
+  [42]: thematicBreak,
+  [45]: [setextUnderline, thematicBreak],
+  [60]: htmlFlow,
+  [61]: setextUnderline,
+  [95]: thematicBreak,
+  [96]: codeFenced,
+  [126]: codeFenced
 };
-var insideSpan = {
-  null: [attention_1, text_1.resolver]
+/** @type {Extension['string']} */
+
+const string$1 = {
+  [38]: characterReference,
+  [92]: characterEscape
 };
-var disable = {
+/** @type {Extension['text']} */
+
+const text$1 = {
+  [-5]: lineEnding,
+  [-4]: lineEnding,
+  [-3]: lineEnding,
+  [33]: labelStartImage,
+  [38]: characterReference,
+  [42]: attention,
+  [60]: [autolink, htmlText],
+  [91]: labelStartLink,
+  [92]: [hardBreakEscape, characterEscape],
+  [93]: labelEnd,
+  [95]: attention,
+  [96]: codeText
+};
+/** @type {Extension['insideSpan']} */
+
+const insideSpan = {
+  null: [attention, resolver]
+};
+/** @type {Extension['attentionMarkers']} */
+
+const attentionMarkers = {
+  null: [42, 95]
+};
+/** @type {Extension['disable']} */
+
+const disable = {
   null: []
 };
 
-exports.contentInitial = contentInitial;
-exports.disable = disable;
-exports.document = document;
-exports.flow = flow;
-exports.flowInitial = flowInitial;
-exports.insideSpan = insideSpan;
-exports.string = string;
-exports.text = text;
+var defaultConstructs = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  document: document$2,
+  contentInitial: contentInitial,
+  flowInitial: flowInitial,
+  flow: flow$1,
+  string: string$1,
+  text: text$1,
+  insideSpan: insideSpan,
+  attentionMarkers: attentionMarkers,
+  disable: disable
 });
 
-function parse(options) {
-  var settings = options || {};
-  var parser = {
+/**
+ * @typedef {import('micromark-util-types').InitialConstruct} InitialConstruct
+ * @typedef {import('micromark-util-types').FullNormalizedExtension} FullNormalizedExtension
+ * @typedef {import('micromark-util-types').ParseOptions} ParseOptions
+ * @typedef {import('micromark-util-types').ParseContext} ParseContext
+ * @typedef {import('micromark-util-types').Create} Create
+ */
+/**
+ * @param {ParseOptions} [options]
+ * @returns {ParseContext}
+ */
+
+function parse(options = {}) {
+  /** @type {FullNormalizedExtension} */
+  // @ts-expect-error `defaultConstructs` is full, so the result will be too.
+  const constructs = combineExtensions(
+    // @ts-expect-error Same as above.
+    [defaultConstructs].concat(options.extensions || [])
+  );
+  /** @type {ParseContext} */
+
+  const parser = {
     defined: [],
-    constructs: combineExtensions_1(
-      [constructs$1].concat(miniflat_1(settings.extensions))
-    ),
+    lazy: {},
+    constructs,
     content: create(content),
     document: create(document$1),
     flow: create(flow),
-    string: create(text_1.string),
-    text: create(text_1.text)
+    string: create(string),
+    text: create(text)
   };
   return parser
+  /**
+   * @param {InitialConstruct} initial
+   */
 
-  function create(initializer) {
+  function create(initial) {
     return creator
+    /** @type {Create} */
 
     function creator(from) {
-      return createTokenizer_1(parser, initializer, from)
+      return createTokenizer(parser, initial, from)
     }
   }
 }
 
-var parse_1 = parse;
+/**
+ * @typedef {import('micromark-util-types').Encoding} Encoding
+ * @typedef {import('micromark-util-types').Value} Value
+ * @typedef {import('micromark-util-types').Chunk} Chunk
+ * @typedef {import('micromark-util-types').Code} Code
+ */
 
-var search = /[\0\t\n\r]/g;
+/**
+ * @callback Preprocessor
+ * @param {Value} value
+ * @param {Encoding} [encoding]
+ * @param {boolean} [end=false]
+ * @returns {Chunk[]}
+ */
+const search = /[\0\t\n\r]/g;
+/**
+ * @returns {Preprocessor}
+ */
 
 function preprocess() {
-  var start = true;
-  var column = 1;
-  var buffer = '';
-  var atCarriageReturn;
+  let column = 1;
+  let buffer = '';
+  /** @type {boolean|undefined} */
+
+  let start = true;
+  /** @type {boolean|undefined} */
+
+  let atCarriageReturn;
   return preprocessor
+  /** @type {Preprocessor} */
 
   function preprocessor(value, encoding, end) {
-    var chunks = [];
-    var match;
-    var next;
-    var startPosition;
-    var endPosition;
-    var code;
+    /** @type {Chunk[]} */
+    const chunks = [];
+    /** @type {RegExpMatchArray|null} */
+
+    let match;
+    /** @type {number} */
+
+    let next;
+    /** @type {number} */
+
+    let startPosition;
+    /** @type {number} */
+
+    let endPosition;
+    /** @type {Code} */
+
+    let code; // @ts-expect-error `Buffer` does allow an encoding.
+
     value = buffer + value.toString(encoding);
     startPosition = 0;
     buffer = '';
@@ -6499,7 +8258,8 @@ function preprocess() {
     while (startPosition < value.length) {
       search.lastIndex = startPosition;
       match = search.exec(value);
-      endPosition = match ? match.index : value.length;
+      endPosition =
+        match && match.index !== undefined ? match.index : value.length;
       code = value.charCodeAt(endPosition);
 
       if (!match) {
@@ -6521,21 +8281,32 @@ function preprocess() {
           column += endPosition - startPosition;
         }
 
-        if (code === 0) {
-          chunks.push(65533);
-          column++;
-        } else if (code === 9) {
-          next = Math.ceil(column / 4) * 4;
-          chunks.push(-2);
+        switch (code) {
+          case 0: {
+            chunks.push(65533);
+            column++;
+            break
+          }
 
-          while (column++ < next) chunks.push(-1);
-        } else if (code === 10) {
-          chunks.push(-4);
-          column = 1;
-        } // Must be carriage return.
-        else {
-          atCarriageReturn = true;
-          column = 1;
+          case 9: {
+            next = Math.ceil(column / 4) * 4;
+            chunks.push(-2);
+
+            while (column++ < next) chunks.push(-1);
+
+            break
+          }
+
+          case 10: {
+            chunks.push(-4);
+            column = 1;
+            break
+          }
+
+          default: {
+            atCarriageReturn = true;
+            column = 1;
+          }
         }
       }
 
@@ -6552,51 +8323,126 @@ function preprocess() {
   }
 }
 
-var preprocess_1 = preprocess;
+/**
+ * @typedef {import('micromark-util-types').Event} Event
+ */
+/**
+ * @param {Event[]} events
+ * @returns {Event[]}
+ */
 
 function postprocess(events) {
-  while (!subtokenize_1(events)) {
+  while (!subtokenize(events)) {
     // Empty
   }
 
   return events
 }
 
-var postprocess_1 = postprocess;
+/**
+ * Turn the number (in string form as either hexa- or plain decimal) coming from
+ * a numeric character reference into a character.
+ *
+ * @param {string} value
+ *   Value to decode.
+ * @param {number} base
+ *   Numeric base.
+ * @returns {string}
+ */
+function decodeNumericCharacterReference(value, base) {
+  const code = Number.parseInt(value, base);
 
-var dist = fromMarkdown;
-
-// These three are compiled away in the `dist/`
-
-
-
-
-
-
-
-
-
-
-
-
-function fromMarkdown(value, encoding, options) {
-  if (typeof encoding !== 'string') {
-    options = encoding;
-    encoding = undefined;
+  if (
+    // C0 except for HT, LF, FF, CR, space
+    code < 9 ||
+    code === 11 ||
+    (code > 13 && code < 32) || // Control character (DEL) of the basic block and C1 controls.
+    (code > 126 && code < 160) || // Lone high surrogates and low surrogates.
+    (code > 55295 && code < 57344) || // Noncharacters.
+    (code > 64975 && code < 65008) ||
+    (code & 65535) === 65535 ||
+    (code & 65535) === 65534 || // Out of range
+    code > 1114111
+  ) {
+    return '\uFFFD'
   }
 
-  return compiler(options)(
-    postprocess_1(
-      parse_1(options).document().write(preprocess_1()(value, encoding, true))
-    )
-  )
+  return String.fromCharCode(code)
 }
 
-// Note this compiler only understand complete buffering, not streaming.
-function compiler(options) {
-  var settings = options || {};
-  var config = configure(
+/**
+ * @typedef {import('micromark-util-types').Encoding} Encoding
+ * @typedef {import('micromark-util-types').Event} Event
+ * @typedef {import('micromark-util-types').ParseOptions} ParseOptions
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Value} Value
+ * @typedef {Root|Root['children'][number]} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist').Point} Point
+ * @typedef {import('mdast').Break} Break
+ * @typedef {import('mdast').Blockquote} Blockquote
+ * @typedef {import('mdast').Code} Code
+ * @typedef {import('mdast').Definition} Definition
+ * @typedef {import('mdast').Emphasis} Emphasis
+ * @typedef {import('mdast').Heading} Heading
+ * @typedef {import('mdast').HTML} HTML
+ * @typedef {import('mdast').Image} Image
+ * @typedef {import('mdast').InlineCode} InlineCode
+ * @typedef {import('mdast').Link} Link
+ * @typedef {import('mdast').List} List
+ * @typedef {import('mdast').ListItem} ListItem
+ * @typedef {import('mdast').Paragraph} Paragraph
+ * @typedef {import('mdast').Root} Root
+ * @typedef {import('mdast').Strong} Strong
+ * @typedef {import('mdast').Text} Text
+ * @typedef {import('mdast').ThematicBreak} ThematicBreak
+ */
+const own$2 = {}.hasOwnProperty;
+/**
+ * @param value Markdown to parse (`string` or `Buffer`).
+ * @param [encoding] Character encoding to understand `value` as when it’s a `Buffer` (`string`, default: `'utf8'`).
+ * @param [options] Configuration
+ */
+
+const fromMarkdown =
+  /**
+   * @type {(
+   *   ((value: Value, encoding: Encoding, options?: Options) => Root) &
+   *   ((value: Value, options?: Options) => Root)
+   * )}
+   */
+
+  /**
+   * @param {Value} value
+   * @param {Encoding} [encoding]
+   * @param {Options} [options]
+   * @returns {Root}
+   */
+  function (value, encoding, options) {
+    if (typeof encoding !== 'string') {
+      options = encoding;
+      encoding = undefined;
+    }
+
+    return compiler(options)(
+      postprocess(
+        parse(options).document().write(preprocess()(value, encoding, true))
+      )
+    )
+  };
+/**
+ * Note this compiler only understand complete buffering, not streaming.
+ *
+ * @param {Options} [options]
+ */
+
+function compiler(options = {}) {
+  /** @type {NormalizedExtension} */
+  // @ts-expect-error: our base has all required fields, so the result will too.
+  const config = configure(
     {
+      transforms: [],
       canContainEols: [
         'emphasis',
         'fragment',
@@ -6604,7 +8450,6 @@ function compiler(options) {
         'paragraph',
         'strong'
       ],
-
       enter: {
         autolink: opener(link),
         autolinkProtocol: onenterdata,
@@ -6648,7 +8493,6 @@ function compiler(options) {
         strong: opener(strong),
         thematicBreak: opener(thematicBreak)
       },
-
       exit: {
         atxHeading: closer(),
         atxHeadingSequence: onexitatxheadingsequence,
@@ -6700,33 +8544,46 @@ function compiler(options) {
         thematicBreak: closer()
       }
     },
-
-    settings.mdastExtensions || []
+    options.mdastExtensions || []
   );
+  /** @type {CompileData} */
 
-  var data = {};
-
+  const data = {};
   return compile
+  /**
+   * @param {Array.<Event>} events
+   * @returns {Root}
+   */
 
   function compile(events) {
-    var stack = [{type: 'root', children: []}];
-    var tokenStack = [];
-    var listStack = [];
-    var index = -1;
-    var handler;
-    var listStart;
-
-    var context = {
-      stack: stack,
-      tokenStack: tokenStack,
-      config: config,
-      enter: enter,
-      exit: exit,
-      buffer: buffer,
-      resume: resume,
-      setData: setData,
-      getData: getData
+    /** @type {Root} */
+    let tree = {
+      type: 'root',
+      children: []
     };
+    /** @type {CompileContext['stack']} */
+
+    const stack = [tree];
+    /** @type {CompileContext['tokenStack']} */
+
+    const tokenStack = [];
+    /** @type {Array.<number>} */
+
+    const listStack = [];
+    /** @type {Omit<CompileContext, 'sliceSerialize'>} */
+
+    const context = {
+      stack,
+      tokenStack,
+      config,
+      enter,
+      exit,
+      buffer,
+      resume,
+      setData,
+      getData
+    };
+    let index = -1;
 
     while (++index < events.length) {
       // We preprocess lists to add `listItem` tokens, and to infer whether
@@ -6738,8 +8595,8 @@ function compiler(options) {
         if (events[index][0] === 'enter') {
           listStack.push(index);
         } else {
-          listStart = listStack.pop(index);
-          index = prepareList(events, listStart, index);
+          const tail = listStack.pop();
+          index = prepareList(events, tail, index);
         }
       }
     }
@@ -6747,59 +8604,88 @@ function compiler(options) {
     index = -1;
 
     while (++index < events.length) {
-      handler = config[events[index][0]];
+      const handler = config[events[index][0]];
 
-      if (hasOwnProperty_1.call(handler, events[index][1].type)) {
+      if (own$2.call(handler, events[index][1].type)) {
         handler[events[index][1].type].call(
-          assign_1({sliceSerialize: events[index][2].sliceSerialize}, context),
+          Object.assign(
+            {
+              sliceSerialize: events[index][2].sliceSerialize
+            },
+            context
+          ),
           events[index][1]
         );
       }
     }
 
-    if (tokenStack.length) {
+    if (tokenStack.length > 0) {
       throw new Error(
         'Cannot close document, a token (`' +
           tokenStack[tokenStack.length - 1].type +
           '`, ' +
-          unistUtilStringifyPosition({
+          stringifyPosition({
             start: tokenStack[tokenStack.length - 1].start,
             end: tokenStack[tokenStack.length - 1].end
           }) +
           ') is still open'
       )
-    }
+    } // Figure out `root` position.
 
-    // Figure out `root` position.
-    stack[0].position = {
+    tree.position = {
       start: point(
-        events.length ? events[0][1].start : {line: 1, column: 1, offset: 0}
+        events.length > 0
+          ? events[0][1].start
+          : {
+              line: 1,
+              column: 1,
+              offset: 0
+            }
       ),
-
       end: point(
-        events.length
+        events.length > 0
           ? events[events.length - 2][1].end
-          : {line: 1, column: 1, offset: 0}
+          : {
+              line: 1,
+              column: 1,
+              offset: 0
+            }
       )
     };
+    index = -1;
 
-    return stack[0]
+    while (++index < config.transforms.length) {
+      tree = config.transforms[index](tree) || tree;
+    }
+
+    return tree
   }
+  /**
+   * @param {Array.<Event>} events
+   * @param {number} start
+   * @param {number} length
+   * @returns {number}
+   */
 
   function prepareList(events, start, length) {
-    var index = start - 1;
-    var containerBalance = -1;
-    var listSpread = false;
-    var listItem;
-    var tailIndex;
-    var lineIndex;
-    var tailEvent;
-    var event;
-    var firstBlankLineIndex;
-    var atMarker;
+    let index = start - 1;
+    let containerBalance = -1;
+    let listSpread = false;
+    /** @type {Token|undefined} */
+
+    let listItem;
+    /** @type {number|undefined} */
+
+    let lineIndex;
+    /** @type {number|undefined} */
+
+    let firstBlankLineIndex;
+    /** @type {boolean|undefined} */
+
+    let atMarker;
 
     while (++index <= length) {
-      event = events[index];
+      const event = events[index];
 
       if (
         event[1].type === 'listUnordered' ||
@@ -6846,11 +8732,11 @@ function compiler(options) {
             event[1].type === 'listOrdered'))
       ) {
         if (listItem) {
-          tailIndex = index;
+          let tailIndex = index;
           lineIndex = undefined;
 
           while (tailIndex--) {
-            tailEvent = events[tailIndex];
+            const tailEvent = events[tailIndex];
 
             if (
               tailEvent[1].type === 'lineEnding' ||
@@ -6880,26 +8766,26 @@ function compiler(options) {
             firstBlankLineIndex &&
             (!lineIndex || firstBlankLineIndex < lineIndex)
           ) {
+            // @ts-expect-error Patched.
             listItem._spread = true;
-          }
+          } // Fix position.
 
-          // Fix position.
-          listItem.end = point(
+          listItem.end = Object.assign(
+            {},
             lineIndex ? events[lineIndex][1].start : event[1].end
           );
-
           events.splice(lineIndex || index, 0, ['exit', listItem, event[2]]);
           index++;
           length++;
-        }
+        } // Create a new list item.
 
-        // Create a new list item.
         if (event[1].type === 'listItemPrefix') {
           listItem = {
             type: 'listItem',
+            // @ts-expect-error Patched
             _spread: false,
-            start: point(event[1].start)
-          };
+            start: Object.assign({}, event[1].start)
+          }; // @ts-expect-error: `listItem` is most definitely defined, TS...
 
           events.splice(index, 0, ['enter', listItem, event[2]]);
           index++;
@@ -6908,64 +8794,124 @@ function compiler(options) {
           atMarker = true;
         }
       }
-    }
+    } // @ts-expect-error Patched.
 
     events[start][1]._spread = listSpread;
     return length
   }
+  /**
+   * @type {CompileContext['setData']}
+   * @param [value]
+   */
 
   function setData(key, value) {
     data[key] = value;
   }
+  /**
+   * @type {CompileContext['getData']}
+   * @template {string} K
+   * @param {K} key
+   * @returns {CompileData[K]}
+   */
 
   function getData(key) {
     return data[key]
   }
+  /**
+   * @param {Point} d
+   * @returns {Point}
+   */
 
   function point(d) {
-    return {line: d.line, column: d.column, offset: d.offset}
+    return {
+      line: d.line,
+      column: d.column,
+      offset: d.offset
+    }
   }
+  /**
+   * @param {(token: Token) => Node} create
+   * @param {Handle} [and]
+   * @returns {Handle}
+   */
 
   function opener(create, and) {
     return open
+    /**
+     * @this {CompileContext}
+     * @param {Token} token
+     * @returns {void}
+     */
 
     function open(token) {
       enter.call(this, create(token), token);
       if (and) and.call(this, token);
     }
   }
+  /** @type {CompileContext['buffer']} */
 
   function buffer() {
-    this.stack.push({type: 'fragment', children: []});
+    // @ts-expect-error: Custom node type to collect text.
+    this.stack.push({
+      type: 'fragment',
+      children: []
+    });
   }
+  /**
+   * @type {CompileContext['enter']}
+   * @template {Node} N
+   * @this {CompileContext}
+   * @param {N} node
+   * @param {Token} token
+   * @returns {N}
+   */
 
   function enter(node, token) {
-    this.stack[this.stack.length - 1].children.push(node);
+    /** @type {Parent} */
+    // @ts-expect-error: Assume parent.
+    const parent = this.stack[this.stack.length - 1];
+    parent.children.push(node);
     this.stack.push(node);
-    this.tokenStack.push(token);
-    node.position = {start: point(token.start)};
+    this.tokenStack.push(token); // @ts-expect-error: `end` will be patched later.
+
+    node.position = {
+      start: point(token.start)
+    };
     return node
   }
+  /**
+   * @param {Handle} [and]
+   * @returns {Handle}
+   */
 
   function closer(and) {
     return close
+    /**
+     * @this {CompileContext}
+     * @param {Token} token
+     * @returns {void}
+     */
 
     function close(token) {
       if (and) and.call(this, token);
       exit.call(this, token);
     }
   }
+  /** @type {CompileContext['exit']} */
 
   function exit(token) {
-    var node = this.stack.pop();
-    var open = this.tokenStack.pop();
+    const node = this.stack.pop();
+    const open = this.tokenStack.pop();
 
     if (!open) {
       throw new Error(
         'Cannot close `' +
           token.type +
           '` (' +
-          unistUtilStringifyPosition({start: token.start, end: token.end}) +
+          stringifyPosition({
+            start: token.start,
+            end: token.end
+          }) +
           '): it’s not open'
       )
     } else if (open.type !== token.type) {
@@ -6973,11 +8919,17 @@ function compiler(options) {
         'Cannot close `' +
           token.type +
           '` (' +
-          unistUtilStringifyPosition({start: token.start, end: token.end}) +
+          stringifyPosition({
+            start: token.start,
+            end: token.end
+          }) +
           '): a different token (`' +
           open.type +
           '`, ' +
-          unistUtilStringifyPosition({start: open.start, end: open.end}) +
+          stringifyPosition({
+            start: open.start,
+            end: open.end
+          }) +
           ') is open'
       )
     }
@@ -6985,39 +8937,46 @@ function compiler(options) {
     node.position.end = point(token.end);
     return node
   }
+  /**
+   * @this {CompileContext}
+   * @returns {string}
+   */
 
   function resume() {
-    return mdastUtilToString(this.stack.pop())
-  }
-
-  //
+    return toString(this.stack.pop())
+  } //
   // Handlers.
   //
+
+  /** @type {Handle} */
 
   function onenterlistordered() {
     setData('expectingFirstListItemValue', true);
   }
+  /** @type {Handle} */
 
   function onenterlistitemvalue(token) {
     if (getData('expectingFirstListItemValue')) {
-      this.stack[this.stack.length - 2].start = parseInt(
+      this.stack[this.stack.length - 2].start = Number.parseInt(
         this.sliceSerialize(token),
         10
       );
-
       setData('expectingFirstListItemValue');
     }
   }
+  /** @type {Handle} */
 
   function onexitcodefencedfenceinfo() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].lang = data;
   }
+  /** @type {Handle} */
 
   function onexitcodefencedfencemeta() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].meta = data;
   }
+  /** @type {Handle} */
 
   function onexitcodefencedfence() {
     // Exit if this is the closing fence.
@@ -7025,127 +8984,149 @@ function compiler(options) {
     this.buffer();
     setData('flowCodeInside', true);
   }
+  /** @type {Handle} */
 
   function onexitcodefenced() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].value = data.replace(
       /^(\r?\n|\r)|(\r?\n|\r)$/g,
       ''
     );
-
     setData('flowCodeInside');
   }
+  /** @type {Handle} */
 
   function onexitcodeindented() {
-    var data = this.resume();
-    this.stack[this.stack.length - 1].value = data;
+    const data = this.resume();
+    this.stack[this.stack.length - 1].value = data.replace(/(\r?\n|\r)$/g, '');
   }
+  /** @type {Handle} */
 
   function onexitdefinitionlabelstring(token) {
     // Discard label, use the source content instead.
-    var label = this.resume();
+    const label = this.resume();
     this.stack[this.stack.length - 1].label = label;
-    this.stack[this.stack.length - 1].identifier = normalizeIdentifier_1(
+    this.stack[this.stack.length - 1].identifier = normalizeIdentifier(
       this.sliceSerialize(token)
     ).toLowerCase();
   }
+  /** @type {Handle} */
 
   function onexitdefinitiontitlestring() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].title = data;
   }
+  /** @type {Handle} */
 
   function onexitdefinitiondestinationstring() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].url = data;
   }
+  /** @type {Handle} */
 
   function onexitatxheadingsequence(token) {
     if (!this.stack[this.stack.length - 1].depth) {
-      this.stack[this.stack.length - 1].depth = this.sliceSerialize(
-        token
-      ).length;
+      this.stack[this.stack.length - 1].depth =
+        this.sliceSerialize(token).length;
     }
   }
+  /** @type {Handle} */
 
   function onexitsetextheadingtext() {
     setData('setextHeadingSlurpLineEnding', true);
   }
+  /** @type {Handle} */
 
   function onexitsetextheadinglinesequence(token) {
     this.stack[this.stack.length - 1].depth =
       this.sliceSerialize(token).charCodeAt(0) === 61 ? 1 : 2;
   }
+  /** @type {Handle} */
 
   function onexitsetextheading() {
     setData('setextHeadingSlurpLineEnding');
   }
+  /** @type {Handle} */
 
   function onenterdata(token) {
-    var siblings = this.stack[this.stack.length - 1].children;
-    var tail = siblings[siblings.length - 1];
+    /** @type {Parent} */
+    // @ts-expect-error: assume parent.
+    const parent = this.stack[this.stack.length - 1];
+    /** @type {Node} */
+    // @ts-expect-error: assume child.
+
+    let tail = parent.children[parent.children.length - 1];
 
     if (!tail || tail.type !== 'text') {
       // Add a new text node.
-      tail = text();
-      tail.position = {start: point(token.start)};
-      this.stack[this.stack.length - 1].children.push(tail);
+      tail = text(); // @ts-expect-error: we’ll add `end` later.
+
+      tail.position = {
+        start: point(token.start)
+      };
+      parent.children.push(tail);
     }
 
     this.stack.push(tail);
   }
+  /** @type {Handle} */
 
   function onexitdata(token) {
-    var tail = this.stack.pop();
+    const tail = this.stack.pop();
     tail.value += this.sliceSerialize(token);
     tail.position.end = point(token.end);
   }
+  /** @type {Handle} */
 
   function onexitlineending(token) {
-    var context = this.stack[this.stack.length - 1];
+    /** @type {Parent} */
+    // @ts-expect-error: supposed to be a parent.
+    const context = this.stack[this.stack.length - 1];
 
     // If we’re at a hard break, include the line ending in there.
     if (getData('atHardBreak')) {
-      context.children[context.children.length - 1].position.end = point(
-        token.end
-      );
-
+      const tail = context.children[context.children.length - 1];
+      tail.position.end = point(token.end);
       setData('atHardBreak');
       return
     }
 
     if (
       !getData('setextHeadingSlurpLineEnding') &&
-      config.canContainEols.indexOf(context.type) > -1
+      config.canContainEols.includes(context.type)
     ) {
       onenterdata.call(this, token);
       onexitdata.call(this, token);
     }
   }
+  /** @type {Handle} */
 
   function onexithardbreak() {
     setData('atHardBreak', true);
   }
+  /** @type {Handle} */
 
   function onexithtmlflow() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].value = data;
   }
+  /** @type {Handle} */
 
   function onexithtmltext() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].value = data;
   }
+  /** @type {Handle} */
 
   function onexitcodetext() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].value = data;
   }
+  /** @type {Handle} */
 
   function onexitlink() {
-    var context = this.stack[this.stack.length - 1];
+    const context = this.stack[this.stack.length - 1]; // To do: clean.
 
-    // To do: clean.
     if (getData('inReference')) {
       context.type += 'Reference';
       context.referenceType = getData('referenceType') || 'shortcut';
@@ -7159,11 +9140,11 @@ function compiler(options) {
 
     setData('referenceType');
   }
+  /** @type {Handle} */
 
   function onexitimage() {
-    var context = this.stack[this.stack.length - 1];
+    const context = this.stack[this.stack.length - 1]; // To do: clean.
 
-    // To do: clean.
     if (getData('inReference')) {
       context.type += 'Reference';
       context.referenceType = getData('referenceType') || 'shortcut';
@@ -7177,20 +9158,20 @@ function compiler(options) {
 
     setData('referenceType');
   }
+  /** @type {Handle} */
 
   function onexitlabeltext(token) {
-    this.stack[this.stack.length - 2].identifier = normalizeIdentifier_1(
+    this.stack[this.stack.length - 2].identifier = normalizeIdentifier(
       this.sliceSerialize(token)
     ).toLowerCase();
   }
+  /** @type {Handle} */
 
   function onexitlabel() {
-    var fragment = this.stack[this.stack.length - 1];
-    var value = this.resume();
+    const fragment = this.stack[this.stack.length - 1];
+    const value = this.resume();
+    this.stack[this.stack.length - 1].label = value; // Assume a reference.
 
-    this.stack[this.stack.length - 1].label = value;
-
-    // Assume a reference.
     setData('inReference', true);
 
     if (this.stack[this.stack.length - 1].type === 'link') {
@@ -7199,299 +9180,616 @@ function compiler(options) {
       this.stack[this.stack.length - 1].alt = value;
     }
   }
+  /** @type {Handle} */
 
   function onexitresourcedestinationstring() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].url = data;
   }
+  /** @type {Handle} */
 
   function onexitresourcetitlestring() {
-    var data = this.resume();
+    const data = this.resume();
     this.stack[this.stack.length - 1].title = data;
   }
+  /** @type {Handle} */
 
   function onexitresource() {
     setData('inReference');
   }
+  /** @type {Handle} */
 
   function onenterreference() {
     setData('referenceType', 'collapsed');
   }
+  /** @type {Handle} */
 
   function onexitreferencestring(token) {
-    var label = this.resume();
+    const label = this.resume();
     this.stack[this.stack.length - 1].label = label;
-    this.stack[this.stack.length - 1].identifier = normalizeIdentifier_1(
+    this.stack[this.stack.length - 1].identifier = normalizeIdentifier(
       this.sliceSerialize(token)
     ).toLowerCase();
     setData('referenceType', 'full');
   }
+  /** @type {Handle} */
 
   function onexitcharacterreferencemarker(token) {
     setData('characterReferenceType', token.type);
   }
+  /** @type {Handle} */
 
   function onexitcharacterreferencevalue(token) {
-    var data = this.sliceSerialize(token);
-    var type = getData('characterReferenceType');
-    var value;
-    var tail;
+    const data = this.sliceSerialize(token);
+    const type = getData('characterReferenceType');
+    /** @type {string} */
+
+    let value;
 
     if (type) {
-      value = safeFromInt_1(
+      value = decodeNumericCharacterReference(
         data,
         type === 'characterReferenceMarkerNumeric' ? 10 : 16
       );
-
       setData('characterReferenceType');
     } else {
-      value = decodeEntity_browser(data);
+      // @ts-expect-error `decodeEntity` can return false for invalid named
+      // character references, but everything we’ve tokenized is valid.
+      value = decodeEntity(data);
     }
 
-    tail = this.stack.pop();
+    const tail = this.stack.pop();
     tail.value += value;
     tail.position.end = point(token.end);
   }
+  /** @type {Handle} */
 
   function onexitautolinkprotocol(token) {
     onexitdata.call(this, token);
     this.stack[this.stack.length - 1].url = this.sliceSerialize(token);
   }
+  /** @type {Handle} */
 
   function onexitautolinkemail(token) {
     onexitdata.call(this, token);
     this.stack[this.stack.length - 1].url =
       'mailto:' + this.sliceSerialize(token);
-  }
-
-  //
+  } //
   // Creaters.
   //
 
+  /** @returns {Blockquote} */
+
   function blockQuote() {
-    return {type: 'blockquote', children: []}
+    return {
+      type: 'blockquote',
+      children: []
+    }
   }
+  /** @returns {Code} */
 
   function codeFlow() {
-    return {type: 'code', lang: null, meta: null, value: ''}
+    // @ts-expect-error: we’ve always used `null`.
+    return {
+      type: 'code',
+      lang: null,
+      meta: null,
+      value: ''
+    }
   }
+  /** @returns {InlineCode} */
 
   function codeText() {
-    return {type: 'inlineCode', value: ''}
+    return {
+      type: 'inlineCode',
+      value: ''
+    }
   }
+  /** @returns {Definition} */
 
   function definition() {
     return {
       type: 'definition',
       identifier: '',
+      // @ts-expect-error: we’ve always used `null`.
       label: null,
+      // @ts-expect-error: we’ve always used `null`.
       title: null,
       url: ''
     }
   }
+  /** @returns {Emphasis} */
 
   function emphasis() {
-    return {type: 'emphasis', children: []}
+    return {
+      type: 'emphasis',
+      children: []
+    }
   }
+  /** @returns {Heading} */
 
   function heading() {
-    return {type: 'heading', depth: undefined, children: []}
+    // @ts-expect-error `depth` will be set later.
+    return {
+      type: 'heading',
+      depth: undefined,
+      children: []
+    }
   }
+  /** @returns {Break} */
 
   function hardBreak() {
-    return {type: 'break'}
+    return {
+      type: 'break'
+    }
   }
+  /** @returns {HTML} */
 
   function html() {
-    return {type: 'html', value: ''}
+    return {
+      type: 'html',
+      value: ''
+    }
   }
+  /** @returns {Image} */
 
   function image() {
-    return {type: 'image', title: null, url: '', alt: null}
+    // @ts-expect-error: we’ve always used `null`.
+    return {
+      type: 'image',
+      title: null,
+      url: '',
+      alt: null
+    }
   }
+  /** @returns {Link} */
 
   function link() {
-    return {type: 'link', title: null, url: '', children: []}
+    // @ts-expect-error: we’ve always used `null`.
+    return {
+      type: 'link',
+      title: null,
+      url: '',
+      children: []
+    }
   }
+  /**
+   * @param {Token} token
+   * @returns {List}
+   */
 
   function list(token) {
     return {
       type: 'list',
       ordered: token.type === 'listOrdered',
+      // @ts-expect-error: we’ve always used `null`.
       start: null,
+      // @ts-expect-error Patched.
       spread: token._spread,
       children: []
     }
   }
+  /**
+   * @param {Token} token
+   * @returns {ListItem}
+   */
 
   function listItem(token) {
     return {
       type: 'listItem',
+      // @ts-expect-error Patched.
       spread: token._spread,
+      // @ts-expect-error: we’ve always used `null`.
       checked: null,
       children: []
     }
   }
+  /** @returns {Paragraph} */
 
   function paragraph() {
-    return {type: 'paragraph', children: []}
+    return {
+      type: 'paragraph',
+      children: []
+    }
   }
+  /** @returns {Strong} */
 
   function strong() {
-    return {type: 'strong', children: []}
+    return {
+      type: 'strong',
+      children: []
+    }
   }
+  /** @returns {Text} */
 
   function text() {
-    return {type: 'text', value: ''}
+    return {
+      type: 'text',
+      value: ''
+    }
   }
+  /** @returns {ThematicBreak} */
 
   function thematicBreak() {
-    return {type: 'thematicBreak'}
+    return {
+      type: 'thematicBreak'
+    }
   }
 }
+/**
+ * @param {Extension} combined
+ * @param {Array.<Extension|Array.<Extension>>} extensions
+ * @returns {Extension}
+ */
 
-function configure(config, extensions) {
-  var index = -1;
+function configure(combined, extensions) {
+  let index = -1;
 
   while (++index < extensions.length) {
-    extension$1(config, extensions[index]);
+    const value = extensions[index];
+
+    if (Array.isArray(value)) {
+      configure(combined, value);
+    } else {
+      extension(combined, value);
+    }
   }
 
-  return config
+  return combined
 }
+/**
+ * @param {Extension} combined
+ * @param {Extension} extension
+ * @returns {void}
+ */
 
-function extension$1(config, extension) {
-  var key;
-  var left;
+function extension(combined, extension) {
+  /** @type {string} */
+  let key;
 
   for (key in extension) {
-    left = hasOwnProperty_1.call(config, key) ? config[key] : (config[key] = {});
+    if (own$2.call(extension, key)) {
+      const list = key === 'canContainEols' || key === 'transforms';
+      const maybe = own$2.call(combined, key) ? combined[key] : undefined;
+      /* c8 ignore next */
 
-    if (key === 'canContainEols') {
-      config[key] = [].concat(left, extension[key]);
-    } else {
-      Object.assign(left, extension[key]);
+      const left = maybe || (combined[key] = list ? [] : {});
+      const right = extension[key];
+
+      if (right) {
+        if (list) {
+          // @ts-expect-error: `left` is an array.
+          combined[key] = [...left, ...right];
+        } else {
+          Object.assign(left, right);
+        }
+      }
     }
   }
 }
 
-var mdastUtilFromMarkdown = dist;
+/**
+ * @typedef {import('mdast').Root} Root
+ * @typedef {import('mdast-util-from-markdown').Options} Options
+ */
 
-var remarkParse = parse$1;
+/** @type {import('unified').Plugin<[Options?] | void[], string, Root>} */
+function remarkParse(options) {
+  /** @type {import('unified').ParserFunction<Root>} */
+  const parser = (doc) => {
+    // Assume options.
+    const settings = /** @type {Options} */ (this.data('settings'));
 
-
-
-function parse$1(options) {
-  var self = this;
-
-  this.Parser = parse;
-
-  function parse(doc) {
-    return mdastUtilFromMarkdown(
+    return fromMarkdown(
       doc,
-      Object.assign({}, self.data('settings'), options, {
+      Object.assign({}, settings, options, {
         // Note: these options are not in the readme.
         // The goal is for them to be set by plugins on `data` instead of being
         // passed by users.
-        extensions: self.data('micromarkExtensions') || [],
-        mdastExtensions: self.data('fromMarkdownExtensions') || []
+        extensions: this.data('micromarkExtensions') || [],
+        mdastExtensions: this.data('fromMarkdownExtensions') || []
       })
     )
-  }
+  };
+
+  Object.assign(this, {Parser: parser});
 }
 
-var unistBuilder = u;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist').Literal} Literal
+ * @typedef {Object.<string, unknown>} Props
+ * @typedef {Array.<Node>|string} ChildrenOrValue
+ *
+ * @typedef {(<T extends string, P extends Record<string, unknown>, C extends Node[]>(type: T, props: P, children: C) => {type: T, children: C} & P)} BuildParentWithProps
+ * @typedef {(<T extends string, P extends Record<string, unknown>>(type: T, props: P, value: string) => {type: T, value: string} & P)} BuildLiteralWithProps
+ * @typedef {(<T extends string, P extends Record<string, unknown>>(type: T, props: P) => {type: T} & P)} BuildVoidWithProps
+ * @typedef {(<T extends string, C extends Node[]>(type: T, children: C) => {type: T, children: C})} BuildParent
+ * @typedef {(<T extends string>(type: T, value: string) => {type: T, value: string})} BuildLiteral
+ * @typedef {(<T extends string>(type: T) => {type: T})} BuildVoid
+ */
 
-function u(type, props, value) {
-  var node;
+var u = /**
+ * @type {BuildVoid & BuildVoidWithProps & BuildLiteral & BuildLiteralWithProps & BuildParent & BuildParentWithProps}
+ */ (
+  /**
+   * @param {string} type Type of node
+   * @param {Props|ChildrenOrValue} [props] Additional properties for node (or `children` or `value`)
+   * @param {ChildrenOrValue} [value] `children` or `value` of node
+   * @returns {Node}
+   */
+  function (type, props, value) {
+    /** @type {Node} */
+    var node = {type: String(type)};
 
-  if (
-    (value === null || value === undefined) &&
-    (typeof props !== 'object' || Array.isArray(props))
-  ) {
-    value = props;
-    props = {};
-  }
-
-  node = Object.assign({type: String(type)}, props);
-
-  if (Array.isArray(value)) {
-    node.children = value;
-  } else if (value !== null && value !== undefined) {
-    node.value = String(value);
-  }
-
-  return node
-}
-
-var convert_1 = convert;
-
-function convert(test) {
-  if (test == null) {
-    return ok
-  }
-
-  if (typeof test === 'string') {
-    return typeFactory(test)
-  }
-
-  if (typeof test === 'object') {
-    return 'length' in test ? anyFactory(test) : allFactory(test)
-  }
-
-  if (typeof test === 'function') {
-    return test
-  }
-
-  throw new Error('Expected function, string, or object as test')
-}
-
-// Utility assert each property in `test` is represented in `node`, and each
-// values are strictly equal.
-function allFactory(test) {
-  return all
-
-  function all(node) {
-    var key;
-
-    for (key in test) {
-      if (node[key] !== test[key]) return false
+    if (
+      (value === undefined || value === null) &&
+      (typeof props === 'string' || Array.isArray(props))
+    ) {
+      value = props;
+    } else {
+      Object.assign(node, props);
     }
 
-    return true
+    if (Array.isArray(value)) {
+      node.children = value;
+    } else if (value !== undefined && value !== null) {
+      node.value = String(value);
+    }
+
+    return node
   }
+);
+
+/**
+ * @typedef {import('mdast').Root|import('mdast').Parent['children'][number]} MdastNode
+ * @typedef {import('./index.js').H} H
+ * @typedef {import('./index.js').Handler} Handler
+ * @typedef {import('./index.js').Content} Content
+ */
+
+const own$3 = {}.hasOwnProperty;
+
+/**
+ * Transform an unknown node.
+ * @type {Handler}
+ * @param {MdastNode} node
+ */
+function unknown(h, node) {
+  const data = node.data || {};
+
+  if (
+    'value' in node &&
+    !(
+      own$3.call(data, 'hName') ||
+      own$3.call(data, 'hProperties') ||
+      own$3.call(data, 'hChildren')
+    )
+  ) {
+    return h.augment(node, u('text', node.value))
+  }
+
+  return h(node, 'div', all$1(h, node))
 }
 
+/**
+ * @type {Handler}
+ * @param {MdastNode} node
+ */
+function one$1(h, node, parent) {
+  const type = node && node.type;
+  /** @type {Handler} */
+  let fn;
+
+  // Fail on non-nodes.
+  if (!type) {
+    throw new Error('Expected node, got `' + node + '`')
+  }
+
+  if (own$3.call(h.handlers, type)) {
+    fn = h.handlers[type];
+  } else if (h.passThrough && h.passThrough.includes(type)) {
+    fn = returnNode;
+  } else {
+    fn = h.unknownHandler;
+  }
+
+  return (typeof fn === 'function' ? fn : unknown)(h, node, parent)
+}
+
+/**
+ * @type {Handler}
+ * @param {MdastNode} node
+ */
+function returnNode(h, node) {
+  // @ts-expect-error: Pass through custom node.
+  return 'children' in node ? {...node, children: all$1(h, node)} : node
+}
+
+/**
+ * @param {H} h
+ * @param {MdastNode} parent
+ */
+function all$1(h, parent) {
+  /** @type {Array.<Content>} */
+  const values = [];
+
+  if ('children' in parent) {
+    const nodes = parent.children;
+    let index = -1;
+
+    while (++index < nodes.length) {
+      const result = one$1(h, nodes[index], parent);
+
+      if (result) {
+        if (index && nodes[index - 1].type === 'break') {
+          if (!Array.isArray(result) && result.type === 'text') {
+            result.value = result.value.replace(/^\s+/, '');
+          }
+
+          if (!Array.isArray(result) && result.type === 'element') {
+            const head = result.children[0];
+
+            if (head && head.type === 'text') {
+              head.value = head.value.replace(/^\s+/, '');
+            }
+          }
+        }
+
+        if (Array.isArray(result)) {
+          values.push(...result);
+        } else {
+          values.push(result);
+        }
+      }
+    }
+  }
+
+  return values
+}
+
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ *
+ * @typedef {string} Type
+ * @typedef {Object<string, unknown>} Props
+ *
+ * @typedef {null|undefined|Type|Props|TestFunctionAnything|Array.<Type|Props|TestFunctionAnything>} Test
+ */
+
+const convert =
+  /**
+   * @type {(
+   *   (<T extends Node>(test: T['type']|Partial<T>|TestFunctionPredicate<T>) => AssertPredicate<T>) &
+   *   ((test?: Test) => AssertAnything)
+   * )}
+   */
+  (
+    /**
+     * Generate an assertion from a check.
+     * @param {Test} [test]
+     * When nullish, checks if `node` is a `Node`.
+     * When `string`, works like passing `function (node) {return node.type === test}`.
+     * When `function` checks if function passed the node is true.
+     * When `object`, checks that all keys in test are in node, and that they have (strictly) equal values.
+     * When `array`, checks any one of the subtests pass.
+     * @returns {AssertAnything}
+     */
+    function (test) {
+      if (test === undefined || test === null) {
+        return ok
+      }
+
+      if (typeof test === 'string') {
+        return typeFactory(test)
+      }
+
+      if (typeof test === 'object') {
+        return Array.isArray(test) ? anyFactory(test) : propsFactory(test)
+      }
+
+      if (typeof test === 'function') {
+        return castFactory(test)
+      }
+
+      throw new Error('Expected function, string, or object as test')
+    }
+  );
+/**
+ * @param {Array.<Type|Props|TestFunctionAnything>} tests
+ * @returns {AssertAnything}
+ */
 function anyFactory(tests) {
-  var checks = [];
-  var index = -1;
+  /** @type {Array.<AssertAnything>} */
+  const checks = [];
+  let index = -1;
 
   while (++index < tests.length) {
     checks[index] = convert(tests[index]);
   }
 
-  return any
+  return castFactory(any)
 
-  function any() {
-    var index = -1;
+  /**
+   * @this {unknown}
+   * @param {unknown[]} parameters
+   * @returns {boolean}
+   */
+  function any(...parameters) {
+    let index = -1;
 
     while (++index < checks.length) {
-      if (checks[index].apply(this, arguments)) {
-        return true
-      }
+      if (checks[index].call(this, ...parameters)) return true
     }
 
     return false
   }
 }
 
-// Utility to convert a string into a function which checks a given node’s type
-// for said string.
-function typeFactory(test) {
-  return type
+/**
+ * Utility to assert each property in `test` is represented in `node`, and each
+ * values are strictly equal.
+ *
+ * @param {Props} check
+ * @returns {AssertAnything}
+ */
+function propsFactory(check) {
+  return castFactory(all)
 
+  /**
+   * @param {Node} node
+   * @returns {boolean}
+   */
+  function all(node) {
+    /** @type {string} */
+    let key;
+
+    for (key in check) {
+      // @ts-expect-error: hush, it sure works as an index.
+      if (node[key] !== check[key]) return false
+    }
+
+    return true
+  }
+}
+
+/**
+ * Utility to convert a string into a function which checks a given node’s type
+ * for said string.
+ *
+ * @param {Type} check
+ * @returns {AssertAnything}
+ */
+function typeFactory(check) {
+  return castFactory(type)
+
+  /**
+   * @param {Node} node
+   */
   function type(node) {
-    return Boolean(node && node.type === test)
+    return node && node.type === check
+  }
+}
+
+/**
+ * Utility to convert a string into a function which checks a given node’s type
+ * for said string.
+ * @param {TestFunctionAnything} check
+ * @returns {AssertAnything}
+ */
+function castFactory(check) {
+  return assertion
+
+  /**
+   * @this {unknown}
+   * @param {Array.<unknown>} parameters
+   * @returns {boolean}
+   */
+  function assertion(...parameters) {
+    // @ts-expect-error: spreading is fine.
+    return Boolean(check.call(this, ...parameters))
   }
 }
 
@@ -7500,93 +9798,149 @@ function ok() {
   return true
 }
 
-var color_browser = identity;
-function identity(d) {
+/**
+ * @param {string} d
+ * @returns {string}
+ */
+function color(d) {
   return d
 }
 
-var unistUtilVisitParents = visitParents;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist-util-is').Test} Test
+ */
 
+/**
+ * Continue traversing as normal
+ */
+const CONTINUE = true;
+/**
+ * Do not traverse this node’s children
+ */
+const SKIP = 'skip';
+/**
+ * Stop traversing immediately
+ */
+const EXIT = false;
 
+/**
+ * Visit children of tree which pass a test
+ *
+ * @param tree Abstract syntax tree to walk
+ * @param test Test node, optional
+ * @param visitor Function to run for each node
+ * @param reverse Visit the tree in reverse order, defaults to false
+ */
+const visitParents =
+  /**
+   * @type {(
+   *   (<Tree extends Node, Check extends Test>(tree: Tree, test: Check, visitor: Visitor<import('./complex-types').Matches<import('./complex-types').InclusiveDescendant<Tree>, Check>>, reverse?: boolean) => void) &
+   *   (<Tree extends Node>(tree: Tree, visitor: Visitor<import('./complex-types').InclusiveDescendant<Tree>>, reverse?: boolean) => void)
+   * )}
+   */
+  (
+    /**
+     * @param {Node} tree
+     * @param {Test} test
+     * @param {Visitor<Node>} visitor
+     * @param {boolean} [reverse]
+     */
+    function (tree, test, visitor, reverse) {
+      if (typeof test === 'function' && typeof visitor !== 'function') {
+        reverse = visitor;
+        // @ts-expect-error no visitor given, so `visitor` is test.
+        visitor = test;
+        test = null;
+      }
 
+      const is = convert(test);
+      const step = reverse ? -1 : 1;
 
-var CONTINUE = true;
-var SKIP = 'skip';
-var EXIT = false;
+      factory(tree, null, [])();
 
-visitParents.CONTINUE = CONTINUE;
-visitParents.SKIP = SKIP;
-visitParents.EXIT = EXIT;
+      /**
+       * @param {Node} node
+       * @param {number?} index
+       * @param {Array.<Parent>} parents
+       */
+      function factory(node, index, parents) {
+        /** @type {Object.<string, unknown>} */
+        // @ts-expect-error: hush
+        const value = typeof node === 'object' && node !== null ? node : {};
+        /** @type {string|undefined} */
+        let name;
 
-function visitParents(tree, test, visitor, reverse) {
-  var step;
-  var is;
+        if (typeof value.type === 'string') {
+          name =
+            typeof value.tagName === 'string'
+              ? value.tagName
+              : typeof value.name === 'string'
+              ? value.name
+              : undefined;
 
-  if (typeof test === 'function' && typeof visitor !== 'function') {
-    reverse = visitor;
-    visitor = test;
-    test = null;
-  }
+          Object.defineProperty(visit, 'name', {
+            value:
+              'node (' +
+              color(value.type + (name ? '<' + name + '>' : '')) +
+              ')'
+          });
+        }
 
-  is = convert_1(test);
-  step = reverse ? -1 : 1;
+        return visit
 
-  factory(tree, null, [])();
+        function visit() {
+          /** @type {ActionTuple} */
+          let result = [];
+          /** @type {ActionTuple} */
+          let subresult;
+          /** @type {number} */
+          let offset;
+          /** @type {Array.<Parent>} */
+          let grandparents;
 
-  function factory(node, index, parents) {
-    var value = typeof node === 'object' && node !== null ? node : {};
-    var name;
+          if (!test || is(node, index, parents[parents.length - 1] || null)) {
+            result = toResult(visitor(node, parents));
 
-    if (typeof value.type === 'string') {
-      name =
-        typeof value.tagName === 'string'
-          ? value.tagName
-          : typeof value.name === 'string'
-          ? value.name
-          : undefined;
+            if (result[0] === EXIT) {
+              return result
+            }
+          }
 
-      visit.displayName =
-        'node (' + color_browser(value.type + (name ? '<' + name + '>' : '')) + ')';
-    }
+          // @ts-expect-error looks like a parent.
+          if (node.children && result[0] !== SKIP) {
+            // @ts-expect-error looks like a parent.
+            offset = (reverse ? node.children.length : -1) + step;
+            // @ts-expect-error looks like a parent.
+            grandparents = parents.concat(node);
 
-    return visit
+            // @ts-expect-error looks like a parent.
+            while (offset > -1 && offset < node.children.length) {
+              // @ts-expect-error looks like a parent.
+              subresult = factory(node.children[offset], offset, grandparents)();
 
-    function visit() {
-      var grandparents = parents.concat(node);
-      var result = [];
-      var subresult;
-      var offset;
+              if (subresult[0] === EXIT) {
+                return subresult
+              }
 
-      if (!test || is(node, index, parents[parents.length - 1] || null)) {
-        result = toResult(visitor(node, parents));
+              offset =
+                typeof subresult[1] === 'number' ? subresult[1] : offset + step;
+            }
+          }
 
-        if (result[0] === EXIT) {
           return result
         }
       }
-
-      if (node.children && result[0] !== SKIP) {
-        offset = (reverse ? node.children.length : -1) + step;
-
-        while (offset > -1 && offset < node.children.length) {
-          subresult = factory(node.children[offset], offset, grandparents)();
-
-          if (subresult[0] === EXIT) {
-            return subresult
-          }
-
-          offset =
-            typeof subresult[1] === 'number' ? subresult[1] : offset + step;
-        }
-      }
-
-      return result
     }
-  }
-}
+  );
 
+/**
+ * @param {VisitorResult} value
+ * @returns {ActionTuple}
+ */
 function toResult(value) {
-  if (value !== null && typeof value === 'object' && 'length' in value) {
+  if (Array.isArray(value)) {
     return value
   }
 
@@ -7597,64 +9951,123 @@ function toResult(value) {
   return [value]
 }
 
-var unistUtilVisit = visit;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist-util-is').Test} Test
+ * @typedef {import('unist-util-visit-parents').VisitorResult} VisitorResult
+ */
 
+/**
+ * Visit children of tree which pass a test
+ *
+ * @param tree Abstract syntax tree to walk
+ * @param test Test, optional
+ * @param visitor Function to run for each node
+ * @param reverse Fisit the tree in reverse, defaults to false
+ */
+const visit =
+  /**
+   * @type {(
+   *   (<Tree extends Node, Check extends Test>(tree: Tree, test: Check, visitor: Visitor<import('unist-util-visit-parents/complex-types').Matches<import('unist-util-visit-parents/complex-types').InclusiveDescendant<Tree>, Check>>, reverse?: boolean) => void) &
+   *   (<Tree extends Node>(tree: Tree, visitor: Visitor<import('unist-util-visit-parents/complex-types').InclusiveDescendant<Tree>>, reverse?: boolean) => void)
+   * )}
+   */
+  (
+    /**
+     * @param {Node} tree
+     * @param {Test} test
+     * @param {Visitor<Node>} visitor
+     * @param {boolean} [reverse]
+     */
+    function (tree, test, visitor, reverse) {
+      if (typeof test === 'function' && typeof visitor !== 'function') {
+        reverse = visitor;
+        visitor = test;
+        test = null;
+      }
 
+      visitParents(tree, test, overload, reverse);
 
-var CONTINUE$1 = unistUtilVisitParents.CONTINUE;
-var SKIP$1 = unistUtilVisitParents.SKIP;
-var EXIT$1 = unistUtilVisitParents.EXIT;
+      /**
+       * @param {Node} node
+       * @param {Array.<Parent>} parents
+       */
+      function overload(node, parents) {
+        const parent = parents[parents.length - 1];
+        return visitor(
+          node,
+          parent ? parent.children.indexOf(node) : null,
+          parent
+        )
+      }
+    }
+  );
 
-visit.CONTINUE = CONTINUE$1;
-visit.SKIP = SKIP$1;
-visit.EXIT = EXIT$1;
+/**
+ * @typedef {import('unist').Position} Position
+ * @typedef {import('unist').Point} Point
+ *
+ * @typedef {Partial<Point>} PointLike
+ *
+ * @typedef {Object} PositionLike
+ * @property {PointLike} [start]
+ * @property {PointLike} [end]
+ *
+ * @typedef {Object} NodeLike
+ * @property {PositionLike} [position]
+ */
 
-function visit(tree, test, visitor, reverse) {
-  if (typeof test === 'function' && typeof visitor !== 'function') {
-    reverse = visitor;
-    visitor = test;
-    test = null;
-  }
+var pointStart = point$1('start');
+var pointEnd = point$1('end');
 
-  unistUtilVisitParents(tree, test, overload, reverse);
-
-  function overload(node, parents) {
-    var parent = parents[parents.length - 1];
-    var index = parent ? parent.children.indexOf(node) : null;
-    return visitor(node, index, parent)
-  }
-}
-
-var start = factory('start');
-var end = factory('end');
-
-var unistUtilPosition = position$1;
-
-position$1.start = start;
-position$1.end = end;
-
-function position$1(node) {
-  return {start: start(node), end: end(node)}
-}
-
-function factory(type) {
-  point.displayName = type;
-
+/**
+ * Get the positional info of `node`.
+ *
+ * @param {'start'|'end'} type
+ */
+function point$1(type) {
   return point
 
+  /**
+   * Get the positional info of `node`.
+   *
+   * @param {NodeLike} [node]
+   * @returns {Point}
+   */
   function point(node) {
+    /** @type {Point} */
+    // @ts-ignore looks like a point
     var point = (node && node.position && node.position[type]) || {};
 
     return {
       line: point.line || null,
       column: point.column || null,
-      offset: isNaN(point.offset) ? null : point.offset
+      offset: point.offset > -1 ? point.offset : null
     }
   }
 }
 
-var unistUtilGenerated = generated;
+/**
+ * @typedef {Object} PointLike
+ * @property {number} [line]
+ * @property {number} [column]
+ * @property {number} [offset]
+ *
+ * @typedef {Object} PositionLike
+ * @property {PointLike} [start]
+ * @property {PointLike} [end]
+ *
+ * @typedef {Object} NodeLike
+ * @property {PositionLike} [position]
+ */
 
+/**
+ * Check if `node` is *generated*.
+ *
+ * @param {NodeLike} [node]
+ * @returns {boolean}
+ */
 function generated(node) {
   return (
     !node ||
@@ -7668,261 +10081,390 @@ function generated(node) {
   )
 }
 
-var mdastUtilDefinitions = getDefinitionFactory;
-
-var own$4 = {}.hasOwnProperty;
-
-// Get a definition in `node` by `identifier`.
-function getDefinitionFactory(node, options) {
-  return getterFactory(gather(node))
+/**
+ * @param {string} d
+ * @returns {string}
+ */
+function color$1(d) {
+  return d
 }
 
-// Gather all definitions in `node`
-function gather(node) {
-  var cache = {};
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist-util-is').Test} Test
+ */
+
+/**
+ * Continue traversing as normal
+ */
+const CONTINUE$1 = true;
+/**
+ * Do not traverse this node’s children
+ */
+const SKIP$1 = 'skip';
+/**
+ * Stop traversing immediately
+ */
+const EXIT$1 = false;
+
+const visitParents$1 =
+  /**
+   * @type {(
+   *   (<T extends Node>(tree: Node, test: T['type']|Partial<T>|import('unist-util-is').TestFunctionPredicate<T>|Array.<T['type']|Partial<T>|import('unist-util-is').TestFunctionPredicate<T>>, visitor: Visitor<T>, reverse?: boolean) => void) &
+   *   ((tree: Node, test: Test, visitor: Visitor<Node>, reverse?: boolean) => void) &
+   *   ((tree: Node, visitor: Visitor<Node>, reverse?: boolean) => void)
+   * )}
+   */
+  (
+    /**
+     * Visit children of tree which pass a test
+     *
+     * @param {Node} tree Abstract syntax tree to walk
+     * @param {Test} test test Test node
+     * @param {Visitor<Node>} visitor Function to run for each node
+     * @param {boolean} [reverse] Fisit the tree in reverse, defaults to false
+     */
+    function (tree, test, visitor, reverse) {
+      if (typeof test === 'function' && typeof visitor !== 'function') {
+        reverse = visitor;
+        // @ts-ignore no visitor given, so `visitor` is test.
+        visitor = test;
+        test = null;
+      }
+
+      var is = convert(test);
+      var step = reverse ? -1 : 1;
+
+      factory(tree, null, [])();
+
+      /**
+       * @param {Node} node
+       * @param {number?} index
+       * @param {Array.<Parent>} parents
+       */
+      function factory(node, index, parents) {
+        /** @type {Object.<string, unknown>} */
+        var value = typeof node === 'object' && node !== null ? node : {};
+        /** @type {string} */
+        var name;
+
+        if (typeof value.type === 'string') {
+          name =
+            typeof value.tagName === 'string'
+              ? value.tagName
+              : typeof value.name === 'string'
+              ? value.name
+              : undefined;
+
+          Object.defineProperty(visit, 'name', {
+            value:
+              'node (' +
+              color$1(value.type + (name ? '<' + name + '>' : '')) +
+              ')'
+          });
+        }
+
+        return visit
+
+        function visit() {
+          /** @type {ActionTuple} */
+          var result = [];
+          /** @type {ActionTuple} */
+          var subresult;
+          /** @type {number} */
+          var offset;
+          /** @type {Array.<Parent>} */
+          var grandparents;
+
+          if (!test || is(node, index, parents[parents.length - 1] || null)) {
+            result = toResult$1(visitor(node, parents));
+
+            if (result[0] === EXIT$1) {
+              return result
+            }
+          }
+
+          if (node.children && result[0] !== SKIP$1) {
+            // @ts-ignore looks like a parent.
+            offset = (reverse ? node.children.length : -1) + step;
+            // @ts-ignore looks like a parent.
+            grandparents = parents.concat(node);
+
+            // @ts-ignore looks like a parent.
+            while (offset > -1 && offset < node.children.length) {
+              subresult = factory(node.children[offset], offset, grandparents)();
+
+              if (subresult[0] === EXIT$1) {
+                return subresult
+              }
+
+              offset =
+                typeof subresult[1] === 'number' ? subresult[1] : offset + step;
+            }
+          }
+
+          return result
+        }
+      }
+    }
+  );
+
+/**
+ * @param {VisitorResult} value
+ * @returns {ActionTuple}
+ */
+function toResult$1(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    return [CONTINUE$1, value]
+  }
+
+  return [value]
+}
+
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist-util-is').Test} Test
+ * @typedef {import('unist-util-visit-parents').VisitorResult} VisitorResult
+ */
+
+const visit$1 =
+  /**
+   * @type {(
+   *   (<T extends Node>(tree: Node, test: T['type']|Partial<T>|import('unist-util-is').TestFunctionPredicate<T>|Array.<T['type']|Partial<T>|import('unist-util-is').TestFunctionPredicate<T>>, visitor: Visitor<T>, reverse?: boolean) => void) &
+   *   ((tree: Node, test: Test, visitor: Visitor<Node>, reverse?: boolean) => void) &
+   *   ((tree: Node, visitor: Visitor<Node>, reverse?: boolean) => void)
+   * )}
+   */
+  (
+    /**
+     * Visit children of tree which pass a test
+     *
+     * @param {Node} tree Abstract syntax tree to walk
+     * @param {Test} test test Test node
+     * @param {Visitor<Node>} visitor Function to run for each node
+     * @param {boolean} [reverse] Fisit the tree in reverse, defaults to false
+     */
+    function (tree, test, visitor, reverse) {
+      if (typeof test === 'function' && typeof visitor !== 'function') {
+        reverse = visitor;
+        visitor = test;
+        test = null;
+      }
+
+      visitParents$1(tree, test, overload, reverse);
+
+      /**
+       * @param {Node} node
+       * @param {Array.<Parent>} parents
+       */
+      function overload(node, parents) {
+        var parent = parents[parents.length - 1];
+        return visitor(
+          node,
+          parent ? parent.children.indexOf(node) : null,
+          parent
+        )
+      }
+    }
+  );
+
+/**
+ * @typedef {import('mdast').Root|import('mdast').Content} Node
+ * @typedef {import('mdast').Definition} Definition
+ * @typedef {import('unist-util-visit').Visitor<Definition>} DefinitionVisitor
+ */
+
+const own$4 = {}.hasOwnProperty;
+
+/**
+ *
+ * @param {Node} node
+ */
+function definitions(node) {
+  /** @type {Object.<string, Definition>} */
+  const cache = Object.create(null);
 
   if (!node || !node.type) {
     throw new Error('mdast-util-definitions expected node')
   }
 
-  unistUtilVisit(node, 'definition', ondefinition);
+  visit$1(node, 'definition', ondefinition);
 
-  return cache
+  return getDefinition
 
+  /** @type {DefinitionVisitor} */
   function ondefinition(definition) {
-    var id = normalise(definition.identifier);
-    if (!own$4.call(cache, id)) {
+    const id = clean(definition.identifier);
+    if (id && !own$4.call(cache, id)) {
       cache[id] = definition;
     }
   }
-}
 
-// Factory to get a node from the given definition-cache.
-function getterFactory(cache) {
-  return getter
-
-  // Get a node from the bound definition-cache.
-  function getter(identifier) {
-    var id = identifier && normalise(identifier);
+  /**
+   * Get a node from the bound definition-cache.
+   *
+   * @param {string} identifier
+   * @returns {Definition|null}
+   */
+  function getDefinition(identifier) {
+    const id = clean(identifier);
     return id && own$4.call(cache, id) ? cache[id] : null
   }
 }
 
-function normalise(identifier) {
-  return identifier.toUpperCase()
+/**
+ * @param {string} [value]
+ * @returns {string}
+ */
+function clean(value) {
+  return String(value || '').toUpperCase()
 }
 
-var all_1 = all$1;
+/**
+ * @typedef {import('mdast').ThematicBreak} ThematicBreak
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-function all$1(h, parent) {
-  var nodes = parent.children || [];
-  var length = nodes.length;
-  var values = [];
-  var index = -1;
-  var result;
-  var head;
-
-  while (++index < length) {
-    result = one_1(h, nodes[index], parent);
-
-    if (result) {
-      if (index && nodes[index - 1].type === 'break') {
-        if (result.value) {
-          result.value = result.value.replace(/^\s+/, '');
-        }
-
-        head = result.children && result.children[0];
-
-        if (head && head.value) {
-          head.value = head.value.replace(/^\s+/, '');
-        }
-      }
-
-      values = values.concat(result);
-    }
-  }
-
-  return values
-}
-
-var one_1 = one;
-
-
-
-
-var own$5 = {}.hasOwnProperty;
-
-// Transform an unknown node.
-function unknown(h, node) {
-  if (text(node)) {
-    return h.augment(node, unistBuilder('text', node.value))
-  }
-
-  return h(node, 'div', all_1(h, node))
-}
-
-// Visit a node.
-function one(h, node, parent) {
-  var type = node && node.type;
-  var fn;
-
-  // Fail on non-nodes.
-  if (!type) {
-    throw new Error('Expected node, got `' + node + '`')
-  }
-
-  if (own$5.call(h.handlers, type)) {
-    fn = h.handlers[type];
-  } else if (h.passThrough && h.passThrough.indexOf(type) > -1) {
-    fn = returnNode;
-  } else {
-    fn = h.unknownHandler;
-  }
-
-  return (typeof fn === 'function' ? fn : unknown)(h, node, parent)
-}
-
-// Check if the node should be renderered as a text node.
-function text(node) {
-  var data = node.data || {};
-
-  if (
-    own$5.call(data, 'hName') ||
-    own$5.call(data, 'hProperties') ||
-    own$5.call(data, 'hChildren')
-  ) {
-    return false
-  }
-
-  return 'value' in node
-}
-
-function returnNode(h, node) {
-  var clone;
-
-  if (node.children) {
-    clone = Object.assign({}, node);
-    clone.children = all_1(h, node);
-    return clone
-  }
-
-  return node
-}
-
-var thematicBreak_1$1 = thematicBreak$1;
-
+/**
+ * @type {Handler}
+ * @param {ThematicBreak} [node]
+ * @returns {Element}
+ */
 function thematicBreak$1(h, node) {
   return h(node, 'hr')
 }
 
-var wrap_1$1 = wrap$1;
+/**
+ * @typedef {import('./index.js').Content} Content
+ */
 
-
-
-// Wrap `nodes` with line feeds between each entry.
-// Optionally adds line feeds at the start and end.
+/**
+ * Wrap `nodes` with line feeds between each entry.
+ * Optionally adds line feeds at the start and end.
+ *
+ * @param {Array.<Content>} nodes
+ * @param {boolean} [loose=false]
+ * @returns {Array.<Content>}
+ */
 function wrap$1(nodes, loose) {
-  var result = [];
-  var index = -1;
-  var length = nodes.length;
+  /** @type {Array.<Content>} */
+  const result = [];
+  let index = -1;
 
   if (loose) {
-    result.push(unistBuilder('text', '\n'));
+    result.push(u('text', '\n'));
   }
 
-  while (++index < length) {
-    if (index) {
-      result.push(unistBuilder('text', '\n'));
-    }
-
+  while (++index < nodes.length) {
+    if (index) result.push(u('text', '\n'));
     result.push(nodes[index]);
   }
 
   if (loose && nodes.length > 0) {
-    result.push(unistBuilder('text', '\n'));
+    result.push(u('text', '\n'));
   }
 
   return result
 }
 
-var list_1$1 = list$1;
+/**
+ * @typedef {import('mdast').List} List
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-
+/**
+ * @type {Handler}
+ * @param {List} node
+ * @returns {Element}
+ */
 function list$1(h, node) {
-  var props = {};
-  var name = node.ordered ? 'ol' : 'ul';
-  var items;
-  var index = -1;
-  var length;
+  /** @type {Properties} */
+  const props = {};
+  const name = node.ordered ? 'ol' : 'ul';
+  const items = all$1(h, node);
+  let index = -1;
 
   if (typeof node.start === 'number' && node.start !== 1) {
     props.start = node.start;
   }
 
-  items = all_1(h, node);
-  length = items.length;
-
   // Like GitHub, add a class for custom styling.
-  while (++index < length) {
+  while (++index < items.length) {
+    const item = items[index];
+
     if (
-      items[index].properties.className &&
-      items[index].properties.className.indexOf('task-list-item') !== -1
+      item.type === 'element' &&
+      item.tagName === 'li' &&
+      item.properties &&
+      Array.isArray(item.properties.className) &&
+      item.properties.className.includes('task-list-item')
     ) {
       props.className = ['contains-task-list'];
       break
     }
   }
 
-  return h(node, name, props, wrap_1$1(items, true))
+  return h(node, name, props, wrap$1(items, true))
 }
 
-var footer = generateFootnotes;
+/**
+ * @typedef {import('mdast').BlockContent} BlockContent
+ * @typedef {import('mdast').FootnoteDefinition} FootnoteDefinition
+ * @typedef {import('mdast').Link} Link
+ * @typedef {import('mdast').ListItem} ListItem
+ * @typedef {import('mdast').Paragraph} Paragraph
+ * @typedef {import('./index.js').H} H
+ */
 
+/**
+ * @param {H} h
+ */
+function footer(h) {
+  const footnoteById = h.footnoteById;
+  const footnoteOrder = h.footnoteOrder;
+  let index = -1;
+  /** @type {Array.<ListItem>} */
+  const listItems = [];
 
-
-
-
-function generateFootnotes(h) {
-  var footnoteById = h.footnoteById;
-  var footnoteOrder = h.footnoteOrder;
-  var length = footnoteOrder.length;
-  var index = -1;
-  var listItems = [];
-  var def;
-  var backReference;
-  var content;
-  var tail;
-
-  while (++index < length) {
-    def = footnoteById[footnoteOrder[index].toUpperCase()];
+  while (++index < footnoteOrder.length) {
+    const def = footnoteById[footnoteOrder[index].toUpperCase()];
 
     if (!def) {
       continue
     }
 
-    content = def.children.concat();
-    tail = content[content.length - 1];
-    backReference = {
+    const marker = String(index + 1);
+    const content = [...def.children];
+    /** @type {Link} */
+    const backReference = {
       type: 'link',
-      url: '#fnref-' + def.identifier,
-      data: {hProperties: {className: ['footnote-backref']}},
+      url: '#fnref' + marker,
+      data: {hProperties: {className: ['footnote-back'], role: 'doc-backlink'}},
       children: [{type: 'text', value: '↩'}]
     };
+    const tail = content[content.length - 1];
 
-    if (!tail || tail.type !== 'paragraph') {
-      tail = {type: 'paragraph', children: []};
-      content.push(tail);
+    if (tail && tail.type === 'paragraph') {
+      tail.children.push(backReference);
+    } else {
+      // @ts-expect-error Indeed, link directly added in block content.
+      // Which we do because that way at least the handlers will be called
+      // for the other HTML we’re generating (as markdown).
+      content.push(backReference);
     }
-
-    tail.children.push(backReference);
 
     listItems.push({
       type: 'listItem',
-      data: {hProperties: {id: 'fn-' + def.identifier}},
+      data: {hProperties: {id: 'fn' + marker, role: 'doc-endnote'}},
       children: content,
       position: def.position
     });
@@ -7934,52 +10476,71 @@ function generateFootnotes(h) {
 
   return h(
     null,
-    'div',
-    {className: ['footnotes']},
-    wrap_1$1(
+    'section',
+    {className: ['footnotes'], role: 'doc-endnotes'},
+    wrap$1(
       [
-        thematicBreak_1$1(h),
-        list_1$1(h, {type: 'list', ordered: true, children: listItems})
+        thematicBreak$1(h),
+        list$1(h, {type: 'list', ordered: true, children: listItems})
       ],
       true
     )
   )
 }
 
-var blockquote_1 = blockquote;
+/**
+ * @typedef {import('mdast').Blockquote} Blockquote
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-
+/**
+ * @type {Handler}
+ * @param {Blockquote} node
+ */
 function blockquote(h, node) {
-  return h(node, 'blockquote', wrap_1$1(all_1(h, node), true))
+  return h(node, 'blockquote', wrap$1(all$1(h, node), true))
 }
 
-var _break = hardBreak;
+/**
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('hast').Text} Text
+ * @typedef {import('mdast').Break} Break
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Break} node
+ * @returns {Array<Element|Text>}
+ */
 function hardBreak(h, node) {
-  return [h(node, 'br'), unistBuilder('text', '\n')]
+  return [h(node, 'br'), u('text', '\n')]
 }
 
-var code_1 = code;
+/**
+ * @typedef {import('mdast').Code} Code
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Code} node
+ */
 function code(h, node) {
-  var value = node.value ? node.value + '\n' : '';
+  const value = node.value ? node.value + '\n' : '';
   // To do: next major, use `node.lang` w/o regex, the splitting’s been going
   // on for years in remark now.
-  var lang = node.lang && node.lang.match(/^[^ \t]+(?=[ \t]|$)/);
-  var props = {};
-  var code;
+  const lang = node.lang && node.lang.match(/^[^ \t]+(?=[ \t]|$)/);
+  /** @type {Properties} */
+  const props = {};
 
   if (lang) {
     props.className = ['language-' + lang];
   }
 
-  code = h(node, 'code', props, [unistBuilder('text', value)]);
+  const code = h(node, 'code', props, [u('text', value)]);
 
   if (node.meta) {
     code.data = {meta: node.meta};
@@ -7988,55 +10549,79 @@ function code(h, node) {
   return h(node.position, 'pre', [code])
 }
 
-var _delete = strikethrough;
+/**
+ * @typedef {import('mdast').Delete} Delete
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Delete} node
+ */
 function strikethrough(h, node) {
-  return h(node, 'del', all_1(h, node))
+  return h(node, 'del', all$1(h, node))
 }
 
-var emphasis_1 = emphasis;
+/**
+ * @typedef {import('mdast').Emphasis} Emphasis
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Emphasis} node
+ */
 function emphasis(h, node) {
-  return h(node, 'em', all_1(h, node))
+  return h(node, 'em', all$1(h, node))
 }
 
-var footnoteReference_1 = footnoteReference;
+/**
+ * @typedef {import('mdast').FootnoteReference} FootnoteReference
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {FootnoteReference} node
+ */
 function footnoteReference(h, node) {
-  var footnoteOrder = h.footnoteOrder;
-  var identifier = String(node.identifier);
+  const footnoteOrder = h.footnoteOrder;
+  const identifier = String(node.identifier);
+  const index = footnoteOrder.indexOf(identifier);
+  const marker = String(
+    index === -1 ? footnoteOrder.push(identifier) : index + 1
+  );
 
-  if (footnoteOrder.indexOf(identifier) === -1) {
-    footnoteOrder.push(identifier);
-  }
-
-  return h(node.position, 'sup', {id: 'fnref-' + identifier}, [
-    h(node, 'a', {href: '#fn-' + identifier, className: ['footnote-ref']}, [
-      unistBuilder('text', node.label || identifier)
-    ])
-  ])
+  return h(
+    node,
+    'a',
+    {
+      href: '#fn' + marker,
+      className: ['footnote-ref'],
+      id: 'fnref' + marker,
+      role: 'doc-noteref'
+    },
+    [h(node.position, 'sup', [u('text', marker)])]
+  )
 }
 
-var footnote_1 = footnote;
+/**
+ * @typedef {import('mdast').Footnote} Footnote
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Footnote} node
+ */
 function footnote(h, node) {
-  var footnoteById = h.footnoteById;
-  var footnoteOrder = h.footnoteOrder;
-  var identifier = 1;
+  const footnoteById = h.footnoteById;
+  const footnoteOrder = h.footnoteOrder;
+  let no = 1;
 
-  while (identifier in footnoteById) {
-    identifier++;
-  }
+  while (no in footnoteById) no++;
 
-  identifier = String(identifier);
+  const identifier = String(no);
 
   // No need to check if `identifier` exists in `footnoteOrder`, it’s guaranteed
   // to not exist because we just generated it.
@@ -8044,33 +10629,45 @@ function footnote(h, node) {
 
   footnoteById[identifier] = {
     type: 'footnoteDefinition',
-    identifier: identifier,
+    identifier,
     children: [{type: 'paragraph', children: node.children}],
     position: node.position
   };
 
-  return footnoteReference_1(h, {
+  return footnoteReference(h, {
     type: 'footnoteReference',
-    identifier: identifier,
+    identifier,
     position: node.position
   })
 }
 
-var heading_1 = heading;
+/**
+ * @typedef {import('mdast').Heading} Heading
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Heading} node
+ */
 function heading(h, node) {
-  return h(node, 'h' + node.depth, all_1(h, node))
+  return h(node, 'h' + node.depth, all$1(h, node))
 }
 
-var html_1 = html;
+/**
+ * @typedef {import('mdast').HTML} HTML
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-// Return either a `raw` node in dangerous mode, otherwise nothing.
+/**
+ * Return either a `raw` node in dangerous mode, otherwise nothing.
+ *
+ * @type {Handler}
+ * @param {HTML} node
+ */
 function html(h, node) {
-  return h.dangerous ? h.augment(node, unistBuilder('raw', node.value)) : null
+  // @ts-expect-error non-standard raw nodes.
+  return h.dangerous ? h.augment(node, u('raw', node.value)) : null
 }
 
 var encodeCache = {};
@@ -8168,18 +10765,23 @@ encode.componentChars = "-_.!~*'()";
 
 var encode_1 = encode;
 
-var revert_1 = revert;
+/**
+ * @typedef {import('mdast').LinkReference} LinkReference
+ * @typedef {import('mdast').ImageReference} ImageReference
+ * @typedef {import('./index.js').Handler} Handler
+ * @typedef {import('./index.js').Content} Content
+ */
 
-
-
-
-// Return the content of a reference without definition as Markdown.
+/**
+ * Return the content of a reference without definition as plain text.
+ *
+ * @type {Handler}
+ * @param {ImageReference|LinkReference} node
+ * @returns {Content|Array.<Content>}
+ */
 function revert(h, node) {
-  var subtype = node.referenceType;
-  var suffix = ']';
-  var contents;
-  var head;
-  var tail;
+  const subtype = node.referenceType;
+  let suffix = ']';
 
   if (subtype === 'collapsed') {
     suffix += '[]';
@@ -8188,43 +10790,48 @@ function revert(h, node) {
   }
 
   if (node.type === 'imageReference') {
-    return unistBuilder('text', '![' + node.alt + suffix)
+    return u('text', '![' + node.alt + suffix)
   }
 
-  contents = all_1(h, node);
-  head = contents[0];
+  const contents = all$1(h, node);
+  const head = contents[0];
 
   if (head && head.type === 'text') {
     head.value = '[' + head.value;
   } else {
-    contents.unshift(unistBuilder('text', '['));
+    contents.unshift(u('text', '['));
   }
 
-  tail = contents[contents.length - 1];
+  const tail = contents[contents.length - 1];
 
   if (tail && tail.type === 'text') {
     tail.value += suffix;
   } else {
-    contents.push(unistBuilder('text', suffix));
+    contents.push(u('text', suffix));
   }
 
   return contents
 }
 
-var imageReference_1 = imageReference;
+/**
+ * @typedef {import('mdast').ImageReference} ImageReference
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-
+/**
+ * @type {Handler}
+ * @param {ImageReference} node
+ */
 function imageReference(h, node) {
-  var def = h.definition(node.identifier);
-  var props;
+  const def = h.definition(node.identifier);
 
   if (!def) {
-    return revert_1(h, node)
+    return revert(h, node)
   }
 
-  props = {src: encode_1(def.url || ''), alt: node.alt};
+  /** @type {Properties} */
+  const props = {src: encode_1(def.url || ''), alt: node.alt};
 
   if (def.title !== null && def.title !== undefined) {
     props.title = def.title;
@@ -8233,10 +10840,19 @@ function imageReference(h, node) {
   return h(node, 'img', props)
 }
 
-var image_1 = image;
+/**
+ * @typedef {import('mdast').Image} Image
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
+/**
+ * @type {Handler}
+ * @param {Image} node
+ */
 function image(h, node) {
-  var props = {src: encode_1(node.url), alt: node.alt};
+  /** @type {Properties} */
+  const props = {src: encode_1(node.url), alt: node.alt};
 
   if (node.title !== null && node.title !== undefined) {
     props.title = node.title;
@@ -8245,76 +10861,109 @@ function image(h, node) {
   return h(node, 'img', props)
 }
 
-var inlineCode_1 = inlineCode;
+/**
+ * @typedef {import('mdast').InlineCode} InlineCode
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {InlineCode} node
+ */
 function inlineCode(h, node) {
-  var value = node.value.replace(/\r?\n|\r/g, ' ');
-  return h(node, 'code', [unistBuilder('text', value)])
+  return h(node, 'code', [u('text', node.value.replace(/\r?\n|\r/g, ' '))])
 }
 
-var linkReference_1 = linkReference;
+/**
+ * @typedef {import('mdast').LinkReference} LinkReference
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-
-
+/**
+ * @type {Handler}
+ * @param {LinkReference} node
+ */
 function linkReference(h, node) {
-  var def = h.definition(node.identifier);
-  var props;
+  const def = h.definition(node.identifier);
 
   if (!def) {
-    return revert_1(h, node)
+    return revert(h, node)
   }
 
-  props = {href: encode_1(def.url || '')};
+  /** @type {Properties} */
+  const props = {href: encode_1(def.url || '')};
 
   if (def.title !== null && def.title !== undefined) {
     props.title = def.title;
   }
 
-  return h(node, 'a', props, all_1(h, node))
+  return h(node, 'a', props, all$1(h, node))
 }
 
-var link_1 = link;
+/**
+ * @typedef {import('mdast').Link} Link
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
+/**
+ * @type {Handler}
+ * @param {Link} node
+ */
 function link(h, node) {
-  var props = {href: encode_1(node.url)};
+  /** @type {Properties} */
+  const props = {href: encode_1(node.url)};
 
   if (node.title !== null && node.title !== undefined) {
     props.title = node.title;
   }
 
-  return h(node, 'a', props, all_1(h, node))
+  return h(node, 'a', props, all$1(h, node))
 }
 
-var listItem_1 = listItem;
+/**
+ * @typedef {import('mdast').ListItem} ListItem
+ * @typedef {import('mdast').List} List
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').Content} Content
+ */
 
-
-
-
+/**
+ * @type {Handler}
+ * @param {ListItem} node
+ * @param {List} parent
+ */
 function listItem(h, node, parent) {
-  var result = all_1(h, node);
-  var head = result[0];
-  var loose = parent ? listLoose(parent) : listItemLoose(node);
-  var props = {};
-  var wrapped = [];
-  var length;
-  var index;
-  var child;
+  const result = all$1(h, node);
+  const loose = parent ? listLoose(parent) : listItemLoose(node);
+  /** @type {Properties} */
+  const props = {};
+  /** @type {Array.<Content>} */
+  const wrapped = [];
 
   if (typeof node.checked === 'boolean') {
-    if (!head || head.tagName !== 'p') {
-      head = h(null, 'p', []);
-      result.unshift(head);
+    /** @type {Element} */
+    let paragraph;
+
+    if (
+      result[0] &&
+      result[0].type === 'element' &&
+      result[0].tagName === 'p'
+    ) {
+      paragraph = result[0];
+    } else {
+      paragraph = h(null, 'p', []);
+      result.unshift(paragraph);
     }
 
-    if (head.children.length > 0) {
-      head.children.unshift(unistBuilder('text', ' '));
+    if (paragraph.children.length > 0) {
+      paragraph.children.unshift(u('text', ' '));
     }
 
-    head.children.unshift(
+    paragraph.children.unshift(
       h(null, 'input', {
         type: 'checkbox',
         checked: node.checked,
@@ -8327,124 +10976,153 @@ function listItem(h, node, parent) {
     props.className = ['task-list-item'];
   }
 
-  length = result.length;
-  index = -1;
+  let index = -1;
 
-  while (++index < length) {
-    child = result[index];
+  while (++index < result.length) {
+    const child = result[index];
 
     // Add eols before nodes, except if this is a loose, first paragraph.
-    if (loose || index !== 0 || child.tagName !== 'p') {
-      wrapped.push(unistBuilder('text', '\n'));
+    if (
+      loose ||
+      index !== 0 ||
+      child.type !== 'element' ||
+      child.tagName !== 'p'
+    ) {
+      wrapped.push(u('text', '\n'));
     }
 
-    if (child.tagName === 'p' && !loose) {
-      wrapped = wrapped.concat(child.children);
+    if (child.type === 'element' && child.tagName === 'p' && !loose) {
+      wrapped.push(...child.children);
     } else {
       wrapped.push(child);
     }
   }
 
+  const tail = result[result.length - 1];
+
   // Add a final eol.
-  if (length && (loose || child.tagName !== 'p')) {
-    wrapped.push(unistBuilder('text', '\n'));
+  if (tail && (loose || !('tagName' in tail) || tail.tagName !== 'p')) {
+    wrapped.push(u('text', '\n'));
   }
 
   return h(node, 'li', props, wrapped)
 }
 
+/**
+ * @param {List} node
+ * @return {Boolean}
+ */
 function listLoose(node) {
-  var loose = node.spread;
-  var children = node.children;
-  var length = children.length;
-  var index = -1;
+  let loose = node.spread;
+  const children = node.children;
+  let index = -1;
 
-  while (!loose && ++index < length) {
+  while (!loose && ++index < children.length) {
     loose = listItemLoose(children[index]);
   }
 
-  return loose
+  return Boolean(loose)
 }
 
+/**
+ * @param {ListItem} node
+ * @return {Boolean}
+ */
 function listItemLoose(node) {
-  var spread = node.spread;
+  const spread = node.spread;
 
   return spread === undefined || spread === null
     ? node.children.length > 1
     : spread
 }
 
-var paragraph_1 = paragraph;
+/**
+ * @typedef {import('mdast').Paragraph} Paragraph
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Paragraph} node
+ */
 function paragraph(h, node) {
-  return h(node, 'p', all_1(h, node))
+  return h(node, 'p', all$1(h, node))
 }
 
-var root_1 = root;
+/**
+ * @typedef {import('mdast').Root} Root
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-
-
+/**
+ * @type {Handler}
+ * @param {Root} node
+ */
 function root(h, node) {
-  return h.augment(node, unistBuilder('root', wrap_1$1(all_1(h, node))))
+  // @ts-expect-error `root`s are also fine.
+  return h.augment(node, u('root', wrap$1(all$1(h, node))))
 }
 
-var strong_1 = strong;
+/**
+ * @typedef {import('mdast').Strong} Strong
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
+/**
+ * @type {Handler}
+ * @param {Strong} node
+ */
 function strong(h, node) {
-  return h(node, 'strong', all_1(h, node))
+  return h(node, 'strong', all$1(h, node))
 }
 
-var table_1 = table;
+/**
+ * @typedef {import('mdast').Table} Table
+ * @typedef {import('mdast').TableCell} TableCell
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').Content} Content
+ */
 
-
-
-
-
+/**
+ * @type {Handler}
+ * @param {Table} node
+ */
 function table(h, node) {
-  var rows = node.children;
-  var index = rows.length;
-  var align = node.align || [];
-  var alignLength = align.length;
-  var result = [];
-  var pos;
-  var row;
-  var out;
-  var name;
-  var cell;
+  const rows = node.children;
+  let index = -1;
+  const align = node.align || [];
+  /** @type {Array.<Element>} */
+  const result = [];
 
-  while (index--) {
-    row = rows[index].children;
-    name = index === 0 ? 'th' : 'td';
-    pos = alignLength || row.length;
-    out = [];
+  while (++index < rows.length) {
+    const row = rows[index].children;
+    const name = index === 0 ? 'th' : 'td';
+    let pos = node.align ? align.length : row.length;
+    /** @type {Array.<Content>} */
+    const out = [];
 
     while (pos--) {
-      cell = row[pos];
-      out[pos] = h(cell, name, {align: align[pos]}, cell ? all_1(h, cell) : []);
+      const cell = row[pos];
+      out[pos] = h(cell, name, {align: align[pos]}, cell ? all$1(h, cell) : []);
     }
 
-    result[index] = h(rows[index], 'tr', wrap_1$1(out, true));
+    result[index] = h(rows[index], 'tr', wrap$1(out, true));
   }
 
   return h(
     node,
     'table',
-    wrap_1$1(
-      [h(result[0].position, 'thead', wrap_1$1([result[0]], true))].concat(
+    wrap$1(
+      [h(result[0].position, 'thead', wrap$1([result[0]], true))].concat(
         result[1]
           ? h(
               {
-                start: unistUtilPosition.start(result[1]),
-                end: unistUtilPosition.end(result[result.length - 1])
+                start: pointStart(result[1]),
+                end: pointEnd(result[result.length - 1])
               },
               'tbody',
-              wrap_1$1(result.slice(1), true)
+              wrap$1(result.slice(1), true)
             )
           : []
       ),
@@ -8453,40 +11131,45 @@ function table(h, node) {
   )
 }
 
-var text_1$1 = text$1;
+/**
+ * @typedef {import('mdast').Text} Text
+ * @typedef {import('../index.js').Handler} Handler
+ */
 
-
-
-function text$1(h, node) {
+/**
+ * @type {Handler}
+ * @param {Text} node
+ */
+function text$2(h, node) {
   return h.augment(
     node,
-    unistBuilder('text', String(node.value).replace(/[ \t]*(\r?\n|\r)[ \t]*/g, '$1'))
+    u('text', String(node.value).replace(/[ \t]*(\r?\n|\r)[ \t]*/g, '$1'))
   )
 }
 
-var handlers = {
-  blockquote: blockquote_1,
-  break: _break,
-  code: code_1,
-  delete: _delete,
-  emphasis: emphasis_1,
-  footnoteReference: footnoteReference_1,
-  footnote: footnote_1,
-  heading: heading_1,
-  html: html_1,
-  imageReference: imageReference_1,
-  image: image_1,
-  inlineCode: inlineCode_1,
-  linkReference: linkReference_1,
-  link: link_1,
-  listItem: listItem_1,
-  list: list_1$1,
-  paragraph: paragraph_1,
-  root: root_1,
-  strong: strong_1,
-  table: table_1,
-  text: text_1$1,
-  thematicBreak: thematicBreak_1$1,
+const handlers = {
+  blockquote,
+  break: hardBreak,
+  code,
+  delete: strikethrough,
+  emphasis,
+  footnoteReference,
+  footnote,
+  heading,
+  html,
+  imageReference,
+  image,
+  inlineCode,
+  linkReference,
+  link,
+  listItem,
+  list: list$1,
+  paragraph,
+  root,
+  strong,
+  table,
+  text: text$2,
+  thematicBreak: thematicBreak$1,
   toml: ignore,
   yaml: ignore,
   definition: ignore,
@@ -8498,57 +11181,117 @@ function ignore() {
   return null
 }
 
-var lib$1 = toHast;
+/**
+ * @typedef {import('mdast').Root|import('mdast').Parent['children'][number]} MdastNode
+ * @typedef {import('hast').Root|import('hast').Parent['children'][number]} HastNode
+ * @typedef {import('mdast').Parent} Parent
+ * @typedef {import('mdast').Definition} Definition
+ * @typedef {import('mdast').FootnoteDefinition} FootnoteDefinition
+ * @typedef {import('hast').Properties} Properties
+ * @typedef {import('hast').Text} Text
+ * @typedef {import('hast').Comment} Comment
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('hast').Root} Root
+ * @typedef {import('unist-util-position').PositionLike} PositionLike
+ *
+ * @typedef {Element|Text|Comment} Content
+ *
+ * @typedef EmbeddedHastFields
+ * @property {string} [hName] Defines the tag name of an element
+ * @property {Properties} [hProperties] Defines the properties of an element
+ * @property {Array.<Content>} [hChildren] Defines the (hast) children of an element
+ *
+ * @typedef {Object.<string, unknown> & EmbeddedHastFields} Data unist data with embedded hast fields
+ *
+ * @typedef {MdastNode & {data?: Data}} NodeWithData unist node with embedded hast data
+ *
+ * @callback Handler
+ * @param {H} h Handle context
+ * @param {any} node mdast node to handle
+ * @param {Parent|null} parent Parent of `node`
+ * @returns {Content|Array.<Content>|null|undefined} hast node
+ *
+ * @callback HFunctionProps
+ * @param {MdastNode|PositionLike|null|undefined} node mdast node or unist position
+ * @param {string} tagName HTML tag name
+ * @param {Properties} props Properties
+ * @param {Array.<Content>?} [children] hast content
+ * @returns {Element}
+ *
+ * @callback HFunctionNoProps
+ * @param {MdastNode|PositionLike|null|undefined} node mdast node or unist position
+ * @param {string} tagName HTML tag name
+ * @param {Array.<Content>?} [children] hast content
+ * @returns {Element}
+ *
+ * @typedef HFields
+ * @property {boolean} dangerous Whether HTML is allowed
+ * @property {(identifier: string) => Definition|null} definition Definition cache
+ * @property {Object.<string, FootnoteDefinition>} footnoteById Footnote cache
+ * @property {Array.<string>} footnoteOrder Order in which footnotes occur
+ * @property {Handlers} handlers Applied handlers
+ * @property {Handler} unknownHandler Handler for any none not in `passThrough` or otherwise handled
+ * @property {(left: NodeWithData|PositionLike|null|undefined, right: Content) => Content} augment Like `h` but lower-level and usable on non-elements.
+ * @property {Array.<string>} passThrough List of node types to pass through untouched (except for their children).
+ *
+ * @typedef Options
+ * @property {boolean} [allowDangerousHtml=false] Whether to allow `html` nodes and inject them as `raw` HTML
+ * @property {Handlers} [handlers] Object mapping mdast nodes to functions handling them
+ * @property {Array.<string>} [passThrough] List of custom mdast node types to pass through (keep) in hast
+ * @property {Handler} [unknownHandler] Handler for all unknown nodes.
+ *
+ * @typedef {Record.<string, Handler>} Handlers Map of node types to handlers
+ * @typedef {HFunctionProps & HFunctionNoProps & HFields} H Handle context
+ */
 
+const own$5 = {}.hasOwnProperty;
 
-
-
-
-
-
-
-
-
-var own$6 = {}.hasOwnProperty;
-
-var deprecationWarningIssued = false;
-
-// Factory to transform.
-function factory$1(tree, options) {
-  var settings = options || {};
-
-  // Issue a warning if the deprecated tag 'allowDangerousHTML' is used
-  if (settings.allowDangerousHTML !== undefined && !deprecationWarningIssued) {
-    deprecationWarningIssued = true;
-    console.warn(
-      'mdast-util-to-hast: deprecation: `allowDangerousHTML` is nonstandard, use `allowDangerousHtml` instead'
-    );
-  }
-
-  var dangerous = settings.allowDangerousHtml || settings.allowDangerousHTML;
-  var footnoteById = {};
+/**
+ * Factory to transform.
+ * @param {MdastNode} tree mdast node
+ * @param {Options} [options] Configuration
+ * @returns {H} `h` function
+ */
+function factory(tree, options) {
+  const settings = options || {};
+  const dangerous = settings.allowDangerousHtml || false;
+  /** @type {Object.<string, FootnoteDefinition>} */
+  const footnoteById = {};
 
   h.dangerous = dangerous;
-  h.definition = mdastUtilDefinitions(tree);
+  h.definition = definitions(tree);
   h.footnoteById = footnoteById;
+  /** @type {Array.<string>} */
   h.footnoteOrder = [];
   h.augment = augment;
-  h.handlers = Object.assign({}, handlers, settings.handlers);
+  h.handlers = {...handlers, ...settings.handlers};
   h.unknownHandler = settings.unknownHandler;
   h.passThrough = settings.passThrough;
 
-  unistUtilVisit(tree, 'footnoteDefinition', onfootnotedefinition);
+  visit(tree, 'footnoteDefinition', (definition) => {
+    const id = String(definition.identifier).toUpperCase();
 
+    // Mimick CM behavior of link definitions.
+    // See: <https://github.com/syntax-tree/mdast-util-definitions/blob/8290999/index.js#L26>.
+    if (!own$5.call(footnoteById, id)) {
+      footnoteById[id] = definition;
+    }
+  });
+
+  // @ts-expect-error Hush, it’s fine!
   return h
 
-  // Finalise the created `right`, a hast node, from `left`, an mdast node.
+  /**
+   * Finalise the created `right`, a hast node, from `left`, an mdast node.
+   * @param {(NodeWithData|PositionLike)?} left
+   * @param {Content} right
+   * @returns {Content}
+   */
   function augment(left, right) {
-    var data;
-    var ctx;
-
     // Handle `data.hName`, `data.hProperties, `data.hChildren`.
-    if (left && left.data) {
-      data = left.data;
+    if (left && 'data' in left && left.data) {
+      /** @type {Data} */
+      const data = left.data;
 
       if (data.hName) {
         if (right.type !== 'element') {
@@ -8564,109 +11307,124 @@ function factory$1(tree, options) {
       }
 
       if (right.type === 'element' && data.hProperties) {
-        right.properties = Object.assign({}, right.properties, data.hProperties);
+        right.properties = {...right.properties, ...data.hProperties};
       }
 
-      if (right.children && data.hChildren) {
+      if ('children' in right && right.children && data.hChildren) {
         right.children = data.hChildren;
       }
     }
 
-    ctx = left && left.position ? left : {position: left};
+    if (left) {
+      const ctx = 'type' in left ? left : {position: left};
 
-    if (!unistUtilGenerated(ctx)) {
-      right.position = {
-        start: unistUtilPosition.start(ctx),
-        end: unistUtilPosition.end(ctx)
-      };
+      if (!generated(ctx)) {
+        right.position = {start: pointStart(ctx), end: pointEnd(ctx)};
+      }
     }
 
     return right
   }
 
-  // Create an element for `node`.
+  /**
+   * Create an element for `node`.
+   *
+   * @type {HFunctionProps}
+   */
   function h(node, tagName, props, children) {
-    if (
-      (children === undefined || children === null) &&
-      typeof props === 'object' &&
-      'length' in props
-    ) {
+    if (Array.isArray(props)) {
       children = props;
       props = {};
     }
 
+    // @ts-expect-error augmenting an element yields an element.
     return augment(node, {
       type: 'element',
-      tagName: tagName,
+      tagName,
       properties: props || {},
       children: children || []
     })
   }
-
-  function onfootnotedefinition(definition) {
-    var id = String(definition.identifier).toUpperCase();
-
-    // Mimick CM behavior of link definitions.
-    // See: <https://github.com/syntax-tree/mdast-util-definitions/blob/8290999/index.js#L26>.
-    if (!own$6.call(footnoteById, id)) {
-      footnoteById[id] = definition;
-    }
-  }
 }
 
-// Transform `tree`, which is an mdast node, to a hast node.
+/**
+ * Transform `tree` (an mdast node) to a hast node.
+ *
+ * @param {MdastNode} tree mdast node
+ * @param {Options} [options] Configuration
+ * @returns {HastNode|null|undefined} hast node
+ */
 function toHast(tree, options) {
-  var h = factory$1(tree, options);
-  var node = one_1(h, tree);
-  var foot = footer(h);
+  const h = factory(tree, options);
+  const node = one$1(h, tree, null);
+  const foot = footer(h);
 
   if (foot) {
-    node.children = node.children.concat(unistBuilder('text', '\n'), foot);
+    // @ts-expect-error If there’s a footer, there were definitions, meaning block
+    // content.
+    // So assume `node` is a parent node.
+    node.children.push(u('text', '\n'), foot);
   }
 
-  return node
+  return Array.isArray(node) ? {type: 'root', children: node} : node
 }
 
-var mdastUtilToHast = lib$1;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('hast').Root} HastRoot
+ * @typedef {import('mdast').Root} MdastRoot
+ * @typedef {import('mdast-util-to-hast').Options} Options
+ * @typedef {import('unified').Processor<any, any, any, any>} Processor
+ */
 
-var remarkRehype = remark2rehype;
+// Note: the `<MdastRoot, HastRoot>` overload doesn’t seem to work :'(
 
-// Attacher.
-// If a destination is given, runs the destination with the new hast tree
-// (bridge mode).
-// Without destination, returns the tree: further plugins run on that tree
-// (mutate mode).
-function remark2rehype(destination, options) {
-  if (destination && !destination.process) {
-    options = destination;
-    destination = null;
-  }
-
-  return destination ? bridge(destination, options) : mutate(options)
-}
-
-// Bridge mode.
-// Runs the destination with the new hast tree.
-function bridge(destination, options) {
-  return transformer
-
-  function transformer(node, file, next) {
-    destination.run(mdastUtilToHast(node, options), file, done);
-
-    function done(error) {
-      next(error);
+/**
+ * Plugin to bridge or mutate to rehype.
+ *
+ * If a destination is given, runs the destination with the new hast tree
+ * (bridge-mode).
+ * Without destination, returns the hast tree: further plugins run on that tree
+ * (mutate-mode).
+ *
+ * @param destination
+ *   Optional unified processor.
+ * @param options
+ *   Options passed to `mdast-util-to-hast`.
+ */
+const remarkRehype =
+  /** @type {(import('unified').Plugin<[Processor, Options?]|[Options]|[], MdastRoot>)} */
+  (
+    function (destination, options) {
+      return destination && 'run' in destination
+        ? bridge(destination, options)
+        : mutate(destination)
     }
+  );
+
+/**
+ * Bridge-mode.
+ * Runs the destination with the new hast tree.
+ *
+ * @type {import('unified').Plugin<[Processor, Options?], MdastRoot>}
+ */
+function bridge(destination, options) {
+  return (node, file, next) => {
+    destination.run(toHast(node, options), file, (error) => {
+      next(error);
+    });
   }
 }
 
-// Mutate-mode.
-// Further transformers run on the hast tree.
+/**
+ * Mutate-mode.
+ * Further transformers run on the nlcst tree.
+ *
+ * @type {import('unified').Plugin<[Options?]|void[], MdastRoot, HastRoot>}
+ */
 function mutate(options) {
-  return transformer
-
-  function transformer(node) {
-    return mdastUtilToHast(node, options)
-  }
+  // @ts-expect-error: assume a corresponding node is returned for `toHast`.
+  return (node) => toHast(node, options)
 }
 
 /**
@@ -8747,98 +11505,97 @@ var propTypes = createCommonjsModule(function (module) {
 }
 });
 
-var immutable = extend$1;
+/**
+ * @typedef {import('./info.js').Info} Info
+ * @typedef {Object.<string, Info>} Properties
+ * @typedef {Object.<string, string>} Normal
+ */
 
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-function extend$1() {
-    var target = {};
-
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments[i];
-
-        for (var key in source) {
-            if (hasOwnProperty.call(source, key)) {
-                target[key] = source[key];
-            }
-        }
+class Schema {
+  /**
+   * @constructor
+   * @param {Properties} property
+   * @param {Normal} normal
+   * @param {string} [space]
+   */
+  constructor(property, normal, space) {
+    this.property = property;
+    this.normal = normal;
+    if (space) {
+      this.space = space;
     }
-
-    return target
-}
-
-var schema = Schema;
-
-var proto$1 = Schema.prototype;
-
-proto$1.space = null;
-proto$1.normal = {};
-proto$1.property = {};
-
-function Schema(property, normal, space) {
-  this.property = property;
-  this.normal = normal;
-
-  if (space) {
-    this.space = space;
   }
 }
 
-var merge_1 = merge;
+/** @type {Properties} */
+Schema.prototype.property = {};
+/** @type {Normal} */
+Schema.prototype.normal = {};
+/** @type {string|null} */
+Schema.prototype.space = null;
 
-function merge(definitions) {
-  var length = definitions.length;
-  var property = [];
-  var normal = [];
+/**
+ * @typedef {import('./schema.js').Properties} Properties
+ * @typedef {import('./schema.js').Normal} Normal
+ */
+
+/**
+ * @param {import('./schema.js').Schema[]} definitions
+ * @param {string} space
+ * @returns {import('./schema.js').Schema}
+ */
+function merge(definitions, space) {
+  /** @type {Properties} */
+  var property = {};
+  /** @type {Normal} */
+  var normal = {};
   var index = -1;
-  var info;
-  var space;
 
-  while (++index < length) {
-    info = definitions[index];
-    property.push(info.property);
-    normal.push(info.normal);
-    space = info.space;
+  while (++index < definitions.length) {
+    Object.assign(property, definitions[index].property);
+    Object.assign(normal, definitions[index].normal);
   }
 
-  return new schema(
-    immutable.apply(null, property),
-    immutable.apply(null, normal),
-    space
-  )
+  return new Schema(property, normal, space)
 }
 
-var normalize_1 = normalize$1;
-
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function normalize$1(value) {
   return value.toLowerCase()
 }
 
-var info$1 = Info;
-
-var proto$2 = Info.prototype;
-
-proto$2.space = null;
-proto$2.attribute = null;
-proto$2.property = null;
-proto$2.boolean = false;
-proto$2.booleanish = false;
-proto$2.overloadedBoolean = false;
-proto$2.number = false;
-proto$2.commaSeparated = false;
-proto$2.spaceSeparated = false;
-proto$2.commaOrSpaceSeparated = false;
-proto$2.mustUseProperty = false;
-proto$2.defined = false;
-
-function Info(property, attribute) {
-  this.property = property;
-  this.attribute = attribute;
+class Info {
+  /**
+   * @constructor
+   * @param {string} property
+   * @param {string} attribute
+   */
+  constructor(property, attribute) {
+    this.property = property;
+    this.attribute = attribute;
+  }
 }
+
+/** @type {string|null} */
+Info.prototype.space = null;
+Info.prototype.attribute = null;
+Info.prototype.property = null;
+Info.prototype.boolean = false;
+Info.prototype.booleanish = false;
+Info.prototype.overloadedBoolean = false;
+Info.prototype.number = false;
+Info.prototype.commaSeparated = false;
+Info.prototype.spaceSeparated = false;
+Info.prototype.commaOrSpaceSeparated = false;
+Info.prototype.mustUseProperty = false;
+Info.prototype.defined = false;
 
 var powers = 0;
 
-var boolean_1 = increment();
+var boolean = increment();
 var booleanish = increment();
 var overloadedBoolean = increment();
 var number = increment();
@@ -8847,90 +11604,120 @@ var commaSeparated = increment();
 var commaOrSpaceSeparated = increment();
 
 function increment() {
-  return Math.pow(2, ++powers)
+  return 2 ** ++powers
 }
 
-var types = {
-	boolean: boolean_1,
-	booleanish: booleanish,
-	overloadedBoolean: overloadedBoolean,
-	number: number,
-	spaceSeparated: spaceSeparated,
-	commaSeparated: commaSeparated,
-	commaOrSpaceSeparated: commaOrSpaceSeparated
-};
+var types = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  boolean: boolean,
+  booleanish: booleanish,
+  overloadedBoolean: overloadedBoolean,
+  number: number,
+  spaceSeparated: spaceSeparated,
+  commaSeparated: commaSeparated,
+  commaOrSpaceSeparated: commaOrSpaceSeparated
+});
 
-var definedInfo = DefinedInfo;
+var checks = Object.keys(types);
 
-DefinedInfo.prototype = new info$1();
-DefinedInfo.prototype.defined = true;
+class DefinedInfo extends Info {
+  /**
+   * @constructor
+   * @param {string} property
+   * @param {string} attribute
+   * @param {number} [mask]
+   * @param {string} [space]
+   */
+  constructor(property, attribute, mask, space) {
+    var index = -1;
 
-var checks = [
-  'boolean',
-  'booleanish',
-  'overloadedBoolean',
-  'number',
-  'commaSeparated',
-  'spaceSeparated',
-  'commaOrSpaceSeparated'
-];
-var checksLength = checks.length;
+    super(property, attribute);
 
-function DefinedInfo(property, attribute, mask, space) {
-  var index = -1;
-  var check;
+    mark(this, 'space', space);
 
-  mark(this, 'space', space);
-
-  info$1.call(this, property, attribute);
-
-  while (++index < checksLength) {
-    check = checks[index];
-    mark(this, check, (mask & types[check]) === types[check]);
+    while (++index < checks.length) {
+      mark(
+        this,
+        checks[index],
+        (mask & types[checks[index]]) === types[checks[index]]
+      );
+    }
   }
 }
 
+DefinedInfo.prototype.defined = true;
+
+/**
+ * @param {InstanceType<typeof DefinedInfo>} values
+ * @param {string} key
+ * @param {unknown} value
+ */
 function mark(values, key, value) {
   if (value) {
     values[key] = value;
   }
 }
 
-var create_1 = create;
+/**
+ * @typedef {import('./schema.js').Properties} Properties
+ * @typedef {import('./schema.js').Normal} Normal
+ * @typedef {import('./info.js').Info} Info
+ */
 
+/**
+ * @typedef {Object.<string, string>} Attributes
+ *
+ * @typedef {Object} Definition
+ * @property {Object.<string, number|null>} properties
+ * @property {(attributes: Attributes, property: string) => string} transform
+ * @property {string} [space]
+ * @property {Attributes} [attributes]
+ * @property {Array.<string>} [mustUseProperty]
+ */
+
+var own$6 = {}.hasOwnProperty;
+
+/**
+ * @param {Definition} definition
+ * @returns {import('./schema.js').Schema}
+ */
 function create(definition) {
-  var space = definition.space;
-  var mustUseProperty = definition.mustUseProperty || [];
-  var attributes = definition.attributes || {};
-  var props = definition.properties;
-  var transform = definition.transform;
+  /** @type {Properties} */
   var property = {};
+  /** @type {Normal} */
   var normal = {};
+  /** @type {string} */
   var prop;
+  /** @type {Info} */
   var info;
 
-  for (prop in props) {
-    info = new definedInfo(
-      prop,
-      transform(attributes, prop),
-      props[prop],
-      space
-    );
+  for (prop in definition.properties) {
+    if (own$6.call(definition.properties, prop)) {
+      info = new DefinedInfo(
+        prop,
+        definition.transform(definition.attributes, prop),
+        definition.properties[prop],
+        definition.space
+      );
 
-    if (mustUseProperty.indexOf(prop) !== -1) {
-      info.mustUseProperty = true;
+      if (
+        definition.mustUseProperty &&
+        definition.mustUseProperty.includes(prop)
+      ) {
+        info.mustUseProperty = true;
+      }
+
+      property[prop] = info;
+
+      normal[normalize$1(prop)] = prop;
+      normal[normalize$1(info.attribute)] = prop;
     }
-
-    property[prop] = info;
-
-    normal[normalize_1(prop)] = prop;
-    normal[normalize_1(info.attribute)] = prop;
   }
 
-  return new schema(property, normal, space)
+  return new Schema(property, normal, definition.space)
 }
 
-var xlink = create_1({
+var xlink = create({
   space: 'xlink',
   transform: xlinkTransform,
   properties: {
@@ -8944,119 +11731,120 @@ var xlink = create_1({
   }
 });
 
+/**
+ * @param {unknown} _
+ * @param {string} prop
+ * @returns {string}
+ */
 function xlinkTransform(_, prop) {
   return 'xlink:' + prop.slice(5).toLowerCase()
 }
 
-var xml = create_1({
+var xml = create({
   space: 'xml',
   transform: xmlTransform,
-  properties: {
-    xmlLang: null,
-    xmlBase: null,
-    xmlSpace: null
-  }
+  properties: {xmlLang: null, xmlBase: null, xmlSpace: null}
 });
 
+/**
+ * @param {unknown} _
+ * @param {string} prop
+ * @returns {string}
+ */
 function xmlTransform(_, prop) {
   return 'xml:' + prop.slice(3).toLowerCase()
 }
 
-var caseSensitiveTransform_1 = caseSensitiveTransform;
-
+/**
+ * @param {Object.<string, string>} attributes
+ * @param {string} attribute
+ * @returns {string}
+ */
 function caseSensitiveTransform(attributes, attribute) {
   return attribute in attributes ? attributes[attribute] : attribute
 }
 
-var caseInsensitiveTransform_1 = caseInsensitiveTransform;
-
+/**
+ * @param {Object.<string, string>} attributes
+ * @param {string} property
+ * @returns {string}
+ */
 function caseInsensitiveTransform(attributes, property) {
-  return caseSensitiveTransform_1(attributes, property.toLowerCase())
+  return caseSensitiveTransform(attributes, property.toLowerCase())
 }
 
-var xmlns = create_1({
+var xmlns = create({
   space: 'xmlns',
-  attributes: {
-    xmlnsxlink: 'xmlns:xlink'
-  },
-  transform: caseInsensitiveTransform_1,
-  properties: {
-    xmlns: null,
-    xmlnsXLink: null
-  }
+  attributes: {xmlnsxlink: 'xmlns:xlink'},
+  transform: caseInsensitiveTransform,
+  properties: {xmlns: null, xmlnsXLink: null}
 });
 
-var booleanish$1 = types.booleanish;
-var number$1 = types.number;
-var spaceSeparated$1 = types.spaceSeparated;
-
-var aria = create_1({
+var aria = create({
   transform: ariaTransform,
   properties: {
     ariaActiveDescendant: null,
-    ariaAtomic: booleanish$1,
+    ariaAtomic: booleanish,
     ariaAutoComplete: null,
-    ariaBusy: booleanish$1,
-    ariaChecked: booleanish$1,
-    ariaColCount: number$1,
-    ariaColIndex: number$1,
-    ariaColSpan: number$1,
-    ariaControls: spaceSeparated$1,
+    ariaBusy: booleanish,
+    ariaChecked: booleanish,
+    ariaColCount: number,
+    ariaColIndex: number,
+    ariaColSpan: number,
+    ariaControls: spaceSeparated,
     ariaCurrent: null,
-    ariaDescribedBy: spaceSeparated$1,
+    ariaDescribedBy: spaceSeparated,
     ariaDetails: null,
-    ariaDisabled: booleanish$1,
-    ariaDropEffect: spaceSeparated$1,
+    ariaDisabled: booleanish,
+    ariaDropEffect: spaceSeparated,
     ariaErrorMessage: null,
-    ariaExpanded: booleanish$1,
-    ariaFlowTo: spaceSeparated$1,
-    ariaGrabbed: booleanish$1,
+    ariaExpanded: booleanish,
+    ariaFlowTo: spaceSeparated,
+    ariaGrabbed: booleanish,
     ariaHasPopup: null,
-    ariaHidden: booleanish$1,
+    ariaHidden: booleanish,
     ariaInvalid: null,
     ariaKeyShortcuts: null,
     ariaLabel: null,
-    ariaLabelledBy: spaceSeparated$1,
-    ariaLevel: number$1,
+    ariaLabelledBy: spaceSeparated,
+    ariaLevel: number,
     ariaLive: null,
-    ariaModal: booleanish$1,
-    ariaMultiLine: booleanish$1,
-    ariaMultiSelectable: booleanish$1,
+    ariaModal: booleanish,
+    ariaMultiLine: booleanish,
+    ariaMultiSelectable: booleanish,
     ariaOrientation: null,
-    ariaOwns: spaceSeparated$1,
+    ariaOwns: spaceSeparated,
     ariaPlaceholder: null,
-    ariaPosInSet: number$1,
-    ariaPressed: booleanish$1,
-    ariaReadOnly: booleanish$1,
+    ariaPosInSet: number,
+    ariaPressed: booleanish,
+    ariaReadOnly: booleanish,
     ariaRelevant: null,
-    ariaRequired: booleanish$1,
-    ariaRoleDescription: spaceSeparated$1,
-    ariaRowCount: number$1,
-    ariaRowIndex: number$1,
-    ariaRowSpan: number$1,
-    ariaSelected: booleanish$1,
-    ariaSetSize: number$1,
+    ariaRequired: booleanish,
+    ariaRoleDescription: spaceSeparated,
+    ariaRowCount: number,
+    ariaRowIndex: number,
+    ariaRowSpan: number,
+    ariaSelected: booleanish,
+    ariaSetSize: number,
     ariaSort: null,
-    ariaValueMax: number$1,
-    ariaValueMin: number$1,
-    ariaValueNow: number$1,
+    ariaValueMax: number,
+    ariaValueMin: number,
+    ariaValueNow: number,
     ariaValueText: null,
     role: null
   }
 });
 
+/**
+ * @param {unknown} _
+ * @param {string} prop
+ * @returns {string}
+ */
 function ariaTransform(_, prop) {
   return prop === 'role' ? prop : 'aria-' + prop.slice(4).toLowerCase()
 }
 
-var boolean = types.boolean;
-var overloadedBoolean$1 = types.overloadedBoolean;
-var booleanish$2 = types.booleanish;
-var number$2 = types.number;
-var spaceSeparated$2 = types.spaceSeparated;
-var commaSeparated$1 = types.commaSeparated;
-
-var html$1 = create_1({
+var html$1 = create({
   space: 'html',
   attributes: {
     acceptcharset: 'accept-charset',
@@ -9064,14 +11852,14 @@ var html$1 = create_1({
     htmlfor: 'for',
     httpequiv: 'http-equiv'
   },
-  transform: caseInsensitiveTransform_1,
+  transform: caseInsensitiveTransform,
   mustUseProperty: ['checked', 'multiple', 'muted', 'selected'],
   properties: {
     // Standard Properties.
     abbr: null,
-    accept: commaSeparated$1,
-    acceptCharset: spaceSeparated$2,
-    accessKey: spaceSeparated$2,
+    accept: commaSeparated,
+    acceptCharset: spaceSeparated,
+    accessKey: spaceSeparated,
     action: null,
     allow: null,
     allowFullScreen: boolean,
@@ -9081,21 +11869,21 @@ var html$1 = create_1({
     as: null,
     async: boolean,
     autoCapitalize: null,
-    autoComplete: spaceSeparated$2,
+    autoComplete: spaceSeparated,
     autoFocus: boolean,
     autoPlay: boolean,
     capture: boolean,
     charSet: null,
     checked: boolean,
     cite: null,
-    className: spaceSeparated$2,
-    cols: number$2,
+    className: spaceSeparated,
+    cols: number,
     colSpan: null,
     content: null,
-    contentEditable: booleanish$2,
+    contentEditable: booleanish,
     controls: boolean,
-    controlsList: spaceSeparated$2,
-    coords: number$2 | commaSeparated$1,
+    controlsList: spaceSeparated,
+    coords: number | commaSeparated,
     crossOrigin: null,
     data: null,
     dateTime: null,
@@ -9105,8 +11893,8 @@ var html$1 = create_1({
     dir: null,
     dirName: null,
     disabled: boolean,
-    download: overloadedBoolean$1,
-    draggable: booleanish$2,
+    download: overloadedBoolean,
+    draggable: booleanish,
     encType: null,
     enterKeyHint: null,
     form: null,
@@ -9115,26 +11903,26 @@ var html$1 = create_1({
     formMethod: null,
     formNoValidate: boolean,
     formTarget: null,
-    headers: spaceSeparated$2,
-    height: number$2,
+    headers: spaceSeparated,
+    height: number,
     hidden: boolean,
-    high: number$2,
+    high: number,
     href: null,
     hrefLang: null,
-    htmlFor: spaceSeparated$2,
-    httpEquiv: spaceSeparated$2,
+    htmlFor: spaceSeparated,
+    httpEquiv: spaceSeparated,
     id: null,
     imageSizes: null,
-    imageSrcSet: commaSeparated$1,
+    imageSrcSet: commaSeparated,
     inputMode: null,
     integrity: null,
     is: null,
     isMap: boolean,
     itemId: null,
-    itemProp: spaceSeparated$2,
-    itemRef: spaceSeparated$2,
+    itemProp: spaceSeparated,
+    itemRef: spaceSeparated,
     itemScope: boolean,
-    itemType: spaceSeparated$2,
+    itemType: spaceSeparated,
     kind: null,
     label: null,
     lang: null,
@@ -9142,14 +11930,14 @@ var html$1 = create_1({
     list: null,
     loading: null,
     loop: boolean,
-    low: number$2,
+    low: number,
     manifest: null,
     max: null,
-    maxLength: number$2,
+    maxLength: number,
     media: null,
     method: null,
     min: null,
-    minLength: number$2,
+    minLength: number,
     multiple: boolean,
     muted: boolean,
     name: null,
@@ -9240,60 +12028,60 @@ var html$1 = create_1({
     onWaiting: null,
     onWheel: null,
     open: boolean,
-    optimum: number$2,
+    optimum: number,
     pattern: null,
-    ping: spaceSeparated$2,
+    ping: spaceSeparated,
     placeholder: null,
     playsInline: boolean,
     poster: null,
     preload: null,
     readOnly: boolean,
     referrerPolicy: null,
-    rel: spaceSeparated$2,
+    rel: spaceSeparated,
     required: boolean,
     reversed: boolean,
-    rows: number$2,
-    rowSpan: number$2,
-    sandbox: spaceSeparated$2,
+    rows: number,
+    rowSpan: number,
+    sandbox: spaceSeparated,
     scope: null,
     scoped: boolean,
     seamless: boolean,
     selected: boolean,
     shape: null,
-    size: number$2,
+    size: number,
     sizes: null,
     slot: null,
-    span: number$2,
-    spellCheck: booleanish$2,
+    span: number,
+    spellCheck: booleanish,
     src: null,
     srcDoc: null,
     srcLang: null,
-    srcSet: commaSeparated$1,
-    start: number$2,
+    srcSet: commaSeparated,
+    start: number,
     step: null,
     style: null,
-    tabIndex: number$2,
+    tabIndex: number,
     target: null,
     title: null,
     translate: null,
     type: null,
     typeMustMatch: boolean,
     useMap: null,
-    value: booleanish$2,
-    width: number$2,
+    value: booleanish,
+    width: number,
     wrap: null,
 
     // Legacy.
     // See: https://html.spec.whatwg.org/#other-elements,-attributes-and-apis
     align: null, // Several. Use CSS `text-align` instead,
     aLink: null, // `<body>`. Use CSS `a:active {color}` instead
-    archive: spaceSeparated$2, // `<object>`. List of URIs to archives
+    archive: spaceSeparated, // `<object>`. List of URIs to archives
     axis: null, // `<td>` and `<th>`. Use `scope` on `<th>`
     background: null, // `<body>`. Use CSS `background-image` instead
     bgColor: null, // `<body>` and table elements. Use CSS `background-color` instead
-    border: number$2, // `<table>`. Use CSS `border-width` instead,
+    border: number, // `<table>`. Use CSS `border-width` instead,
     borderColor: null, // `<table>`. Use CSS `border-color` instead,
-    bottomMargin: number$2, // `<body>`
+    bottomMargin: number, // `<body>`
     cellPadding: null, // `<table>`
     cellSpacing: null, // `<table>`
     char: null, // Several table elements. When `align=char`, sets the character to align on
@@ -9310,13 +12098,13 @@ var html$1 = create_1({
     face: null, // `<font>`. Use CSS instead
     frame: null, // `<table>`
     frameBorder: null, // `<iframe>`. Use CSS `border` instead
-    hSpace: number$2, // `<img>` and `<object>`
-    leftMargin: number$2, // `<body>`
+    hSpace: number, // `<img>` and `<object>`
+    leftMargin: number, // `<body>`
     link: null, // `<body>`. Use CSS `a:link {color: *}` instead
     longDesc: null, // `<frame>`, `<iframe>`, and `<img>`. Use an `<a>`
     lowSrc: null, // `<img>`. Use a `<picture>`
-    marginHeight: number$2, // `<body>`
-    marginWidth: number$2, // `<body>`
+    marginHeight: number, // `<body>`
+    marginWidth: number, // `<body>`
     noResize: boolean, // `<frame>`
     noHref: boolean, // `<area>`. Use no href instead of an explicit `nohref`
     noShade: boolean, // `<hr>`. Use background-color and height instead of borders
@@ -9325,19 +12113,19 @@ var html$1 = create_1({
     profile: null, // `<head>`
     prompt: null, // `<isindex>`
     rev: null, // `<link>`
-    rightMargin: number$2, // `<body>`
+    rightMargin: number, // `<body>`
     rules: null, // `<table>`
     scheme: null, // `<meta>`
-    scrolling: booleanish$2, // `<frame>`. Use overflow in the child context
+    scrolling: booleanish, // `<frame>`. Use overflow in the child context
     standby: null, // `<object>`
     summary: null, // `<table>`
     text: null, // `<body>`. Use CSS `color` instead
-    topMargin: number$2, // `<body>`
+    topMargin: number, // `<body>`
     valueType: null, // `<param>`
     version: null, // `<html>`. Use a doctype.
     vAlign: null, // Several. Use CSS `vertical-align` instead
     vLink: null, // `<body>`. Use CSS `a:visited {color}` instead
-    vSpace: number$2, // `<img>` and `<object>`
+    vSpace: number, // `<img>` and `<object>`
 
     // Non-standard Properties.
     allowTransparency: null,
@@ -9347,200 +12135,13 @@ var html$1 = create_1({
     disableRemotePlayback: boolean,
     prefix: null,
     property: null,
-    results: number$2,
+    results: number,
     security: null,
     unselectable: null
   }
 });
 
-var html_1$1 = merge_1([xml, xlink, xmlns, aria, html$1]);
-
-const splice$1 = [].splice;
-
-var rehypeFilter_1 = rehypeFilter;
-
-/**
- * @typedef {import('hast').Root} Root
- * @typedef {import('hast').Element} Element
- *
- * @callback AllowElement
- * @param {Element} element
- * @param {number} index
- * @param {Element|Root} parent
- * @returns {boolean}
- *
- * @typedef {Object} RehypeFilterOptions
- * @property {Array.<string>} [allowedElements]
- * @property {Array.<string>} [disallowedElements=[]]
- * @property {AllowElement} [allowElement]
- * @property {boolean} [unwrapDisallowed=false]
- */
-
-/**
- * @param {RehypeFilterOptions} options
- */
-function rehypeFilter(options) {
-  if (options.allowedElements && options.disallowedElements) {
-    throw new TypeError(
-      'Only one of `allowedElements` and `disallowedElements` should be defined'
-    )
-  }
-
-  return options.allowedElements ||
-    options.disallowedElements ||
-    options.allowElement
-    ? transform
-    : undefined
-
-  /**
-   * @param {Root} tree
-   */
-  function transform(tree) {
-    unistUtilVisit(tree, 'element', onelement);
-  }
-
-  /**
-   * @param {Element} node
-   * @param {number} index
-   * @param {Element|Root} parent
-   * @returns {number|void}
-   */
-  function onelement(node, index, parent) {
-    /** @type {boolean} */
-    let remove;
-
-    if (options.allowedElements) {
-      remove = !options.allowedElements.includes(node.tagName);
-    } else if (options.disallowedElements) {
-      remove = options.disallowedElements.includes(node.tagName);
-    }
-
-    if (!remove && options.allowElement) {
-      remove = !options.allowElement(node, index, parent);
-    }
-
-    if (remove) {
-      /** @type {Array.<unknown>} */
-      let parameters = [index, 1];
-
-      if (options.unwrapDisallowed && node.children) {
-        parameters = parameters.concat(node.children);
-      }
-
-      splice$1.apply(parent.children, parameters);
-      return index
-    }
-
-    return undefined
-  }
-}
-
-const protocols = ['http', 'https', 'mailto', 'tel'];
-
-var uriTransformer_1 = uriTransformer;
-
-/**
- * @param {string} uri
- * @returns {string}
- */
-function uriTransformer(uri) {
-  const url = (uri || '').trim();
-  const first = url.charAt(0);
-
-  if (first === '#' || first === '/') {
-    return url
-  }
-
-  const colon = url.indexOf(':');
-  if (colon === -1) {
-    return url
-  }
-
-  let index = -1;
-
-  while (++index < protocols.length) {
-    const protocol = protocols[index];
-
-    if (
-      colon === protocol.length &&
-      url.slice(0, protocol.length).toLowerCase() === protocol
-    ) {
-      return url
-    }
-  }
-
-  index = url.indexOf('?');
-  if (index !== -1 && colon > index) {
-    return url
-  }
-
-  index = url.indexOf('#');
-  if (index !== -1 && colon > index) {
-    return url
-  }
-
-  // eslint-disable-next-line no-script-url
-  return 'javascript:void(0)'
-}
-
-/** @license React v17.0.2
- * react-is.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-var b=60103,c=60106,d=60107,e=60108,f=60114,g=60109,h=60110,k=60112,l=60113,m=60120,n=60115,p=60116,q=60121,r=60122,u$1=60117,v=60129,w=60131;
-if("function"===typeof Symbol&&Symbol.for){var x=Symbol.for;b=x("react.element");c=x("react.portal");d=x("react.fragment");e=x("react.strict_mode");f=x("react.profiler");g=x("react.provider");h=x("react.context");k=x("react.forward_ref");l=x("react.suspense");m=x("react.suspense_list");n=x("react.memo");p=x("react.lazy");q=x("react.block");r=x("react.server.block");u$1=x("react.fundamental");v=x("react.debug_trace_mode");w=x("react.legacy_hidden");}
-function y(a){if("object"===typeof a&&null!==a){var t=a.$$typeof;switch(t){case b:switch(a=a.type,a){case d:case f:case e:case l:case m:return a;default:switch(a=a&&a.$$typeof,a){case h:case k:case p:case n:case g:return a;default:return t}}case c:return t}}}var z=g,A=b,B=k,C=d,D=p,E=n,F=c,G=f,H=e,I=l;var ContextConsumer=h;var ContextProvider=z;var Element=A;var ForwardRef=B;var Fragment=C;var Lazy=D;var Memo=E;var Portal=F;var Profiler=G;var StrictMode=H;
-var Suspense=I;var isAsyncMode=function(){return !1};var isConcurrentMode=function(){return !1};var isContextConsumer=function(a){return y(a)===h};var isContextProvider=function(a){return y(a)===g};var isElement=function(a){return "object"===typeof a&&null!==a&&a.$$typeof===b};var isForwardRef=function(a){return y(a)===k};var isFragment=function(a){return y(a)===d};var isLazy=function(a){return y(a)===p};var isMemo=function(a){return y(a)===n};
-var isPortal=function(a){return y(a)===c};var isProfiler=function(a){return y(a)===f};var isStrictMode=function(a){return y(a)===e};var isSuspense=function(a){return y(a)===l};var isValidElementType=function(a){return "string"===typeof a||"function"===typeof a||a===d||a===f||a===v||a===e||a===l||a===m||a===w||"object"===typeof a&&null!==a&&(a.$$typeof===p||a.$$typeof===n||a.$$typeof===g||a.$$typeof===h||a.$$typeof===k||a.$$typeof===u$1||a.$$typeof===q||a[0]===r)?!0:!1};
-var typeOf=y;
-
-var reactIs_production_min = {
-	ContextConsumer: ContextConsumer,
-	ContextProvider: ContextProvider,
-	Element: Element,
-	ForwardRef: ForwardRef,
-	Fragment: Fragment,
-	Lazy: Lazy,
-	Memo: Memo,
-	Portal: Portal,
-	Profiler: Profiler,
-	StrictMode: StrictMode,
-	Suspense: Suspense,
-	isAsyncMode: isAsyncMode,
-	isConcurrentMode: isConcurrentMode,
-	isContextConsumer: isContextConsumer,
-	isContextProvider: isContextProvider,
-	isElement: isElement,
-	isForwardRef: isForwardRef,
-	isFragment: isFragment,
-	isLazy: isLazy,
-	isMemo: isMemo,
-	isPortal: isPortal,
-	isProfiler: isProfiler,
-	isStrictMode: isStrictMode,
-	isSuspense: isSuspense,
-	isValidElementType: isValidElementType,
-	typeOf: typeOf
-};
-
-var reactIs = createCommonjsModule(function (module) {
-
-{
-  module.exports = reactIs_production_min;
-}
-});
-
-var boolean$1 = types.boolean;
-var number$3 = types.number;
-var spaceSeparated$3 = types.spaceSeparated;
-var commaSeparated$2 = types.commaSeparated;
-var commaOrSpaceSeparated$1 = types.commaOrSpaceSeparated;
-
-var svg = create_1({
+var svg = create({
   space: 'svg',
   attributes: {
     accentHeight: 'accent-height',
@@ -9716,31 +12317,31 @@ var svg = create_1({
     playbackOrder: 'playbackorder',
     timelineBegin: 'timelinebegin'
   },
-  transform: caseSensitiveTransform_1,
+  transform: caseSensitiveTransform,
   properties: {
-    about: commaOrSpaceSeparated$1,
-    accentHeight: number$3,
+    about: commaOrSpaceSeparated,
+    accentHeight: number,
     accumulate: null,
     additive: null,
     alignmentBaseline: null,
-    alphabetic: number$3,
-    amplitude: number$3,
+    alphabetic: number,
+    amplitude: number,
     arabicForm: null,
-    ascent: number$3,
+    ascent: number,
     attributeName: null,
     attributeType: null,
-    azimuth: number$3,
+    azimuth: number,
     bandwidth: null,
     baselineShift: null,
     baseFrequency: null,
     baseProfile: null,
     bbox: null,
     begin: null,
-    bias: number$3,
+    bias: number,
     by: null,
     calcMode: null,
-    capHeight: number$3,
-    className: spaceSeparated$3,
+    capHeight: number,
+    className: spaceSeparated,
     clip: null,
     clipPath: null,
     clipPathUnits: null,
@@ -9760,26 +12361,26 @@ var svg = create_1({
     d: null,
     dataType: null,
     defaultAction: null,
-    descent: number$3,
-    diffuseConstant: number$3,
+    descent: number,
+    diffuseConstant: number,
     direction: null,
     display: null,
     dur: null,
-    divisor: number$3,
+    divisor: number,
     dominantBaseline: null,
-    download: boolean$1,
+    download: boolean,
     dx: null,
     dy: null,
     edgeMode: null,
     editable: null,
-    elevation: number$3,
+    elevation: number,
     enableBackground: null,
     end: null,
     event: null,
-    exponent: number$3,
+    exponent: number,
     externalResourcesRequired: null,
     fill: null,
-    fillOpacity: number$3,
+    fillOpacity: number,
     fillRule: null,
     filter: null,
     filterRes: null,
@@ -9800,37 +12401,37 @@ var svg = create_1({
     from: null,
     fx: null,
     fy: null,
-    g1: commaSeparated$2,
-    g2: commaSeparated$2,
-    glyphName: commaSeparated$2,
+    g1: commaSeparated,
+    g2: commaSeparated,
+    glyphName: commaSeparated,
     glyphOrientationHorizontal: null,
     glyphOrientationVertical: null,
     glyphRef: null,
     gradientTransform: null,
     gradientUnits: null,
     handler: null,
-    hanging: number$3,
+    hanging: number,
     hatchContentUnits: null,
     hatchUnits: null,
     height: null,
     href: null,
     hrefLang: null,
-    horizAdvX: number$3,
-    horizOriginX: number$3,
-    horizOriginY: number$3,
+    horizAdvX: number,
+    horizOriginX: number,
+    horizOriginY: number,
     id: null,
-    ideographic: number$3,
+    ideographic: number,
     imageRendering: null,
     initialVisibility: null,
     in: null,
     in2: null,
-    intercept: number$3,
-    k: number$3,
-    k1: number$3,
-    k2: number$3,
-    k3: number$3,
-    k4: number$3,
-    kernelMatrix: commaOrSpaceSeparated$1,
+    intercept: number,
+    k: number,
+    k1: number,
+    k2: number,
+    k3: number,
+    k4: number,
+    kernelMatrix: commaOrSpaceSeparated,
     kernelUnitLength: null,
     keyPoints: null, // SEMI_COLON_SEPARATED
     keySplines: null, // SEMI_COLON_SEPARATED
@@ -9840,7 +12441,7 @@ var svg = create_1({
     lengthAdjust: null,
     letterSpacing: null,
     lightingColor: null,
-    limitingConeAngle: number$3,
+    limitingConeAngle: number,
     local: null,
     markerEnd: null,
     markerMid: null,
@@ -9856,7 +12457,7 @@ var svg = create_1({
     media: null,
     mediaCharacterEncoding: null,
     mediaContentEncodings: null,
-    mediaSize: number$3,
+    mediaSize: number,
     mediaTime: null,
     method: null,
     min: null,
@@ -9962,43 +12563,43 @@ var svg = create_1({
     origin: null,
     overflow: null,
     overlay: null,
-    overlinePosition: number$3,
-    overlineThickness: number$3,
+    overlinePosition: number,
+    overlineThickness: number,
     paintOrder: null,
     panose1: null,
     path: null,
-    pathLength: number$3,
+    pathLength: number,
     patternContentUnits: null,
     patternTransform: null,
     patternUnits: null,
     phase: null,
-    ping: spaceSeparated$3,
+    ping: spaceSeparated,
     pitch: null,
     playbackOrder: null,
     pointerEvents: null,
     points: null,
-    pointsAtX: number$3,
-    pointsAtY: number$3,
-    pointsAtZ: number$3,
+    pointsAtX: number,
+    pointsAtY: number,
+    pointsAtZ: number,
     preserveAlpha: null,
     preserveAspectRatio: null,
     primitiveUnits: null,
     propagate: null,
-    property: commaOrSpaceSeparated$1,
+    property: commaOrSpaceSeparated,
     r: null,
     radius: null,
     referrerPolicy: null,
     refX: null,
     refY: null,
-    rel: commaOrSpaceSeparated$1,
-    rev: commaOrSpaceSeparated$1,
+    rel: commaOrSpaceSeparated,
+    rev: commaOrSpaceSeparated,
     renderingIntent: null,
     repeatCount: null,
     repeatDur: null,
-    requiredExtensions: commaOrSpaceSeparated$1,
-    requiredFeatures: commaOrSpaceSeparated$1,
-    requiredFonts: commaOrSpaceSeparated$1,
-    requiredFormats: commaOrSpaceSeparated$1,
+    requiredExtensions: commaOrSpaceSeparated,
+    requiredFeatures: commaOrSpaceSeparated,
+    requiredFonts: commaOrSpaceSeparated,
+    requiredFormats: commaOrSpaceSeparated,
     resource: null,
     restart: null,
     result: null,
@@ -10011,8 +12612,8 @@ var svg = create_1({
     side: null,
     slope: null,
     snapshotTime: null,
-    specularConstant: number$3,
-    specularExponent: number$3,
+    specularConstant: number,
+    specularExponent: number,
     spreadMethod: null,
     spacing: null,
     startOffset: null,
@@ -10022,30 +12623,30 @@ var svg = create_1({
     stitchTiles: null,
     stopColor: null,
     stopOpacity: null,
-    strikethroughPosition: number$3,
-    strikethroughThickness: number$3,
+    strikethroughPosition: number,
+    strikethroughThickness: number,
     string: null,
     stroke: null,
-    strokeDashArray: commaOrSpaceSeparated$1,
+    strokeDashArray: commaOrSpaceSeparated,
     strokeDashOffset: null,
     strokeLineCap: null,
     strokeLineJoin: null,
-    strokeMiterLimit: number$3,
-    strokeOpacity: number$3,
+    strokeMiterLimit: number,
+    strokeOpacity: number,
     strokeWidth: null,
     style: null,
-    surfaceScale: number$3,
+    surfaceScale: number,
     syncBehavior: null,
     syncBehaviorDefault: null,
     syncMaster: null,
     syncTolerance: null,
     syncToleranceDefault: null,
-    systemLanguage: commaOrSpaceSeparated$1,
-    tabIndex: number$3,
+    systemLanguage: commaOrSpaceSeparated,
+    tabIndex: number,
     tableValues: null,
     target: null,
-    targetX: number$3,
-    targetY: number$3,
+    targetX: number,
+    targetY: number,
     textAnchor: null,
     textDecoration: null,
     textRendering: null,
@@ -10054,27 +12655,27 @@ var svg = create_1({
     title: null,
     transformBehavior: null,
     type: null,
-    typeOf: commaOrSpaceSeparated$1,
+    typeOf: commaOrSpaceSeparated,
     to: null,
     transform: null,
     u1: null,
     u2: null,
-    underlinePosition: number$3,
-    underlineThickness: number$3,
+    underlinePosition: number,
+    underlineThickness: number,
     unicode: null,
     unicodeBidi: null,
     unicodeRange: null,
-    unitsPerEm: number$3,
+    unitsPerEm: number,
     values: null,
-    vAlphabetic: number$3,
-    vMathematical: number$3,
+    vAlphabetic: number,
+    vMathematical: number,
     vectorEffect: null,
-    vHanging: number$3,
-    vIdeographic: number$3,
+    vHanging: number,
+    vIdeographic: number,
     version: null,
-    vertAdvY: number$3,
-    vertOriginX: number$3,
-    vertOriginY: number$3,
+    vertAdvY: number,
+    vertOriginX: number,
+    vertOriginY: number,
     viewBox: null,
     viewTarget: null,
     visibility: null,
@@ -10086,7 +12687,7 @@ var svg = create_1({
     x1: null,
     x2: null,
     xChannelSelector: null,
-    xHeight: number$3,
+    xHeight: number,
     y: null,
     y1: null,
     y2: null,
@@ -10096,26 +12697,25 @@ var svg = create_1({
   }
 });
 
-var svg_1 = merge_1([xml, xlink, xmlns, aria, svg]);
-
-var data = 'data';
-
-var find_1 = find;
-
 var valid = /^data[-\w.:]+$/i;
 var dash = /-[a-z]/g;
 var cap = /[A-Z]/g;
 
+/**
+ * @param {import('./util/schema.js').Schema} schema
+ * @param {string} value
+ * @returns {import('./util/info.js').Info}
+ */
 function find(schema, value) {
-  var normal = normalize_1(value);
+  var normal = normalize$1(value);
   var prop = value;
-  var Type = info$1;
+  var Type = Info;
 
   if (normal in schema.normal) {
     return schema.property[schema.normal[normal]]
   }
 
-  if (normal.length > 4 && normal.slice(0, 4) === data && valid.test(value)) {
+  if (normal.length > 4 && normal.slice(0, 4) === 'data' && valid.test(value)) {
     // Attribute or property.
     if (value.charAt(4) === '-') {
       prop = datasetToProperty(value);
@@ -10123,17 +12723,25 @@ function find(schema, value) {
       value = datasetToAttribute(value);
     }
 
-    Type = definedInfo;
+    Type = DefinedInfo;
   }
 
   return new Type(prop, value)
 }
 
+/**
+ * @param {string} attribute
+ * @returns {string}
+ */
 function datasetToProperty(attribute) {
   var value = attribute.slice(5).replace(dash, camelcase);
-  return data + value.charAt(0).toUpperCase() + value.slice(1)
+  return 'data' + value.charAt(0).toUpperCase() + value.slice(1)
 }
 
+/**
+ * @param {string} property
+ * @returns {string}
+ */
 function datasetToAttribute(property) {
   var value = property.slice(4);
 
@@ -10147,130 +12755,278 @@ function datasetToAttribute(property) {
     value = '-' + value;
   }
 
-  return data + value
+  return 'data' + value
 }
 
+/**
+ * @param {string} $0
+ * @returns {string}
+ */
 function kebab($0) {
   return '-' + $0.toLowerCase()
 }
 
+/**
+ * @param {string} $0
+ * @returns {string}
+ */
 function camelcase($0) {
   return $0.charAt(1).toUpperCase()
 }
 
-const classId = "classID";
-const dataType = "datatype";
-const itemId = "itemID";
-const strokeDashArray = "strokeDasharray";
-const strokeDashOffset = "strokeDashoffset";
-const strokeLineCap = "strokeLinecap";
-const strokeLineJoin = "strokeLinejoin";
-const strokeMiterLimit = "strokeMiterlimit";
-const typeOf$1 = "typeof";
-const xLinkActuate = "xlinkActuate";
-const xLinkArcRole = "xlinkArcrole";
-const xLinkHref = "xlinkHref";
-const xLinkRole = "xlinkRole";
-const xLinkShow = "xlinkShow";
-const xLinkTitle = "xlinkTitle";
-const xLinkType = "xlinkType";
-const xmlnsXLink = "xmlnsXlink";
 var hastToReact = {
-  classId: classId,
-  dataType: dataType,
-  itemId: itemId,
-  strokeDashArray: strokeDashArray,
-  strokeDashOffset: strokeDashOffset,
-  strokeLineCap: strokeLineCap,
-  strokeLineJoin: strokeLineJoin,
-  strokeMiterLimit: strokeMiterLimit,
-  typeOf: typeOf$1,
-  xLinkActuate: xLinkActuate,
-  xLinkArcRole: xLinkArcRole,
-  xLinkHref: xLinkHref,
-  xLinkRole: xLinkRole,
-  xLinkShow: xLinkShow,
-  xLinkTitle: xLinkTitle,
-  xLinkType: xLinkType,
-  xmlnsXLink: xmlnsXLink
+  classId: 'classID',
+  dataType: 'datatype',
+  itemId: 'itemID',
+  strokeDashArray: 'strokeDasharray',
+  strokeDashOffset: 'strokeDashoffset',
+  strokeLineCap: 'strokeLinecap',
+  strokeLineJoin: 'strokeLinejoin',
+  strokeMiterLimit: 'strokeMiterlimit',
+  typeOf: 'typeof',
+  xLinkActuate: 'xlinkActuate',
+  xLinkArcRole: 'xlinkArcrole',
+  xLinkHref: 'xlinkHref',
+  xLinkRole: 'xlinkRole',
+  xLinkShow: 'xlinkShow',
+  xLinkTitle: 'xlinkTitle',
+  xLinkType: 'xlinkType',
+  xmlnsXLink: 'xmlnsXlink'
 };
 
-var parse_1$1 = parse$2;
-var stringify_1 = stringify$1;
+/**
+ * @typedef {import('./lib/util/info.js').Info} Info
+ * @typedef {import('./lib/util/schema.js').Schema} Schema
+ */
+var html$2 = merge([xml, xlink, xmlns, aria, html$1], 'html');
+var svg$1 = merge([xml, xlink, xmlns, aria, svg], 'svg');
 
-var empty = '';
-var space = ' ';
-var whiteSpace = /[ \t\n\r\f]+/g;
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('hast').Root} Root
+ * @typedef {import('hast').Element} Element
+ *
+ * @callback AllowElement
+ * @param {Element} element
+ * @param {number} index
+ * @param {Element|Root} parent
+ * @returns {boolean|undefined}
+ *
+ * @typedef Options
+ * @property {Array.<string>} [allowedElements]
+ * @property {Array.<string>} [disallowedElements=[]]
+ * @property {AllowElement} [allowElement]
+ * @property {boolean} [unwrapDisallowed=false]
+ */
 
-function parse$2(value) {
-  var input = String(value || empty).trim();
-  return input === empty ? [] : input.split(whiteSpace)
+/**
+ * @type {import('unified').Plugin<[Options], Root>}
+ */
+function rehypeFilter(options) {
+  if (options.allowedElements && options.disallowedElements) {
+    throw new TypeError(
+      'Only one of `allowedElements` and `disallowedElements` should be defined'
+    )
+  }
+
+  if (
+    options.allowedElements ||
+    options.disallowedElements ||
+    options.allowElement
+  ) {
+    return (tree) => {
+      visit(tree, 'element', (node, index, parent_) => {
+        const parent = /** @type {Element|Root} */ (parent_);
+        /** @type {boolean|undefined} */
+        let remove;
+
+        if (options.allowedElements) {
+          remove = !options.allowedElements.includes(node.tagName);
+        } else if (options.disallowedElements) {
+          remove = options.disallowedElements.includes(node.tagName);
+        }
+
+        if (!remove && options.allowElement && typeof index === 'number') {
+          remove = !options.allowElement(node, index, parent);
+        }
+
+        if (remove && typeof index === 'number') {
+          if (options.unwrapDisallowed && node.children) {
+            parent.children.splice(index, 1, ...node.children);
+          } else {
+            parent.children.splice(index, 1);
+          }
+
+          return index
+        }
+
+        return undefined
+      });
+    }
+  }
 }
 
-function stringify$1(values) {
-  return values.join(space).trim()
+const protocols = ['http', 'https', 'mailto', 'tel'];
+
+/**
+ * @param {string} uri
+ * @returns {string}
+ */
+function uriTransformer(uri) {
+  const url = (uri || '').trim();
+  const first = url.charAt(0);
+
+  if (first === '#' || first === '/') {
+    return url
+  }
+
+  const colon = url.indexOf(':');
+  if (colon === -1) {
+    return url
+  }
+
+  let index = -1;
+
+  while (++index < protocols.length) {
+    const protocol = protocols[index];
+
+    if (
+      colon === protocol.length &&
+      url.slice(0, protocol.length).toLowerCase() === protocol
+    ) {
+      return url
+    }
+  }
+
+  index = url.indexOf('?');
+  if (index !== -1 && colon > index) {
+    return url
+  }
+
+  index = url.indexOf('#');
+  if (index !== -1 && colon > index) {
+    return url
+  }
+
+  // eslint-disable-next-line no-script-url
+  return 'javascript:void(0)'
 }
 
-var spaceSeparatedTokens = {
-	parse: parse_1$1,
-	stringify: stringify_1
+/** @license React v17.0.2
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+var b=60103,c=60106,d=60107,e=60108,f=60114,g=60109,h=60110,k=60112,l=60113,m=60120,n=60115,p=60116,q=60121,r=60122,u$1=60117,v=60129,w=60131;
+if("function"===typeof Symbol&&Symbol.for){var x=Symbol.for;b=x("react.element");c=x("react.portal");d=x("react.fragment");e=x("react.strict_mode");f=x("react.profiler");g=x("react.provider");h=x("react.context");k=x("react.forward_ref");l=x("react.suspense");m=x("react.suspense_list");n=x("react.memo");p=x("react.lazy");q=x("react.block");r=x("react.server.block");u$1=x("react.fundamental");v=x("react.debug_trace_mode");w=x("react.legacy_hidden");}
+function y(a){if("object"===typeof a&&null!==a){var t=a.$$typeof;switch(t){case b:switch(a=a.type,a){case d:case f:case e:case l:case m:return a;default:switch(a=a&&a.$$typeof,a){case h:case k:case p:case n:case g:return a;default:return t}}case c:return t}}}var z=g,A=b,B=k,C=d,D=p,E=n,F=c,G=f,H=e,I=l;var ContextConsumer=h;var ContextProvider=z;var Element=A;var ForwardRef=B;var Fragment=C;var Lazy=D;var Memo=E;var Portal=F;var Profiler=G;var StrictMode=H;
+var Suspense=I;var isAsyncMode=function(){return !1};var isConcurrentMode=function(){return !1};var isContextConsumer=function(a){return y(a)===h};var isContextProvider=function(a){return y(a)===g};var isElement=function(a){return "object"===typeof a&&null!==a&&a.$$typeof===b};var isForwardRef=function(a){return y(a)===k};var isFragment=function(a){return y(a)===d};var isLazy=function(a){return y(a)===p};var isMemo=function(a){return y(a)===n};
+var isPortal=function(a){return y(a)===c};var isProfiler=function(a){return y(a)===f};var isStrictMode=function(a){return y(a)===e};var isSuspense=function(a){return y(a)===l};var isValidElementType=function(a){return "string"===typeof a||"function"===typeof a||a===d||a===f||a===v||a===e||a===l||a===m||a===w||"object"===typeof a&&null!==a&&(a.$$typeof===p||a.$$typeof===n||a.$$typeof===g||a.$$typeof===h||a.$$typeof===k||a.$$typeof===u$1||a.$$typeof===q||a[0]===r)?!0:!1};
+var typeOf=y;
+
+var reactIs_production_min = {
+	ContextConsumer: ContextConsumer,
+	ContextProvider: ContextProvider,
+	Element: Element,
+	ForwardRef: ForwardRef,
+	Fragment: Fragment,
+	Lazy: Lazy,
+	Memo: Memo,
+	Portal: Portal,
+	Profiler: Profiler,
+	StrictMode: StrictMode,
+	Suspense: Suspense,
+	isAsyncMode: isAsyncMode,
+	isConcurrentMode: isConcurrentMode,
+	isContextConsumer: isContextConsumer,
+	isContextProvider: isContextProvider,
+	isElement: isElement,
+	isForwardRef: isForwardRef,
+	isFragment: isFragment,
+	isLazy: isLazy,
+	isMemo: isMemo,
+	isPortal: isPortal,
+	isProfiler: isProfiler,
+	isStrictMode: isStrictMode,
+	isSuspense: isSuspense,
+	isValidElementType: isValidElementType,
+	typeOf: typeOf
 };
 
-var parse_1$2 = parse$3;
-var stringify_1$1 = stringify$2;
+var reactIs = createCommonjsModule(function (module) {
 
-var comma = ',';
-var space$1 = ' ';
-var empty$1 = '';
+{
+  module.exports = reactIs_production_min;
+}
+});
 
-// Parse comma-separated tokens to an array.
-function parse$3(value) {
-  var values = [];
-  var input = String(value || empty$1);
-  var index = input.indexOf(comma);
-  var lastIndex = 0;
-  var end = false;
-  var val;
+/**
+ * @param {unknown} thing
+ * @returns {boolean}
+ */
+function whitespace(thing) {
+  /** @type {string} */
+  var value =
+    // @ts-ignore looks like a node.
+    thing && typeof thing === 'object' && thing.type === 'text'
+      ? // @ts-ignore looks like a text.
+        thing.value || ''
+      : thing;
 
-  while (!end) {
-    if (index === -1) {
-      index = input.length;
-      end = true;
-    }
+  // HTML whitespace expression.
+  // See <https://html.spec.whatwg.org/#space-character>.
+  return typeof value === 'string' && value.replace(/[ \t\n\f\r]/g, '') === ''
+}
 
-    val = input.slice(lastIndex, index).trim();
+/**
+ * Parse space separated tokens to an array of strings.
+ *
+ * @param {string} value Space separated tokens
+ * @returns {Array.<string>} Tokens
+ */
 
-    if (val || !end) {
-      values.push(val);
-    }
+/**
+ * Serialize an array of strings as space separated tokens.
+ *
+ * @param {Array.<string|number>} values Tokens
+ * @returns {string} Space separated tokens
+ */
+function stringify(values) {
+  return values.join(' ').trim()
+}
 
-    lastIndex = index + 1;
-    index = input.indexOf(comma, lastIndex);
+/**
+ * @typedef {Object} StringifyOptions
+ * @property {boolean} [padLeft=true] Whether to pad a space before a token (`boolean`, default: `true`).
+ * @property {boolean} [padRight=false] Whether to pad a space after a token (`boolean`, default: `false`).
+ */
+
+/**
+ * Serialize an array of strings to comma separated tokens.
+ *
+ * @param {Array.<string|number>} values
+ * @param {StringifyOptions} [options]
+ * @returns {string}
+ */
+function stringify$1(values, options) {
+  var settings = options || {};
+
+  // Ensure the last empty entry is seen.
+  if (values[values.length - 1] === '') {
+    values = values.concat('');
   }
 
   return values
+    .join(
+      (settings.padRight ? ' ' : '') +
+        ',' +
+        (settings.padLeft === false ? '' : ' ')
+    )
+    .trim()
 }
-
-// Compile an array to comma-separated tokens.
-// `options.padLeft` (default: `true`) pads a space left of each token, and
-// `options.padRight` (default: `false`) pads a space to the right of each token.
-function stringify$2(values, options) {
-  var settings = options || {};
-  var left = settings.padLeft === false ? empty$1 : space$1;
-  var right = settings.padRight ? space$1 : empty$1;
-
-  // Ensure the last empty entry is seen.
-  if (values[values.length - 1] === empty$1) {
-    values = values.concat(empty$1);
-  }
-
-  return values.join(right + comma + left).trim()
-}
-
-var commaSeparatedTokens = {
-	parse: parse_1$2,
-	stringify: stringify_1$1
-};
 
 // http://www.w3.org/TR/CSS21/grammar.html
 // https://github.com/visionmedia/css-parse/pull/49#issuecomment-30088027
@@ -10571,154 +13327,9 @@ function StyleToObject(style, iterator) {
 
 var styleToObject = StyleToObject;
 
-// @ts-ignore remove when typed
-
-// @ts-ignore remove when typed
-
-// @ts-ignore remove when typed
-
-// @ts-ignore remove when typed
-
-// @ts-ignore remove when typed
-
-
-
-var hastToReact_1 = toReact;
-var hastChildrenToReact = childrenToReact;
-
 /**
- * @typedef {JSX.IntrinsicElements} IntrinsicElements
- * @typedef {import('react').ReactNode} ReactNode
- * @typedef {import('unist').Position} Position
- * @typedef {import('hast').Element} Element
- * @typedef {import('hast').Root} Root
- * @typedef {import('hast').Text} Text
- * @typedef {import('hast').Comment} Comment
- * @typedef {import('hast').DocType} Doctype
- */
-
-/**
- * @typedef {Object} Info
- * @property {string?} space
- * @property {string?} attribute
- * @property {string?} property
- * @property {boolean} boolean
- * @property {boolean} booleanish
- * @property {boolean} overloadedBoolean
- * @property {boolean} number
- * @property {boolean} commaSeparated
- * @property {boolean} spaceSeparated
- * @property {boolean} commaOrSpaceSeparated
- * @property {boolean} mustUseProperty
- * @property {boolean} defined
- *
- * @typedef {Object} Schema
- * @property {Object.<string, Info>} property
- * @property {Object.<string, string>} normal
- * @property {string?} space
- *
- * @typedef {Object} Raw
- * @property {'raw'} type
- * @property {string} value
- *
- * @typedef {Object} Context
- * @property {TransformOptions} options
- * @property {Schema} schema
- * @property {number} listDepth
- *
- * @callback TransformLink
- * @param {string} href
- * @param {Array.<Comment|Element|Text>} children
- * @param {string?} title
- * @returns {string}
- *
- * @callback TransformImage
- * @param {string} src
- * @param {string} alt
- * @param {string?} title
- * @returns {string}
- *
- * @callback TransformLinkTarget
- * @param {string} href
- * @param {Array.<Comment|Element|Text>} children
- * @param {string?} title
- * @returns {string}
- *
- * @typedef {keyof IntrinsicElements} ReactMarkdownNames
- *
- * @typedef {{ [key: string]: unknown, className?: string }} ReactBaseProps
- *
- * To do: is `data-sourcepos` typeable?
- *
- * @typedef {Object} ReactMarkdownProps
- * @property {Element} node
- * @property {string} key
- * @property {ReactNode[]} children
- * @property {Position?} [sourcePosition] Passed when `options.rawSourcePos` is given
- * @property {number} [index] Passed when `options.includeElementIndex` is given
- * @property {number} [siblingCount] Passed when `options.includeElementIndex` is given
- *
- * @callback NormalComponent
- * @param {ReactBaseProps & ReactMarkdownProps} props
- * @returns {ReactNode}
- *
- * @callback CodeComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {inline?: boolean}} props
- * @returns {ReactNode}
- *
- * @callback HeadingComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {level: number}} props
- * @returns {ReactNode}
- *
- * @callback LiComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {checked: boolean|null, index: number, ordered: boolean}} props
- * @returns {ReactNode}
- *
- * @callback OrderedListComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {depth: number, ordered: true}} props
- * @returns {ReactNode}
- *
- * @callback TableCellComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {style?: Object.<string, unknown>, isHeader: boolean}} props
- * @returns {ReactNode}
- *
- * @callback TableRowComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {isHeader: boolean}} props
- * @returns {ReactNode}
- *
- * @callback UnorderedListComponent
- * @param {ReactBaseProps & ReactMarkdownProps & {depth: number, ordered: false}} props
- * @returns {ReactNode}
- *
- * @typedef {Object} SpecialComponents
- * @property {CodeComponent|ReactMarkdownNames} code
- * @property {HeadingComponent|ReactMarkdownNames} h1
- * @property {HeadingComponent|ReactMarkdownNames} h2
- * @property {HeadingComponent|ReactMarkdownNames} h3
- * @property {HeadingComponent|ReactMarkdownNames} h4
- * @property {HeadingComponent|ReactMarkdownNames} h5
- * @property {HeadingComponent|ReactMarkdownNames} h6
- * @property {LiComponent|ReactMarkdownNames} li
- * @property {OrderedListComponent|ReactMarkdownNames} ol
- * @property {TableCellComponent|ReactMarkdownNames} td
- * @property {TableCellComponent|ReactMarkdownNames} th
- * @property {TableRowComponent|ReactMarkdownNames} tr
- * @property {UnorderedListComponent|ReactMarkdownNames} ul
- *
- * @typedef {Record<Exclude<ReactMarkdownNames, keyof SpecialComponents>, NormalComponent|ReactMarkdownNames>} NormalComponents
- * @typedef {Partial<NormalComponents & SpecialComponents>} Components
- */
-
-/**
- * @typedef {Object} TransformOptions
- * @property {boolean} [sourcePos=false]
- * @property {boolean} [rawSourcePos=false]
- * @property {boolean} [skipHtml=false]
- * @property {boolean} [includeElementIndex=false]
- * @property {false|TransformLink} [transformLinkUri]
- * @property {TransformImage} [transformImageUri]
- * @property {string|TransformLinkTarget} [linkTarget]
- * @property {Components} [components]
+ * @template T
+ * @typedef {import('react').ComponentType<T>} ComponentType<T>
  */
 
 const own$7 = {}.hasOwnProperty;
@@ -10744,20 +13355,22 @@ function childrenToReact(context, node) {
     if (child.type === 'element') {
       children.push(toReact(context, child, childIndex, node));
     } else if (child.type === 'text') {
-      // React does not permit whitespace text elements as children of table:
-      // cf. https://github.com/remarkjs/react-markdown/issues/576
+      // Currently, a warning is triggered by react for *any* white space in
+      // tables.
+      // So we drop it.
+      // See: <https://github.com/facebook/react/pull/7081>.
+      // See: <https://github.com/facebook/react/pull/7515>.
+      // See: <https://github.com/remarkjs/remark-react/issues/64>.
+      // See: <https://github.com/remarkjs/react-markdown/issues/576>.
       if (
         node.type !== 'element' ||
         !tableElements.has(node.tagName) ||
-        child.value !== '\n'
+        !whitespace(child)
       ) {
         children.push(child.value);
       }
-    }
-    // @ts-ignore `raw` nodes are non-standard
-    else if (child.type === 'raw' && !context.options.skipHtml) {
+    } else if (child.type === 'raw' && !context.options.skipHtml) {
       // Default behavior is to show (encoded) HTML.
-      // @ts-ignore `raw` nodes are non-standard
       children.push(child.value);
     }
   }
@@ -10775,7 +13388,7 @@ function toReact(context, node, index, parent) {
   const options = context.options;
   const parentSchema = context.schema;
   /** @type {ReactMarkdownNames} */
-  // @ts-ignore assume a known HTML/SVG element.
+  // @ts-expect-error assume a known HTML/SVG element.
   const name = node.tagName;
   /** @type {Object.<string, unknown>} */
   const properties = {};
@@ -10784,14 +13397,15 @@ function toReact(context, node, index, parent) {
   let property;
 
   if (parentSchema.space === 'html' && name === 'svg') {
-    schema = svg_1;
+    schema = svg$1;
     context.schema = schema;
   }
 
-  for (property in node.properties) {
-    /* istanbul ignore else - prototype polution. */
-    if (own$7.call(node.properties, property)) {
-      addProperty(properties, property, node.properties[property], context);
+  if (node.properties) {
+    for (property in node.properties) {
+      if (own$7.call(node.properties, property)) {
+        addProperty(properties, property, node.properties[property], context);
+      }
     }
   }
 
@@ -10809,17 +13423,16 @@ function toReact(context, node, index, parent) {
   context.schema = parentSchema;
 
   // Nodes created by plugins do not have positional info, in which case we use
-  // an object that matches the positon interface.
+  // an object that matches the position interface.
   const position = node.position || {
     start: {line: null, column: null, offset: null},
     end: {line: null, column: null, offset: null}
   };
-  /** @type {NormalComponent|SpecialComponents[keyof SpecialComponents]|ReactMarkdownNames} */
   const component =
     options.components && own$7.call(options.components, name)
       ? options.components[name]
       : name;
-  const basic = typeof component === 'string' || component === compat_module.Fragment;
+  const basic = typeof component === 'string' || component === React.Fragment;
 
   if (!reactIs.isValidElementType(component)) {
     throw new TypeError(
@@ -10837,21 +13450,28 @@ function toReact(context, node, index, parent) {
   if (name === 'a' && options.linkTarget) {
     properties.target =
       typeof options.linkTarget === 'function'
-        ? // @ts-ignore assume `href` is a string
-          options.linkTarget(properties.href, node.children, properties.title)
+        ? options.linkTarget(
+            String(properties.href || ''),
+            node.children,
+            typeof properties.title === 'string' ? properties.title : null
+          )
         : options.linkTarget;
   }
 
   if (name === 'a' && options.transformLinkUri) {
     properties.href = options.transformLinkUri(
-      // @ts-ignore assume `href` is a string
-      properties.href,
+      String(properties.href || ''),
       node.children,
-      properties.title
+      typeof properties.title === 'string' ? properties.title : null
     );
   }
 
-  if (!basic && name === 'code' && parent.tagName !== 'pre') {
+  if (
+    !basic &&
+    name === 'code' &&
+    parent.type === 'element' &&
+    parent.tagName !== 'pre'
+  ) {
     properties.inline = true;
   }
 
@@ -10864,21 +13484,21 @@ function toReact(context, node, index, parent) {
       name === 'h5' ||
       name === 'h6')
   ) {
-    properties.level = parseInt(name.charAt(1), 10);
+    properties.level = Number.parseInt(name.charAt(1), 10);
   }
 
   if (name === 'img' && options.transformImageUri) {
     properties.src = options.transformImageUri(
-      // @ts-ignore assume `src` is a string
-      properties.src,
-      properties.alt,
-      properties.title
+      String(properties.src || ''),
+      String(properties.alt || ''),
+      typeof properties.title === 'string' ? properties.title : null
     );
   }
 
-  if (!basic && name === 'li') {
+  if (!basic && name === 'li' && parent.type === 'element') {
     const input = getInputElement(node);
-    properties.checked = input ? Boolean(input.properties.checked) : null;
+    properties.checked =
+      input && input.properties ? Boolean(input.properties.checked) : null;
     properties.index = getElementsBeforeCount(parent, node);
     properties.ordered = parent.tagName === 'ol';
   }
@@ -10891,7 +13511,7 @@ function toReact(context, node, index, parent) {
   if (name === 'td' || name === 'th') {
     if (properties.align) {
       if (!properties.style) properties.style = {};
-      // @ts-ignore assume `style` is an object
+      // @ts-expect-error assume `style` is an object
       properties.style.textAlign = properties.align;
       delete properties.align;
     }
@@ -10901,7 +13521,7 @@ function toReact(context, node, index, parent) {
     }
   }
 
-  if (!basic && name === 'tr') {
+  if (!basic && name === 'tr' && parent.type === 'element') {
     properties.isHeader = Boolean(parent.tagName === 'thead');
   }
 
@@ -10926,8 +13546,8 @@ function toReact(context, node, index, parent) {
 
   // Ensure no React warnings are emitted for void elements w/ children.
   return children.length > 0
-    ? compat_module.createElement(component, properties, children)
-    : compat_module.createElement(component, properties)
+    ? React.createElement(component, properties, children)
+    : React.createElement(component, properties)
 }
 
 /**
@@ -10972,8 +13592,7 @@ function getElementsBeforeCount(parent, node) {
  * @param {Context} ctx
  */
 function addProperty(props, prop, value, ctx) {
-  /** @type {Info} */
-  const info = find_1(ctx.schema, prop);
+  const info = find(ctx.schema, prop);
   let result = value;
 
   // Ignore nullish and `NaN` values.
@@ -10984,22 +13603,21 @@ function addProperty(props, prop, value, ctx) {
 
   // Accept `array`.
   // Most props are space-separated.
-  if (result && typeof result === 'object' && 'length' in result) {
-    // type-coverage:ignore-next-line remove when typed.
-    result = (info.commaSeparated ? commaSeparatedTokens : spaceSeparatedTokens).stringify(result);
+  if (Array.isArray(result)) {
+    result = info.commaSeparated ? stringify$1(result) : stringify(result);
   }
 
   if (info.property === 'style' && typeof result === 'string') {
     result = parseStyle(result);
   }
 
-  if (info.space) {
+  if (info.space && info.property) {
     props[
       own$7.call(hastToReact, info.property)
         ? hastToReact[info.property]
         : info.property
     ] = result;
-  } else {
+  } else if (info.attribute) {
     props[info.attribute] = result;
   }
 }
@@ -11014,7 +13632,7 @@ function parseStyle(value) {
 
   try {
     styleToObject(value, iterator);
-  } catch (/** @type {Error} */ _) {
+  } catch {
     // Silent.
   }
 
@@ -11039,7 +13657,7 @@ function styleReplacer(_, $1) {
 }
 
 /**
- * @param {Position} pos
+ * @param {Position|{start: {line: null, column: null, offset: null}, end: {line: null, column: null, offset: null}}} pos
  * @returns {string}
  */
 function flattenPosition(pos) {
@@ -11056,54 +13674,37 @@ function flattenPosition(pos) {
     .join('')
 }
 
-var astToReact = {
-	hastToReact: hastToReact_1,
-	hastChildrenToReact: hastChildrenToReact
-};
-
-// @ts-ignore remove when typed
-
-
-
-const childrenToReact$1 = astToReact.hastChildrenToReact;
-
 /**
  * @typedef {import('react').ReactNode} ReactNode
  * @typedef {import('react').ReactElement<{}>} ReactElement
  * @typedef {import('unified').PluggableList} PluggableList
  * @typedef {import('hast').Root} Root
- * @typedef {import('./rehype-filter.js').RehypeFilterOptions} FilterOptions
- * @typedef {import('./ast-to-react.js').TransformOptions} TransformOptions
+ * @typedef {import('./rehype-filter.js').Options} FilterOptions
+ * @typedef {import('./ast-to-react.js').Options} TransformOptions
  *
- * @typedef {Object} CoreOptions
+ * @typedef CoreOptions
  * @property {string} children
  *
- * @typedef {Object} PluginOptions
+ * @typedef PluginOptions
  * @property {PluggableList} [plugins=[]] **deprecated**: use `remarkPlugins` instead
  * @property {PluggableList} [remarkPlugins=[]]
  * @property {PluggableList} [rehypePlugins=[]]
  *
- * @typedef {Object} LayoutOptions
+ * @typedef LayoutOptions
  * @property {string} [className]
  *
  * @typedef {CoreOptions & PluginOptions & LayoutOptions & FilterOptions & TransformOptions} ReactMarkdownOptions
+ *
+ * @typedef Deprecation
+ * @property {string} id
+ * @property {string} [to]
  */
-
-var reactMarkdown = ReactMarkdown;
 
 const own$8 = {}.hasOwnProperty;
 const changelog =
   'https://github.com/remarkjs/react-markdown/blob/main/changelog.md';
 
-/**
- * @typedef {Object} Deprecation
- * @property {string} id
- * @property {string} [to]
- */
-
-/**
- * @type {Object.<string, Deprecation>}
- */
+/** @type {Object.<string, Deprecation>} */
 const deprecated = {
   renderers: {to: 'components', id: 'change-renderers-to-components'},
   astPlugins: {id: 'remove-buggy-html-in-markdown-parser'},
@@ -11135,7 +13736,6 @@ const deprecated = {
 function ReactMarkdown(options) {
   for (const key in deprecated) {
     if (own$8.call(deprecated, key) && own$8.call(options, key)) {
-      /** @type {Deprecation} */
       const deprecation = deprecated[key];
       console.warn(
         `[react-markdown] Warning: please ${
@@ -11146,31 +13746,24 @@ function ReactMarkdown(options) {
     }
   }
 
-  const processor = unified_1()
+  const processor = unified()
     .use(remarkParse)
-    // TODO: deprecate `plugins` in v7.0.0.
+    // TODO: deprecate `plugins` in v8.0.0.
     .use(options.remarkPlugins || options.plugins || [])
     .use(remarkRehype, {allowDangerousHtml: true})
     .use(options.rehypePlugins || [])
-    .use(rehypeFilter_1, options);
+    .use(rehypeFilter, options);
 
-  /** @type {vfile} */
-  let file;
+  const file = new VFile();
 
   if (typeof options.children === 'string') {
-    file = vfile(options.children);
-  } else {
-    if (options.children !== undefined && options.children !== null) {
-      console.warn(
-        `[react-markdown] Warning: please pass a string as \`children\` (not: \`${options.children}\`)`
-      );
-    }
-
-    file = vfile();
+    file.value = options.children;
+  } else if (options.children !== undefined && options.children !== null) {
+    console.warn(
+      `[react-markdown] Warning: please pass a string as \`children\` (not: \`${options.children}\`)`
+    );
   }
 
-  /** @type {Root} */
-  // @ts-ignore we’ll throw if it isn’t a root next.
   const hastNode = processor.runSync(processor.parse(file), file);
 
   if (hastNode.type !== 'root') {
@@ -11178,20 +13771,20 @@ function ReactMarkdown(options) {
   }
 
   /** @type {ReactElement} */
-  let result = compat_module.createElement(
-    compat_module.Fragment,
+  let result = React.createElement(
+    React.Fragment,
     {},
-    childrenToReact$1({options: options, schema: html_1$1, listDepth: 0}, hastNode)
+    childrenToReact({options, schema: html$2, listDepth: 0}, hastNode)
   );
 
   if (options.className) {
-    result = compat_module.createElement('div', {className: options.className}, result);
+    result = React.createElement('div', {className: options.className}, result);
   }
 
   return result
 }
 
-ReactMarkdown.defaultProps = {transformLinkUri: uriTransformer_1};
+ReactMarkdown.defaultProps = {transformLinkUri: uriTransformer};
 
 ReactMarkdown.propTypes = {
   // Core options:
@@ -11204,7 +13797,6 @@ ReactMarkdown.propTypes = {
   disallowedElements: propTypes.arrayOf(propTypes.string),
   unwrapDisallowed: propTypes.bool,
   // Plugin options:
-  // type-coverage:ignore-next-line
   remarkPlugins: propTypes.arrayOf(
     propTypes.oneOfType([
       propTypes.object,
@@ -11212,7 +13804,6 @@ ReactMarkdown.propTypes = {
       propTypes.arrayOf(propTypes.oneOfType([propTypes.object, propTypes.func]))
     ])
   ),
-  // type-coverage:ignore-next-line
   rehypePlugins: propTypes.arrayOf(
     propTypes.oneOfType([
       propTypes.object,
@@ -11231,6 +13822,4 @@ ReactMarkdown.propTypes = {
   components: propTypes.object
 };
 
-ReactMarkdown.uriTransformer = uriTransformer_1;
-
-export default reactMarkdown;
+export default ReactMarkdown;

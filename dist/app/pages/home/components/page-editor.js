@@ -1,5 +1,5 @@
 import {h, Component} from "../../../../../_snowpack/pkg/preact.js";
-import SimpleMDE from "../../../../../_snowpack/pkg/react-simplemde-editor.js";
+import {SimpleMdeReact} from "../../../../../_snowpack/pkg/react-simplemde-editor.js";
 import HotKey from "../../../components/hotkey.js";
 import ModalInputDialog from "../../../components/modal-input-dialog.js";
 import "./page-editor.css.proxy.js";
@@ -59,6 +59,9 @@ export default class PageEditor extends Component {
     }];
     SimpleMDEOptions.toolbar = [...myButtons, ...defaultToolbar];
   }
+  _getCodemirrorInstance(codeMirror) {
+    this.codeMirror = codeMirror;
+  }
   onHideCommitMessageDialog(dialogResult, commitMessage) {
     if (dialogResult) {
       this.props.onSave(this.state.content, commitMessage);
@@ -69,7 +72,7 @@ export default class PageEditor extends Component {
     const isCommitMessageDialogShown = true;
     let selectedText = "";
     if (this.simpleMDE) {
-      selectedText = this.simpleMDE.simpleMde.codemirror.getSelection();
+      selectedText = this.codeMirror.getSelection();
     }
     this.setState({selectedText, isCommitMessageDialogShown});
   }
@@ -96,13 +99,14 @@ export default class PageEditor extends Component {
   render(props, state) {
     const content = this.state.content || this.props.content;
     const defaultCommitMessage = state.selectedText || `Change page ${props.pageName}`;
-    return /* @__PURE__ */ h("div", null, this.renderCommitMessageDialog(defaultCommitMessage), /* @__PURE__ */ h(SimpleMDE, {
+    return /* @__PURE__ */ h("div", null, this.renderCommitMessageDialog(defaultCommitMessage), /* @__PURE__ */ h(SimpleMdeReact, {
       ref: (simpleMDE) => {
         this.simpleMDE = simpleMDE;
       },
       onChange: this.changeState,
       value: content,
-      options: SimpleMDEOptions
+      options: SimpleMDEOptions,
+      getCodemirrorInstance: (codeMirror) => this._getCodemirrorInstance(codeMirror)
     }), /* @__PURE__ */ h(HotKey, {
       keys: ["alt", "s"],
       simultaneous: true,
